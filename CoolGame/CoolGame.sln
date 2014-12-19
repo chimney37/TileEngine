@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoolGame", "CoolGame\CoolGa
 EndProject
 Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "CoolGameContent", "CoolGame\CoolGameContent\CoolGameContent.contentproj", "{C434F30B-3C3F-4E08-82DC-53CF985E8475}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicTile", "BasicTile\BasicTile\BasicTile.csproj", "{4875D342-42B3-422A-85EF-960B41493059}"
+EndProject
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "BasicTileContent", "BasicTile\BasicTileContent\BasicTileContent.contentproj", "{C7D9A03B-CFBF-47C0-903B-86CB0096D7B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -19,6 +23,12 @@ Global
 		{6ABA85C3-FEB0-441F-83C9-EE5D739F1EF1}.Release|x86.Build.0 = Release|x86
 		{C434F30B-3C3F-4E08-82DC-53CF985E8475}.Debug|x86.ActiveCfg = Debug|x86
 		{C434F30B-3C3F-4E08-82DC-53CF985E8475}.Release|x86.ActiveCfg = Release|x86
+		{4875D342-42B3-422A-85EF-960B41493059}.Debug|x86.ActiveCfg = Debug|x86
+		{4875D342-42B3-422A-85EF-960B41493059}.Debug|x86.Build.0 = Debug|x86
+		{4875D342-42B3-422A-85EF-960B41493059}.Release|x86.ActiveCfg = Release|x86
+		{4875D342-42B3-422A-85EF-960B41493059}.Release|x86.Build.0 = Release|x86
+		{C7D9A03B-CFBF-47C0-903B-86CB0096D7B7}.Debug|x86.ActiveCfg = Debug|x86
+		{C7D9A03B-CFBF-47C0-903B-86CB0096D7B7}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
