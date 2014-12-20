@@ -87,6 +87,38 @@ namespace BasicTile
             Rows[4].Columns[7].AddBaseTile(103);
             */
 
+            //add some stacking tiles for isometry
+            Rows[16].Columns[4].AddHeightTile(54);
+
+            Rows[17].Columns[3].AddHeightTile(54);
+
+            Rows[15].Columns[3].AddHeightTile(54);
+            Rows[16].Columns[3].AddHeightTile(53);
+
+            Rows[15].Columns[4].AddHeightTile(54);
+            Rows[15].Columns[4].AddHeightTile(54);
+            Rows[15].Columns[4].AddHeightTile(51);
+
+            Rows[18].Columns[3].AddHeightTile(51);
+            Rows[19].Columns[3].AddHeightTile(50);
+            Rows[18].Columns[4].AddHeightTile(55);
+
+            Rows[14].Columns[4].AddHeightTile(54);
+
+            Rows[14].Columns[5].AddHeightTile(62);
+            Rows[14].Columns[5].AddHeightTile(61);
+            Rows[14].Columns[5].AddHeightTile(63);
+
+            //add some topper tiles for isometry
+            Rows[17].Columns[4].AddTopperTile(114);
+            Rows[16].Columns[5].AddTopperTile(115);
+            Rows[14].Columns[4].AddTopperTile(125);
+            Rows[15].Columns[5].AddTopperTile(91);
+            Rows[16].Columns[6].AddTopperTile(94);
+
+
+            Rows[14].Columns[5].AddTopperTile(125);
+
             // End Create Sample Map Data
         }
     }

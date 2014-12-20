@@ -16,19 +16,28 @@ namespace BasicTile
         static public Texture2D TileSetTexture;
 
         //
-        //begin-- Hexagonal map ( part3)
-        //For square map, tile width, height = 32 (part1)
+        //begin-- 
+        //For square map (part1), tile width, height = 32 
         //For square map (part2), replace TileWidth=48 and TileHeight=48
-        static public int TileWidth = 33;
-        static public int TileHeight = 27;
+        //For hexagonal map (part3), TileWidth=33, TIleHeight=27
+        //For isometric map (part 4), replace TileWdith,TIleHeight=64
+        static public int TileWidth = 64;
+        static public int TileHeight = 64;
 
         //For square map TileStepX = TileWidth, TileStepY = TileHeight
+        //For hexagonal map:
         //horizontal: 33 (wdith of tile) + 19 (wdith of top side of tile) + 2 pixels spaces
         //vertical: 15 (half of height) + 2 pixels spaces
-        static public int TileStepX = 54;
-        static public int TileStepY = 17;
-        //every odd row would need to push to the side by width of top side: 19 + empty space along top right: 7 + 1 pixel space
-        static public int OddRowXOffset = 27;
+        //For isometric map: StepX=64, StepY=16
+        static public int TileStepX = 64;
+        static public int TileStepY = 16;
+
+        //hexagonal map:
+        // OddRowXOffset: every odd row would need to push to the side by width of top side: 19 + empty space along top right: 7 + 1 pixel space
+        //isometric map:
+        //XOffset 32
+        static public int OddRowXOffset = 32;
+        static public int HeightTileOffset = 32;
         //end --
 
         /// <summary>

@@ -20,8 +20,16 @@ namespace BasicTile
         SpriteBatch spriteBatch;
 
         TileMap myMap = new TileMap();
-        int squaresAcross = 18;
-        int squaresDown = 11;
+        int squaresAcross = 25;
+        int squaresDown = 25;
+
+        //for isometric map support
+        int baseOffsetX = -32;
+        int baseOffsetY = -64;
+        float heightRowDepthMod = 0.0000001f;
+
+        //debuggint tile locations on map
+        SpriteFont pericles6;
 
         public Game1()
         {
@@ -54,8 +62,10 @@ namespace BasicTile
             // TODO: use this.Content to load your game content here
 
             //Load tile map
-            Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part3_tileset");
+            Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part4_tileset");
 
+            //load fonts
+            pericles6 = Content.Load<SpriteFont>(@"Fonts\Pericles6");
         }
 
         /// <summary>
@@ -109,12 +119,16 @@ namespace BasicTile
             // TODO: Add your drawing code here
 
             //draw the tile map
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
 
             //this points to the map square coordinates that points tot he tiles that camera is pointing at
             Vector2 firstSquare = new Vector2(Camera.Location.X / Tile.TileStepX, Camera.Location.Y / Tile.TileStepY);
             int firstX = (int)firstSquare.X;
             int firstY = (int)firstSquare.Y;
+
+            //
+            float maxdepth = ((myMap.MapWidth + 1) + ((myMap.MapHeight + 1) * Tile.TileWidth)) * 10;
+            float depthOffset;
 
             //if the camera moves in increments of less than one tile, we need to offset it by the amount the camera shifted
             Vector2 squareOffset = new Vector2(Camera.Location.X % Tile.TileStepX, Camera.Location.Y % Tile.TileStepY);
@@ -129,6 +143,12 @@ namespace BasicTile
 
                 for (int x = 0; x < squaresAcross; x++)
                 {
+
+                    int mapx = (firstX + x);
+                    int mapy = (firstY + y);
+                    depthOffset = 0.7f - ((mapx + (mapy * Tile.TileWidth)) / maxdepth);
+
+
                     foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].BaseTiles)
                     {
                         spriteBatch.Draw(
@@ -136,15 +156,78 @@ namespace BasicTile
 
                             //1st rectangle determines where on the screen the tile will be drawn
                             //offset moves the tile drawing by the amount calculated to account for camera being between whole tile markers
-                            new Rectangle((x * Tile.TileStepX) - offsetX + rowOffset,
-                                (y * Tile.TileStepY) - offsetY, 
-                                Tile.TileWidth, 
+                            new Rectangle((x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX,
+                                (y * Tile.TileStepY) - offsetY + baseOffsetY,
+                                Tile.TileWidth,
                                 Tile.TileWidth),
 
                             //Use to get the kind of tile. 
                             Tile.GetSourceRectangle(tileID),
-                            Color.White);
+                            Color.White,
+                            0.0f,
+                            Vector2.Zero,
+                            SpriteEffects.None,
+                            1.0f);
                     }
+
+                    //draw height tiles
+
+                    //keep track of how many heigh tiles drawn
+                    int heightRow = 0;
+                    foreach (int tileID in myMap.Rows[mapy].Columns[mapx].HeightTiles)
+                    {
+                        spriteBatch.Draw(
+                            Tile.TileSetTexture,
+                            new Rectangle(
+                                (x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX,
+
+                                //each time draw, need to move the y by the value of Tile.HeightTileOffset times how many times height tile drawn
+                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (heightRow * Tile.HeightTileOffset),
+                                Tile.TileWidth,
+                                Tile.TileHeight),
+                            Tile.GetSourceRectangle(tileID),
+                            Color.White,
+                            0.0f,
+                            Vector2.Zero,
+                            SpriteEffects.None,
+
+                            //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen (the value of heightRowDepthMod
+                            depthOffset - ((float)heightRow * heightRowDepthMod));
+                        heightRow++;
+                    }
+
+                    //draw topper tiles
+                    foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].TopperTiles)
+                    {
+                        spriteBatch.Draw(
+                            Tile.TileSetTexture,
+                            new Rectangle(
+                                (x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX,
+                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (heightRow * Tile.HeightTileOffset),
+                                Tile.TileWidth,
+                                Tile.TileHeight),
+                            Tile.GetSourceRectangle(tileID),
+                            Color.White,
+                            0.0f,
+                            Vector2.Zero,
+                            SpriteEffects.None,
+                            //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen
+                            depthOffset - ((float)heightRow * heightRowDepthMod));
+                    }
+
+#if DEBUG
+                    //debugging tile draw location
+                    spriteBatch.DrawString(pericles6, 
+                        (x + firstX).ToString() + ", " + (y + firstY).ToString(),
+                        new Vector2((x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX + 24,
+                                    (y * Tile.TileStepY) - offsetY + baseOffsetY + 48), 
+                                    Color.White, 
+                                    0f, 
+                                    Vector2.Zero, 
+                                    1.0f, 
+                                    SpriteEffects.None, 
+                                    0.0f);
+#endif
                 }
             }
 
