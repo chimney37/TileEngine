@@ -20,8 +20,8 @@ namespace BasicTile
         SpriteBatch spriteBatch;
 
         TileMap myMap = new TileMap();
-        int squaresAcross = 10;
-        int squaresDown = 10;
+        int squaresAcross = 18;
+        int squaresDown = 11;
 
         public Game1()
         {
@@ -54,7 +54,7 @@ namespace BasicTile
             // TODO: use this.Content to load your game content here
 
             //Load tile map
-            Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part1_tileset");
+            Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part2_tileset");
 
         }
 
@@ -84,16 +84,16 @@ namespace BasicTile
             //note: clamp to keep X and Y values within pre-defined ranges
             KeyboardState ks = Keyboard.GetState();
             if (ks.IsKeyDown(Keys.Left))
-                Camera.Location.X = MathHelper.Clamp(Camera.Location.X - 2, 0, (myMap.MapWidth - squaresAcross) * 32);
+                Camera.Location.X = MathHelper.Clamp(Camera.Location.X - 2, 0, (myMap.MapWidth - squaresAcross) * Tile.TileWidth);
 
             if (ks.IsKeyDown(Keys.Right))
-                Camera.Location.X = MathHelper.Clamp(Camera.Location.X + 2, 0, (myMap.MapWidth - squaresAcross) * 32);
+                Camera.Location.X = MathHelper.Clamp(Camera.Location.X + 2, 0, (myMap.MapWidth - squaresAcross) * Tile.TileWidth);
 
             if (ks.IsKeyDown(Keys.Up))
-                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y - 2, 0, (myMap.MapHeight - squaresDown) * 32);
+                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y - 2, 0, (myMap.MapHeight - squaresDown) * Tile.TileWidth);
 
             if (ks.IsKeyDown(Keys.Down))
-                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y + 2, 0, (myMap.MapHeight - squaresDown) * 32);
+                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y + 2, 0, (myMap.MapHeight - squaresDown) * Tile.TileWidth);
 
             base.Update(gameTime);
         }
@@ -113,12 +113,12 @@ namespace BasicTile
 
             //each tile is 32x32 px
             //this points to the map square coordinates that points tot he tiles that camera is pointing at
-            Vector2 firstSquare = new Vector2(Camera.Location.X / 32, Camera.Location.Y / 32);
+            Vector2 firstSquare = new Vector2(Camera.Location.X / Tile.TileWidth, Camera.Location.Y / Tile.TileWidth);
             int firstX = (int)firstSquare.X;
             int firstY = (int)firstSquare.Y;
 
             //if the camera moves in increments of less than one tile, we need to offset it by the amount the camera shifted
-            Vector2 squareOffset = new Vector2(Camera.Location.X % 32, Camera.Location.Y % 32);
+            Vector2 squareOffset = new Vector2(Camera.Location.X % Tile.TileWidth, Camera.Location.Y % Tile.TileWidth);
             int offsetX = (int)squareOffset.X;
             int offsetY = (int)squareOffset.Y;
 
@@ -126,17 +126,22 @@ namespace BasicTile
             {
                 for (int x = 0; x < squaresAcross; x++)
                 {
-                    spriteBatch.Draw(
-                        Tile.TileSetTexture,
+                    foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].BaseTiles)
+                    {
+                        spriteBatch.Draw(
+                            Tile.TileSetTexture,
 
-                        //1st rectangle determines where on the screen the tile will be drawn
-                        //offset moves the tile drawing by the amount calculated to account for camera being between whole tile markers
-                        new Rectangle((x * 32) - offsetX, (y * 32) - offsetY, 32, 32),
+                            //1st rectangle determines where on the screen the tile will be drawn
+                            //offset moves the tile drawing by the amount calculated to account for camera being between whole tile markers
+                            new Rectangle((x * Tile.TileWidth) - offsetX, 
+                                (y * Tile.TileWidth) - offsetY, 
+                                Tile.TileWidth, 
+                                Tile.TileWidth),
 
-                        //Use the get the kind of tile. 
-                        //rows and columns are offset by the first X and Y.
-                        Tile.GetSourceRectangle(myMap.Rows[y + firstY].Columns[x + firstX].TileID),
-                        Color.White);
+                            //Use to get the kind of tile. 
+                            Tile.GetSourceRectangle(tileID),
+                            Color.White);
+                    }
                 }
             }
 
