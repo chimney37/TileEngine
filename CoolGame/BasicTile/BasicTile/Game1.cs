@@ -53,6 +53,7 @@ namespace BasicTile
 
             // TODO: use this.Content to load your game content here
 
+            //Load tile map
             Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part1_tileset");
 
         }
@@ -79,7 +80,7 @@ namespace BasicTile
 
             // TODO: Add your update logic here
 
-            //move the camera around
+            //move the camera around using keys
             //note: clamp to keep X and Y values within pre-defined ranges
             KeyboardState ks = Keyboard.GetState();
             if (ks.IsKeyDown(Keys.Left))
@@ -106,6 +107,8 @@ namespace BasicTile
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+
+            //draw the tile map
             spriteBatch.Begin();
 
             //each tile is 32x32 px

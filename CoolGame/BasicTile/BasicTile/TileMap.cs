@@ -5,6 +5,10 @@ using System.Text;
 
 namespace BasicTile
 {
+    /// <summary>
+    /// A Map made of tiles is created and managed
+    /// 
+    /// </summary>
     class TileMap
     {
         public List<MapRow> Rows = new List<MapRow>();
@@ -68,6 +72,9 @@ namespace BasicTile
         }
     }
 
+    /// <summary>
+    /// A row of map cells
+    /// </summary>
     public class MapRow
     {
         public List<MapCell> Columns = new List<MapCell>();

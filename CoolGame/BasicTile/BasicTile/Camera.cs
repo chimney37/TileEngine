@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework;
 
 namespace BasicTile
 {
+    /// <summary>
+    /// Camera is the view of the user application. This can pan
+    /// </summary>
     public static class Camera
     {
 

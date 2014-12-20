@@ -5,6 +5,9 @@ using System.Text;
 
 namespace BasicTile
 {
+    /// <summary>
+    /// MapCell (itself managing an area of the map that represents a tile area, but not necessary a single tile)
+    /// </summary>
     public class MapCell
     {
         public int TileID { get; set; }
