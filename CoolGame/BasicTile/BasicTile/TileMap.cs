@@ -69,7 +69,8 @@ namespace BasicTile
             Rows[5].Columns[7].TileID = 2;
 
 
-            //Add some fringe transitions around water area
+            //Add some fringe transitions around water area (part2)
+            /*
             Rows[3].Columns[5].AddBaseTile(30);
             Rows[4].Columns[5].AddBaseTile(27);
             Rows[5].Columns[5].AddBaseTile(28);
@@ -84,7 +85,7 @@ namespace BasicTile
             Rows[4].Columns[5].AddBaseTile(102);
             Rows[4].Columns[6].AddBaseTile(104);
             Rows[4].Columns[7].AddBaseTile(103);
-
+            */
 
             // End Create Sample Map Data
         }

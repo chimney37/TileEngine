@@ -8,15 +8,28 @@ using Microsoft.Xna.Framework.Graphics;
 namespace BasicTile
 {
     /// <summary>
-    /// Manages the tile resource
+    /// Manages the tile resource.
+    /// FOr more information refer to: http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:3
     /// </summary>
     static class Tile
     {
         static public Texture2D TileSetTexture;
 
-        //set the tile width and height
-        static public int TileWidth = 48;
-        static public int TileHeight = 48;
+        //
+        //begin-- Hexagonal map ( part3)
+        //For square map, tile width, height = 32 (part1)
+        //For square map (part2), replace TileWidth=48 and TileHeight=48
+        static public int TileWidth = 33;
+        static public int TileHeight = 27;
+
+        //For square map TileStepX = TileWidth, TileStepY = TileHeight
+        //horizontal: 33 (wdith of tile) + 19 (wdith of top side of tile) + 2 pixels spaces
+        //vertical: 15 (half of height) + 2 pixels spaces
+        static public int TileStepX = 54;
+        static public int TileStepY = 17;
+        //every odd row would need to push to the side by width of top side: 19 + empty space along top right: 7 + 1 pixel space
+        static public int OddRowXOffset = 27;
+        //end --
 
         /// <summary>
         /// Gets the type of tile according to an index.

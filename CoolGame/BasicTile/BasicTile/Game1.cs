@@ -54,7 +54,7 @@ namespace BasicTile
             // TODO: use this.Content to load your game content here
 
             //Load tile map
-            Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part2_tileset");
+            Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part3_tileset");
 
         }
 
@@ -111,19 +111,22 @@ namespace BasicTile
             //draw the tile map
             spriteBatch.Begin();
 
-            //each tile is 32x32 px
             //this points to the map square coordinates that points tot he tiles that camera is pointing at
-            Vector2 firstSquare = new Vector2(Camera.Location.X / Tile.TileWidth, Camera.Location.Y / Tile.TileWidth);
+            Vector2 firstSquare = new Vector2(Camera.Location.X / Tile.TileStepX, Camera.Location.Y / Tile.TileStepY);
             int firstX = (int)firstSquare.X;
             int firstY = (int)firstSquare.Y;
 
             //if the camera moves in increments of less than one tile, we need to offset it by the amount the camera shifted
-            Vector2 squareOffset = new Vector2(Camera.Location.X % Tile.TileWidth, Camera.Location.Y % Tile.TileWidth);
+            Vector2 squareOffset = new Vector2(Camera.Location.X % Tile.TileStepX, Camera.Location.Y % Tile.TileStepY);
             int offsetX = (int)squareOffset.X;
             int offsetY = (int)squareOffset.Y;
 
             for (int y = 0; y < squaresDown; y++)
             {
+                int rowOffset = 0;
+                if ((firstY + y) % 2 == 1)
+                    rowOffset = Tile.OddRowXOffset;
+
                 for (int x = 0; x < squaresAcross; x++)
                 {
                     foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].BaseTiles)
@@ -133,8 +136,8 @@ namespace BasicTile
 
                             //1st rectangle determines where on the screen the tile will be drawn
                             //offset moves the tile drawing by the amount calculated to account for camera being between whole tile markers
-                            new Rectangle((x * Tile.TileWidth) - offsetX, 
-                                (y * Tile.TileWidth) - offsetY, 
+                            new Rectangle((x * Tile.TileStepX) - offsetX + rowOffset,
+                                (y * Tile.TileStepY) - offsetY, 
                                 Tile.TileWidth, 
                                 Tile.TileWidth),
 
