@@ -12,10 +12,10 @@ namespace BasicTile
     {
         //list of tile ids can stack any number of tile images on the same space
         public List<int> BaseTiles = new List<int>();
-
         //support to store tiles that are elevated above the base level
         public List<int> HeightTiles = new List<int>();
-
+        //support to store tiles that are of multi-size tiles
+        public List<int> MultiSizeTiles = new List<int>();
         //support to allow place tiles on top of elevated map areas created by HeightTiles list -
         public List<int> TopperTiles = new List<int>();
 
@@ -54,6 +54,11 @@ namespace BasicTile
         public void AddTopperTile(int tileID)
         {
             TopperTiles.Add(tileID);
+        }
+
+        public void AddMultiSizeTile(int tileID)
+        {
+            MultiSizeTiles.Add(tileID);
         }
     }
 }

@@ -38,6 +38,7 @@ namespace BasicTile
         //XOffset 32
         static public int OddRowXOffset = 32;
         static public int HeightTileOffset = 32;
+        static public int MultiHeightTileOffset = 64;
         //end --
 
         /// <summary>

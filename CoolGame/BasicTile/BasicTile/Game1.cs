@@ -143,12 +143,12 @@ namespace BasicTile
 
                 for (int x = 0; x < squaresAcross; x++)
                 {
-
                     int mapx = (firstX + x);
                     int mapy = (firstY + y);
                     depthOffset = 0.7f - ((mapx + (mapy * Tile.TileWidth)) / maxdepth);
 
-
+                    #region DRAW BASE TILES
+                    //draw base tiles
                     foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].BaseTiles)
                     {
                         spriteBatch.Draw(
@@ -169,9 +169,10 @@ namespace BasicTile
                             SpriteEffects.None,
                             1.0f);
                     }
+                    #endregion
 
+                    #region STACKED HEIGHT TILES
                     //draw height tiles
-
                     //keep track of how many heigh tiles drawn
                     int heightRow = 0;
                     foreach (int tileID in myMap.Rows[mapy].Columns[mapx].HeightTiles)
@@ -195,7 +196,9 @@ namespace BasicTile
                             depthOffset - ((float)heightRow * heightRowDepthMod));
                         heightRow++;
                     }
+                    #endregion
 
+                    #region DRAW TOPPER TILES (SKINS)
                     //draw topper tiles
                     foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].TopperTiles)
                     {
@@ -214,6 +217,33 @@ namespace BasicTile
                             //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen
                             depthOffset - ((float)heightRow * heightRowDepthMod));
                     }
+                    #endregion
+
+                    #region DRAW MULTI HEIGHT TILES
+                    //draw multi height tiles
+                    int sizeRow = 0;
+                    foreach(int tileID in myMap.Rows[y + firstY].Columns[x + firstX].MultiSizeTiles)
+                    {
+                        spriteBatch.Draw(
+                            Tile.TileSetTexture,
+                            new Rectangle(
+                                (x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX,
+
+                                //each time draw, need to move the y by the value of Tile.HeightTileOffset times how many times height tile drawn
+                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (sizeRow * Tile.MultiHeightTileOffset),
+                                Tile.TileWidth,
+                                Tile.TileHeight),
+                            Tile.GetSourceRectangle(tileID),
+                            Color.White,
+                            0.0f,
+                            Vector2.Zero,
+                            SpriteEffects.None,
+
+                            //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen (the value of heightRowDepthMod
+                            depthOffset - ((float)sizeRow * heightRowDepthMod));
+                        sizeRow++;
+                    }
+                    #endregion
 
 #if DEBUG
                     //debugging tile draw location

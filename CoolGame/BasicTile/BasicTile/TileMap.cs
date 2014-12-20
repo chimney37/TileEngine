@@ -87,6 +87,12 @@ namespace BasicTile
             Rows[4].Columns[7].AddBaseTile(103);
             */
 
+
+            //add multi-height tiles for tree (stacking)
+            Rows[8].Columns[8].AddMultiSizeTile(132);
+            Rows[8].Columns[8].AddMultiSizeTile(122);
+
+
             //add some stacking tiles for isometry
             Rows[16].Columns[4].AddHeightTile(54);
 
@@ -105,6 +111,7 @@ namespace BasicTile
 
             Rows[14].Columns[4].AddHeightTile(54);
 
+            //rocks stacking on top of one another
             Rows[14].Columns[5].AddHeightTile(62);
             Rows[14].Columns[5].AddHeightTile(61);
             Rows[14].Columns[5].AddHeightTile(63);
@@ -118,6 +125,8 @@ namespace BasicTile
 
 
             Rows[14].Columns[5].AddTopperTile(125);
+
+
 
             // End Create Sample Map Data
         }
