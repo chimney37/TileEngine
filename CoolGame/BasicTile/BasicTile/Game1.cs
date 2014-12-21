@@ -22,7 +22,7 @@ namespace BasicTile
 
         TileMap myMap = new TileMap();
         int squaresAcross = 25;
-        int squaresDown = 25;
+        int squaresDown = 30;
 
         //for isometric map support
         //this isometric set, is by 64x64,but the image only occupies bottom 32 pixels of tile.
@@ -32,8 +32,10 @@ namespace BasicTile
         int baseOffsetY = -32;
         float heightRowDepthMod = 0.0000001f;
 
-        //debuggint tile locations on map
+        //debugging tile locations on map
         SpriteFont pericles6;
+        bool EnableDebugging = true;
+        KeyboardState oldState;
 
         public Game1()
         {
@@ -50,6 +52,8 @@ namespace BasicTile
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+
+            oldState = Keyboard.GetState();
 
             base.Initialize();
         }
@@ -93,8 +97,11 @@ namespace BasicTile
                 this.Exit();
 
             // TODO: Add your update logic here
+            
+
 
             //move the camera around using keys
+            //camera moves in increments of (+-2)
             //note: clamp to keep X and Y values within pre-defined ranges
             KeyboardState ks = Keyboard.GetState();
             if (ks.IsKeyDown(Keys.Left))
@@ -109,6 +116,12 @@ namespace BasicTile
             if (ks.IsKeyDown(Keys.Down))
                 Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y + 2, 0, (myMap.MapHeight - squaresDown) * Tile.TileWidth);
 
+            if (ks.IsKeyUp(Keys.Delete) && oldState.IsKeyDown(Keys.Delete))
+                EnableDebugging = !EnableDebugging;
+
+
+            oldState = ks;
+
             base.Update(gameTime);
         }
 
@@ -122,26 +135,33 @@ namespace BasicTile
 
             // TODO: Add your drawing code here
 
-            //draw the tile map. Tells XNA that we are going to specify layer depth (sorted from back(1.0f) to front(0.0f))
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-
-            //this points to the map square coordinates that points to the tiles that camera is pointing at
+            //Camera is intiially at 0,0 and camera can move around
+            //we need to enables pan to the location of the map where the camera points
+            //firstX and firstY are map square coordinates of the game map that camera points at
             Vector2 firstSquare = new Vector2(Camera.Location.X / Tile.TileStepX, Camera.Location.Y / Tile.TileStepY);
             int firstX = (int)firstSquare.X;
             int firstY = (int)firstSquare.Y;
 
-            //
-            float maxdepth = ((myMap.MapWidth + 1) + ((myMap.MapHeight + 1) * Tile.TileWidth)) * 10;
-            float depthOffset;
-
-            //if the camera moves in increments of less than one tile, we need to offset it by the amount the camera shifted
+            //camera moves by increments of a sub tile step
+            //calculate offset by the amount the camera shifted
+            //example, if camera is at (0.0), just draw tile at (0,0)
+            //but if camera is pointing at halfway through a tile to the right (16,0)
+            //we need to shift everything we draw 16 px to left, so right part of tile shows up at upper left of screen
             Vector2 squareOffset = new Vector2(Camera.Location.X % Tile.TileStepX, Camera.Location.Y % Tile.TileStepY);
             int offsetX = (int)squareOffset.X;
             int offsetY = (int)squareOffset.Y;
 
+            //compute the max depth count to draw any map (for 50x50 map this would be (51 + 51*64)*10=33150)
+            float maxdepth = ((myMap.MapWidth + 1) + ((myMap.MapHeight + 1) * Tile.TileWidth)) * 10;
+            float depthOffset;
+
             //zig-zag rendering approach
             //http://stackoverflow.com/questions/892811/drawing-isometric-game-worlds
             //
+
+            //draw the tile map. Tells XNA that we are going to specify layer depth (sorted from back(1.0f) to front(0.0f))
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+
             for (int y = 0; y < squaresDown; y++)
             {
                 //for supporting hexagonal and isometric maps, odd row must be offset
@@ -149,7 +169,7 @@ namespace BasicTile
 
                 for (int x = 0; x < squaresAcross; x++)
                 {
-                    //controlling the depth of isometric tiles with height
+                    //controlling the depth of isometric tiles depending on the x,y location
                     int mapx = (firstX + x);
                     int mapy = (firstY + y);
                     depthOffset = 0.7f - ((mapx + (mapy * Tile.TileWidth)) / maxdepth);
@@ -235,7 +255,7 @@ namespace BasicTile
                             new Rectangle(
                                 //we need to offset by both x and y depending on which part of object is drawn
                                 (x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX - (tile.Item2 * Tile.MultiSizeTileOffset),
-                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (tile.Item3 * Tile.MultiSizeTileOffset),
+                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (tile.Item3 * Tile.MultiSizeTileOffset) - (tile.Item4 * Tile.HeightTileOffset),
                                 Tile.TileWidth,
                                 Tile.TileHeight),
                             Tile.GetSourceRectangle(tile.Item1),
@@ -249,19 +269,19 @@ namespace BasicTile
                     #endregion
 
                     #region DEBUGGING
-#if DEBUG
                     //debugging tile draw location
-                    spriteBatch.DrawString(pericles6, 
-                        (x + firstX).ToString() + ", " + (y + firstY).ToString(),
-                        new Vector2((x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX + 24,
-                                    (y * Tile.TileStepY) - offsetY + baseOffsetY + 48), 
-                                    Color.White, 
-                                    0f, 
-                                    Vector2.Zero, 
-                                    1.0f, 
-                                    SpriteEffects.None, 
-                                    0.0f);
-#endif
+
+                    if(EnableDebugging)
+                        spriteBatch.DrawString(pericles6, 
+                            (x + firstX).ToString() + ", " + (y + firstY).ToString(),
+                            new Vector2((x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX + 24,
+                                        (y * Tile.TileStepY) - offsetY + baseOffsetY + 48), 
+                                        Color.White, 
+                                        0f, 
+                                        Vector2.Zero, 
+                                        1.0f, 
+                                        SpriteEffects.None, 
+                                        0.0f);
                     #endregion
                 }
             }

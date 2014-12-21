@@ -22,12 +22,14 @@ namespace BasicTile
                 MapRow thisRow = new MapRow();
                 for (int x = 0; x < MapWidth; x++)
                 {
+                    // default tileID = 0 (green grassland) for all places
                     thisRow.Columns.Add(new MapCell(0));
                 }
                 Rows.Add(thisRow);
             }
 
-            // Create Sample Map Data
+            //TODO: should enum tileIDs
+            // Create Sample Map Data with other variations of data
             Rows[0].Columns[3].TileID = 3;
             Rows[0].Columns[4].TileID = 3;
             Rows[0].Columns[5].TileID = 1;
@@ -125,21 +127,41 @@ namespace BasicTile
 
             Rows[14].Columns[5].AddTopperTile(125);
 
+            AddLargeLeavedTree(20, 2, 0);
 
+
+            AddMediumConeTree(4, 0);
+
+            AddSmallConeTree(5, 0);
 
             // End Create Sample Map Data
         }
 
-        public void AddLargeLeavedTree(int row, int column)
+        //TODO: create a data loader configurable by text file, making new data addable w/o code change
+
+        public void AddLargeLeavedTree(int row, int column, int height=0)
         {
-            Rows[row].Columns[column].AddMultiSizeTile(158, 0, 0, 0);    //trunk
-            Rows[row].Columns[column].AddMultiSizeTile(148, 0, 1, 2);    //middle
-            Rows[row].Columns[column].AddMultiSizeTile(138, 0, 2, 3);    //upp
-            Rows[row].Columns[column].AddMultiSizeTile(157, 1, 0, 1);    //branch lower left
-            Rows[row].Columns[column].AddMultiSizeTile(147, 1, 1, 2);    //branch middle left
-            Rows[row].Columns[column].AddMultiSizeTile(149, -1, 1, 2);   //branch middle right
-            Rows[row].Columns[column].AddMultiSizeTile(159, -1, 0, 1);   //branch middle right
+            Rows[row].Columns[column].AddMultiSizeTile(158, 0, 0, height);    //trunk
+            Rows[row].Columns[column].AddMultiSizeTile(148, 0, 1, height);    //middle
+            Rows[row].Columns[column].AddMultiSizeTile(138, 0, 2, height);    //upp
+            Rows[row].Columns[column].AddMultiSizeTile(157, 1, 0, height);    //branch lower left
+            Rows[row].Columns[column].AddMultiSizeTile(147, 1, 1, height);    //branch middle left
+            Rows[row].Columns[column].AddMultiSizeTile(149, -1, 1, height);   //branch middle right
+            Rows[row].Columns[column].AddMultiSizeTile(159, -1, 0, height);   //branch middle right
         }
+
+        public void AddMediumConeTree(int row, int column, int height=0)
+        {
+            Rows[row].Columns[column].AddMultiSizeTile(122, 0, 1, height);    //trunk
+            Rows[row].Columns[column].AddMultiSizeTile(132, 0, 0, height);    //middle
+        }
+
+        public void AddSmallConeTree(int row, int column, int height = 0)
+        {
+            Rows[row].Columns[column].AddMultiSizeTile(123, 0, 1, height);    //trunk
+            Rows[row].Columns[column].AddMultiSizeTile(133, 0, 0, height);    //middle
+        }
+
     }
 
     /// <summary>
