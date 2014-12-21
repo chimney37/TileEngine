@@ -14,8 +14,8 @@ namespace BasicTile
         public List<int> BaseTiles = new List<int>();
         //support to store tiles that are elevated above the base level
         public List<int> HeightTiles = new List<int>();
-        //support to store tiles that are of multi-size(height) tiles. multiwidth is not intended
-        public List<int> MultiSizeTiles = new List<int>();
+        //support to store tiles that are of multi-size tiles <tileID, cellOffsetX, cellOffsetY>
+        public List<Tuple<int, int, int, int>> MultiSizeTiles = new List<Tuple<int, int, int, int>>();
         //support to allow place tiles on top of elevated map areas created by HeightTiles list -
         public List<int> TopperTiles = new List<int>();
 
@@ -56,9 +56,9 @@ namespace BasicTile
             TopperTiles.Add(tileID);
         }
 
-        public void AddMultiSizeTile(int tileID)
+        public void AddMultiSizeTile(int tileID, int CellOffsetX, int CellOffsetY, int CellOffsetZ)
         {
-            MultiSizeTiles.Add(tileID);
+            MultiSizeTiles.Add(new Tuple<int, int, int,int>(tileID, CellOffsetX, CellOffsetY, CellOffsetZ));
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -24,8 +25,11 @@ namespace BasicTile
         int squaresDown = 25;
 
         //for isometric map support
-        int baseOffsetX = -32;
-        int baseOffsetY = -64;
+        //this isometric set, is by 64x64,but the image only occupies bottom 32 pixels of tile.
+        //http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:4
+        //Base offset controls the screen coordinate offset from the top left of the screen coordinates
+        int baseOffsetX = 0;
+        int baseOffsetY = -32;
         float heightRowDepthMod = 0.0000001f;
 
         //debuggint tile locations on map
@@ -118,10 +122,10 @@ namespace BasicTile
 
             // TODO: Add your drawing code here
 
-            //draw the tile map
+            //draw the tile map. Tells XNA that we are going to specify layer depth (sorted from back(1.0f) to front(0.0f))
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
 
-            //this points to the map square coordinates that points tot he tiles that camera is pointing at
+            //this points to the map square coordinates that points to the tiles that camera is pointing at
             Vector2 firstSquare = new Vector2(Camera.Location.X / Tile.TileStepX, Camera.Location.Y / Tile.TileStepY);
             int firstX = (int)firstSquare.X;
             int firstY = (int)firstSquare.Y;
@@ -135,14 +139,17 @@ namespace BasicTile
             int offsetX = (int)squareOffset.X;
             int offsetY = (int)squareOffset.Y;
 
+            //zig-zag rendering approach
+            //http://stackoverflow.com/questions/892811/drawing-isometric-game-worlds
+            //
             for (int y = 0; y < squaresDown; y++)
             {
-                int rowOffset = 0;
-                if ((firstY + y) % 2 == 1)
-                    rowOffset = Tile.OddRowXOffset;
+                //for supporting hexagonal and isometric maps, odd row must be offset
+                int rowOffset = ((firstY + y) % 2 == 1) ? rowOffset = Tile.OddRowXOffset : 0;
 
                 for (int x = 0; x < squaresAcross; x++)
                 {
+                    //controlling the depth of isometric tiles with height
                     int mapx = (firstX + x);
                     int mapy = (firstY + y);
                     depthOffset = 0.7f - ((mapx + (mapy * Tile.TileWidth)) / maxdepth);
@@ -150,7 +157,7 @@ namespace BasicTile
                     #region DRAW BASE TILES
                     //draw base tiles
                     foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].BaseTiles)
-                    {
+                    {                       
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
 
@@ -219,32 +226,29 @@ namespace BasicTile
                     }
                     #endregion
 
-                    #region DRAW MULTI HEIGHT TILES
-                    //draw multi height tiles
-                    int sizeRow = 0;
-                    foreach(int tileID in myMap.Rows[y + firstY].Columns[x + firstX].MultiSizeTiles)
+                    #region DRAW MULTI SIZE TILES
+                    //draw multi size tiles
+                    foreach(Tuple<int,int,int,int> tile in myMap.Rows[y + firstY].Columns[x + firstX].MultiSizeTiles)
                     {
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
                             new Rectangle(
-                                (x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX,
-
-                                //each time draw, need to move the y by the value of Tile.HeightTileOffset times how many times height tile drawn
-                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (sizeRow * Tile.MultiHeightTileOffset),
+                                //we need to offset by both x and y depending on which part of object is drawn
+                                (x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX - (tile.Item2 * Tile.MultiSizeTileOffset),
+                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (tile.Item3 * Tile.MultiSizeTileOffset),
                                 Tile.TileWidth,
                                 Tile.TileHeight),
-                            Tile.GetSourceRectangle(tileID),
+                            Tile.GetSourceRectangle(tile.Item1),
                             Color.White,
                             0.0f,
                             Vector2.Zero,
                             SpriteEffects.None,
-
-                            //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen (the value of heightRowDepthMod
-                            depthOffset - ((float)sizeRow * heightRowDepthMod));
-                        sizeRow++;
+                            //
+                            depthOffset - ((float)tile.Item4 * heightRowDepthMod));
                     }
                     #endregion
 
+                    #region DEBUGGING
 #if DEBUG
                     //debugging tile draw location
                     spriteBatch.DrawString(pericles6, 
@@ -258,6 +262,7 @@ namespace BasicTile
                                     SpriteEffects.None, 
                                     0.0f);
 #endif
+                    #endregion
                 }
             }
 

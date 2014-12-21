@@ -88,10 +88,9 @@ namespace BasicTile
             */
 
 
-            //add multi-height tiles for tree (stacking)
-            Rows[8].Columns[8].AddMultiSizeTile(132);
-            Rows[8].Columns[8].AddMultiSizeTile(122);
-
+            //add multi-size tiles for tree (stacking)
+            AddLargeLeavedTree(6, 8);
+            AddLargeLeavedTree(10, 10);
 
             //add some stacking tiles for isometry
             Rows[16].Columns[4].AddHeightTile(54);
@@ -129,6 +128,17 @@ namespace BasicTile
 
 
             // End Create Sample Map Data
+        }
+
+        public void AddLargeLeavedTree(int row, int column)
+        {
+            Rows[row].Columns[column].AddMultiSizeTile(158, 0, 0, 0);    //trunk
+            Rows[row].Columns[column].AddMultiSizeTile(148, 0, 1, 2);    //middle
+            Rows[row].Columns[column].AddMultiSizeTile(138, 0, 2, 3);    //upp
+            Rows[row].Columns[column].AddMultiSizeTile(157, 1, 0, 1);    //branch lower left
+            Rows[row].Columns[column].AddMultiSizeTile(147, 1, 1, 2);    //branch middle left
+            Rows[row].Columns[column].AddMultiSizeTile(149, -1, 1, 2);   //branch middle right
+            Rows[row].Columns[column].AddMultiSizeTile(159, -1, 0, 1);   //branch middle right
         }
     }
 
