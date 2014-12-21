@@ -20,21 +20,23 @@ namespace BasicTile
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        //Default Tile Map: defines what's in a map
+        //squaresAcross/Down : define how many tiles to show on screen at once
         TileMap myMap = new TileMap();
         int squaresAcross = 25;
-        int squaresDown = 30;
+        int squaresDown = 32;
 
         //for isometric map support
         //this isometric set, is by 64x64,but the image only occupies bottom 32 pixels of tile.
         //http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:4
         //Base offset controls the screen coordinate offset from the top left of the screen coordinates
-        int baseOffsetX = 0;
-        int baseOffsetY = -32;
+        int baseOffsetX = -32;
+        int baseOffsetY = -48;
         float heightRowDepthMod = 0.0000001f;
 
         //debugging tile locations on map
         SpriteFont pericles6;
-        bool EnableDebugging = true;
+        bool EnableDebugging = false;
         KeyboardState oldState;
 
         public Game1()
@@ -105,16 +107,16 @@ namespace BasicTile
             //note: clamp to keep X and Y values within pre-defined ranges
             KeyboardState ks = Keyboard.GetState();
             if (ks.IsKeyDown(Keys.Left))
-                Camera.Location.X = MathHelper.Clamp(Camera.Location.X - 2, 0, (myMap.MapWidth - squaresAcross) * Tile.TileWidth);
+                Camera.Location.X = MathHelper.Clamp(Camera.Location.X - 2, 0, (myMap.MapWidth - squaresAcross) * Tile.TileStepX);
 
             if (ks.IsKeyDown(Keys.Right))
-                Camera.Location.X = MathHelper.Clamp(Camera.Location.X + 2, 0, (myMap.MapWidth - squaresAcross) * Tile.TileWidth);
+                Camera.Location.X = MathHelper.Clamp(Camera.Location.X + 2, 0, (myMap.MapWidth - squaresAcross) * Tile.TileStepX);
 
             if (ks.IsKeyDown(Keys.Up))
-                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y - 2, 0, (myMap.MapHeight - squaresDown) * Tile.TileWidth);
+                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y - 2, 0, (myMap.MapHeight - squaresDown) * Tile.TileStepY);
 
             if (ks.IsKeyDown(Keys.Down))
-                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y + 2, 0, (myMap.MapHeight - squaresDown) * Tile.TileWidth);
+                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y + 2, 0, (myMap.MapHeight - squaresDown) * Tile.TileStepY);
 
             if (ks.IsKeyUp(Keys.Delete) && oldState.IsKeyDown(Keys.Delete))
                 EnableDebugging = !EnableDebugging;
