@@ -307,7 +307,7 @@ namespace BasicTile
             //zig-zag rendering approach
             //http://stackoverflow.com/questions/892811/drawing-isometric-game-worlds
 
-            //begin draw the tile map. Tells XNA that we are going to specify layer depth (sorted from back(1.0f) to front(0.0f))
+            //begin draw the tile map. Tells XNA/Monogame that we are going to specify layer depth (sorted from back(1.0f) to front(0.0f))
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
 
             //loop through map cells given current screenview
