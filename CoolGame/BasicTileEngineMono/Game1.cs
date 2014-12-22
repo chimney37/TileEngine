@@ -50,6 +50,7 @@ namespace BasicTile
 
         //player character
         SpriteAnimation vlad;
+        Point vladMapPoint;
 
         public Game1()
             : base()
@@ -249,6 +250,9 @@ namespace BasicTile
                 MathHelper.Clamp(vlad.Position.Y, vlad.DrawOffset.Y + 128, Camera.WorldHeight - vlad.DrawOffset.Y));
             #endregion
 
+            //get the map cell where player is
+            vladMapPoint = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
+
             #region AUTO SCROLLING AS PLAYER APPROACH EDGE
             Vector2 testPos = Camera.WorldToScreen(vlad.Position);
 
@@ -317,11 +321,11 @@ namespace BasicTile
                     //controlling the depth of isometric tiles depending on the x,y location
                     int mapx = (firstX + x);
                     int mapy = (firstY + y);
+                    //get the depth offset depending on the mapx and mapy
+                    //increasing mapy primarily decreases depthOffset, followed by increasing mapx decreasing depthOffset slightly
                     float depthOffset = 0.7f - ((mapx + (mapy * Tile.TileWidth)) / maxdepth);
 
-                    //get the map cell where player is
-                    Point vladMapPoint = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
-
+                    //if mapx hits map size don't render tiles
                     if (mapx >= myMap.MapWidth || mapy >= myMap.MapHeight)
                         continue;
 
