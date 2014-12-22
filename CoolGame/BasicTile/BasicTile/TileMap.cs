@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace BasicTile
 {
@@ -11,12 +13,16 @@ namespace BasicTile
     /// </summary>
     class TileMap
     {
+        private Texture2D mouseMap;
+
         public List<MapRow> Rows = new List<MapRow>();
         public int MapWidth = 50;
         public int MapHeight = 50;
 
-        public TileMap()
+        public TileMap(Texture2D mouseMap)
         {
+            this.mouseMap = mouseMap;
+
             for (int y = 0; y < MapHeight; y++)
             {
                 MapRow thisRow = new MapRow();
@@ -128,7 +134,7 @@ namespace BasicTile
             Rows[14].Columns[5].AddTopperTile(125);
 
             AddLargeLeavedTree(20, 2, 0);
-
+            AddSmallConeTree(14, 5, 3);
 
             AddMediumConeTree(4, 0);
 
@@ -162,6 +168,80 @@ namespace BasicTile
             Rows[row].Columns[column].AddMultiSizeTile(133, 0, 0, height);    //middle
         }
 
+        //convert pixel-based location on the map into map-cell reference
+        //see : http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:7
+        public Point WorldToMapCell(Point worldPoint, out Point localPoint)
+        {
+            //get the map cell from worldPoint
+            Point mapCell = new Point(
+               (int)(worldPoint.X / mouseMap.Width),
+               ((int)(worldPoint.Y / mouseMap.Height)) * 2
+               );
+
+            //get local point within a map cell
+            int localPointX = worldPoint.X % mouseMap.Width;
+            int localPointY = worldPoint.Y % mouseMap.Height;
+
+            //represents the map cell offsets
+            int dx = 0;
+            int dy = 0;
+
+            uint[] myUint = new uint[1];
+
+            //Do a point in rectangle check, if so, find out which part.
+            if (new Rectangle(0, 0, mouseMap.Width, mouseMap.Height).Contains(localPointX, localPointY))
+            {
+                //extract a single pixel of map data from localPointX,Y
+                //store results in uint array
+                //http://rbwhitaker.wikidot.com/extracting-texture-data
+                mouseMap.GetData(0, new Rectangle(localPointX, localPointY, 1, 1), myUint, 0, 1);
+
+                //set the map cell offsets depending on the color
+                //uint values returned are in AABBGGRR order
+                switch(myUint[0])
+                {
+                    case 0xFF0000FF:// Red
+                        dx = -1;
+                        dy = -1;
+                        localPointX = localPointX + (mouseMap.Width / 2);
+                        localPointY = localPointY + (mouseMap.Height / 2);
+                        break;
+                    case 0xFF00FF00:// Green
+                        dx = -1;
+                        dy = 1;
+                        localPointX = localPointX + (mouseMap.Width / 2);
+                        localPointY = localPointY - (mouseMap.Height / 2);
+                        break;
+                    case 0xFF00FFFF:// Yellow
+                        dy = -1;
+                        localPointX = localPointX - (mouseMap.Width / 2);
+                        localPointY = localPointY + (mouseMap.Height / 2);
+                        break;
+                    case 0xFFFF0000:// Blue
+                        dy = 1;
+                        localPointX = localPointX - (mouseMap.Width / 2);
+                        localPointY = localPointY - (mouseMap.Height / 2);
+                        break;
+                }
+            }
+
+            mapCell.X += dx;
+
+            //subtract two from the Y coordinate because the top two "rows" of our map actually don't contain real map information
+            mapCell.Y += dy - 2;
+
+            //TODO: need this in another part. need to comment
+            localPoint = new Point(localPointX, localPointY);
+
+            return mapCell;
+        }
+
+        //overload, simply return a point
+        public Point WorldToMapCell(Point worldPoint)
+        {
+            Point dummy;
+            return WorldToMapCell(worldPoint, out dummy);
+        }
     }
 
     /// <summary>

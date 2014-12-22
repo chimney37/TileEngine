@@ -22,7 +22,7 @@ namespace BasicTile
 
         //Default Tile Map: defines what's in a map
         //squaresAcross/Down : define how many tiles to show on screen at once
-        TileMap myMap = new TileMap();
+        TileMap myMap;
         int squaresAcross = 25;
         int squaresDown = 32;
 
@@ -38,6 +38,14 @@ namespace BasicTile
         SpriteFont pericles6;
         bool EnableDebugging = false;
         KeyboardState oldState;
+
+        //highlighting tiles
+        Texture2D hilight;
+
+        //movable player
+        Texture2D playerTexture;
+        AnimatedSprite playerAnimatedSprite;
+        Vector2 playerPosition = new Vector2(15, 15);
 
         public Game1()
         {
@@ -57,6 +65,9 @@ namespace BasicTile
 
             oldState = Keyboard.GetState();
 
+            //make mouse cursor visible within game window
+            this.IsMouseVisible = true;
+
             base.Initialize();
         }
 
@@ -71,11 +82,28 @@ namespace BasicTile
 
             // TODO: use this.Content to load your game content here
 
-            //Load tile map
+            //Load tiles
             Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part4_tileset");
+
+            //load player texture
+            playerTexture = Content.Load<Texture2D>(@"Textures\Characters\SmileyWalk");
+            playerAnimatedSprite = new AnimatedSprite(playerTexture, 4, 4);
 
             //load fonts
             pericles6 = Content.Load<SpriteFont>(@"Fonts\Pericles6");
+
+            //initialize TileMap
+            myMap = new TileMap(Content.Load<Texture2D>(@"Textures\TileSets\mousemap"));
+
+            //initialize camera
+            Camera.ViewWidth = this.graphics.PreferredBackBufferWidth;
+            Camera.ViewHeight = this.graphics.PreferredBackBufferHeight;
+            Camera.WorldWidth = ((myMap.MapWidth - 2) * Tile.TileStepX);
+            Camera.WorldHeight = ((myMap.MapHeight - 2) * Tile.TileStepY);
+            Camera.DisplayOffset = new Vector2(baseOffsetX, baseOffsetY);
+
+            //intiliaze highlight
+            hilight = Content.Load<Texture2D>(@"Textures\TileSets\hilight");
         }
 
         /// <summary>
@@ -99,30 +127,46 @@ namespace BasicTile
                 this.Exit();
 
             // TODO: Add your update logic here
-            
 
-
+            #region SCENE CAMERA CONTROL
             //move the camera around using keys
             //camera moves in increments of (+-2)
             //note: clamp to keep X and Y values within pre-defined ranges
             KeyboardState ks = Keyboard.GetState();
             if (ks.IsKeyDown(Keys.Left))
-                Camera.Location.X = MathHelper.Clamp(Camera.Location.X - 2, 0, (myMap.MapWidth - squaresAcross) * Tile.TileStepX);
+                Camera.Move(new Vector2(-2, 0));
 
             if (ks.IsKeyDown(Keys.Right))
-                Camera.Location.X = MathHelper.Clamp(Camera.Location.X + 2, 0, (myMap.MapWidth - squaresAcross) * Tile.TileStepX);
+                Camera.Move(new Vector2(2, 0));
 
             if (ks.IsKeyDown(Keys.Up))
-                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y - 2, 0, (myMap.MapHeight - squaresDown) * Tile.TileStepY);
+                Camera.Move(new Vector2(0, -2));
 
             if (ks.IsKeyDown(Keys.Down))
-                Camera.Location.Y = MathHelper.Clamp(Camera.Location.Y + 2, 0, (myMap.MapHeight - squaresDown) * Tile.TileStepY);
+                Camera.Move(new Vector2(0, 2));
 
             if (ks.IsKeyUp(Keys.Delete) && oldState.IsKeyDown(Keys.Delete))
                 EnableDebugging = !EnableDebugging;
-
-
             oldState = ks;
+            #endregion
+
+            #region PLAYER MOVEMENT CONTROL
+            if (ks.IsKeyDown(Keys.A))
+                playerPosition.X--;
+
+            if (ks.IsKeyDown(Keys.D))
+                playerPosition.X++;
+
+            if (ks.IsKeyDown(Keys.W))
+                playerPosition.Y--;
+
+            if (ks.IsKeyDown(Keys.S))
+                playerPosition.Y++;
+
+            #endregion
+
+            //update animation
+            playerAnimatedSprite.Update();
 
             base.Update(gameTime);
         }
@@ -176,25 +220,23 @@ namespace BasicTile
                     int mapy = (firstY + y);
                     depthOffset = 0.7f - ((mapx + (mapy * Tile.TileWidth)) / maxdepth);
 
+                    if (mapx >= myMap.MapWidth || mapy >= myMap.MapHeight)
+                        continue;
+
                     #region DRAW BASE TILES
                     //draw base tiles
-                    foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].BaseTiles)
+                    foreach (int tileID in myMap.Rows[mapy].Columns[mapx].BaseTiles)
                     {                       
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
-
-                            //1st rectangle determines where on the screen the tile will be drawn
-                            //offset moves the tile drawing by the amount calculated to account for camera being between whole tile markers
-                            new Rectangle((x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX,
-                                (y * Tile.TileStepY) - offsetY + baseOffsetY,
-                                Tile.TileWidth,
-                                Tile.TileWidth),
-
-                            //Use to get the kind of tile. 
+                            //use Camera functions for offsetting and global baseoffset
+                            Camera.WorldToScreen(new Vector2(mapx*Tile.TileStepX + rowOffset, mapy*Tile.TileStepY)),
+                            //get source tile. 
                             Tile.GetSourceRectangle(tileID),
                             Color.White,
                             0.0f,
                             Vector2.Zero,
+                            1.0f,
                             SpriteEffects.None,
                             1.0f);
                     }
@@ -208,19 +250,15 @@ namespace BasicTile
                     {
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
-                            new Rectangle(
-                                (x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX,
-
-                                //each time draw, need to move the y by the value of Tile.HeightTileOffset times how many times height tile drawn
-                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (heightRow * Tile.HeightTileOffset),
-                                Tile.TileWidth,
-                                Tile.TileHeight),
+                            //use Camera functions for offsetting and global baseoffset
+                            Camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY - (heightRow * Tile.HeightTileOffset))),
+                            //get tile
                             Tile.GetSourceRectangle(tileID),
                             Color.White,
                             0.0f,
                             Vector2.Zero,
+                            1.0f,
                             SpriteEffects.None,
-
                             //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen (the value of heightRowDepthMod
                             depthOffset - ((float)heightRow * heightRowDepthMod));
                         heightRow++;
@@ -233,15 +271,14 @@ namespace BasicTile
                     {
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
-                            new Rectangle(
-                                (x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX,
-                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (heightRow * Tile.HeightTileOffset),
-                                Tile.TileWidth,
-                                Tile.TileHeight),
+                            //use Camera functions for offsetting and global baseoffset
+                            Camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY- (heightRow * Tile.HeightTileOffset))),
+                            //get source tile
                             Tile.GetSourceRectangle(tileID),
                             Color.White,
                             0.0f,
                             Vector2.Zero,
+                            1.0f,
                             SpriteEffects.None,
                             //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen
                             depthOffset - ((float)heightRow * heightRowDepthMod));
@@ -250,22 +287,20 @@ namespace BasicTile
 
                     #region DRAW MULTI SIZE TILES
                     //draw multi size tiles
-                    foreach(Tuple<int,int,int,int> tile in myMap.Rows[y + firstY].Columns[x + firstX].MultiSizeTiles)
+                    foreach (Tuple<int, int, int, int> tile in myMap.Rows[mapy].Columns[mapx].MultiSizeTiles)
                     {
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
-                            new Rectangle(
-                                //we need to offset by both x and y depending on which part of object is drawn
-                                (x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX - (tile.Item2 * Tile.MultiSizeTileOffset),
-                                (y * Tile.TileStepY) - offsetY + baseOffsetY - (tile.Item3 * Tile.MultiSizeTileOffset) - (tile.Item4 * Tile.HeightTileOffset),
-                                Tile.TileWidth,
-                                Tile.TileHeight),
+                            //use Camera functions for offsetting and global baseoffset
+                            Camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset - (tile.Item2 * Tile.MultiSizeTileOffset), 
+                                mapy * Tile.TileStepY - (tile.Item3 * Tile.MultiSizeTileOffset) - (tile.Item4 * Tile.HeightTileOffset))),
                             Tile.GetSourceRectangle(tile.Item1),
                             Color.White,
                             0.0f,
                             Vector2.Zero,
+                            1.0f,
                             SpriteEffects.None,
-                            //
+                            //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen
                             depthOffset - ((float)tile.Item4 * heightRowDepthMod));
                     }
                     #endregion
@@ -274,8 +309,8 @@ namespace BasicTile
                     //debugging tile draw location
 
                     if(EnableDebugging)
-                        spriteBatch.DrawString(pericles6, 
-                            (x + firstX).ToString() + ", " + (y + firstY).ToString(),
+                        spriteBatch.DrawString(pericles6,
+                            mapx.ToString() + ", " + mapy.ToString(),
                             new Vector2((x * Tile.TileStepX) - offsetX + rowOffset + baseOffsetX + 24,
                                         (y * Tile.TileStepY) - offsetY + baseOffsetY + 48), 
                                         Color.White, 
@@ -288,8 +323,36 @@ namespace BasicTile
                 }
             }
 
+            #region HIGHLIGHT LOCATION OF MOUSE
+            Vector2 hilightLoc = Camera.ScreenToWorld(new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+            Point hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
+
+            //calculate hilight row offset
+            int hilightrowOffset = ((hilightPoint.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
+
+            spriteBatch.Draw(
+                hilight,
+                Camera.WorldToScreen(
+                    new Vector2(
+                        hilightPoint.X * Tile.TileStepX + hilightrowOffset,
+                        //add 2 as image is only half of actual tiles
+                        (hilightPoint.Y + 2) * Tile.TileStepY)),
+                new Rectangle(0, 0, 64, 32),
+                Color.White * 0.3f,
+                0.0f,
+                Vector2.Zero,
+                1.0f,
+                SpriteEffects.None,
+                0.0f);
+
+            #endregion
+
+
             spriteBatch.End();
 
+            #region DRAW PLAYER
+            playerAnimatedSprite.Draw(spriteBatch, playerPosition);
+            #endregion
 
             base.Draw(gameTime);
         }
