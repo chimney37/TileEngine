@@ -8,6 +8,9 @@ using Microsoft.Xna.Framework;
 
 namespace BasicTile
 {
+    /// <summary>
+    /// very basic animation framework. In practice should use FrameAnimation.cs/SpriteAnimation.cs/MobileSprite.cs for powerful manipulation of animated sprites
+    /// </summary>
     public class AnimatedSprite
     {
         public Texture2D Texture { get; set; }

@@ -225,10 +225,14 @@ namespace BasicTile
                 }
             }
 
-            mapCell.X += dx;
 
+            mapCell.X += dx;
             //subtract two from the Y coordinate because the top two "rows" of our map actually don't contain real map information
             mapCell.Y += dy - 2;
+
+            //make sure X or Y don't become negative. Negative coordinates are illegal
+            mapCell.X = (mapCell.X < 0) ? 0 : mapCell.X;
+            mapCell.Y = (mapCell.Y < 0) ? 0 : mapCell.Y;
 
             //TODO: need this in another part. need to comment
             localPoint = new Point(localPointX, localPointY);

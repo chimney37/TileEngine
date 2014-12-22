@@ -35,12 +35,15 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AnimatedSprite.cs" />
+    <Compile Include="Sprite\AnimatedSprite.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="MapCell.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sprite\FrameAnimation.cs" />
+    <Compile Include="Sprite\MobileSprite.cs" />
+    <Compile Include="Sprite\SpriteAnimation.cs" />
     <Compile Include="Tile.cs" />
     <Compile Include="TileMap.cs" />
   </ItemGroup>
