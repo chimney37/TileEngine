@@ -10,18 +10,24 @@ namespace BasicTile
     /// <summary>
     /// A Map made of tiles is created and managed
     /// 
+    /// References: 
+    /// Isometric picking : http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:7
     /// </summary>
     class TileMap
     {
+        //manage a mouse map for isometric picking
         private Texture2D mouseMap;
+        //manage slopes on map
+        private Texture2D slopeMaps;
 
         public List<MapRow> Rows = new List<MapRow>();
         public int MapWidth = 50;
         public int MapHeight = 50;
 
-        public TileMap(Texture2D mouseMap)
+        public TileMap(Texture2D mouseMap, Texture2D slopeMap)
         {
             this.mouseMap = mouseMap;
+            this.slopeMaps = slopeMap;
 
             for (int y = 0; y < MapHeight; y++)
             {
@@ -76,30 +82,6 @@ namespace BasicTile
             Rows[5].Columns[6].TileID = 2;
             Rows[5].Columns[7].TileID = 2;
 
-
-            //Add some fringe transitions around water area (part2)
-            /*
-            Rows[3].Columns[5].AddBaseTile(30);
-            Rows[4].Columns[5].AddBaseTile(27);
-            Rows[5].Columns[5].AddBaseTile(28);
-
-            Rows[3].Columns[6].AddBaseTile(25);
-            Rows[5].Columns[6].AddBaseTile(24);
-
-            Rows[3].Columns[7].AddBaseTile(31);
-            Rows[4].Columns[7].AddBaseTile(26);
-            Rows[5].Columns[7].AddBaseTile(29);
-
-            Rows[4].Columns[5].AddBaseTile(102);
-            Rows[4].Columns[6].AddBaseTile(104);
-            Rows[4].Columns[7].AddBaseTile(103);
-            */
-
-
-            //add multi-size tiles for tree (stacking)
-            AddLargeLeavedTree(6, 8);
-            AddLargeLeavedTree(10, 10);
-
             //add some stacking tiles for isometry
             Rows[16].Columns[4].AddHeightTile(54);
 
@@ -129,22 +111,46 @@ namespace BasicTile
             Rows[14].Columns[4].AddTopperTile(125);
             Rows[15].Columns[5].AddTopperTile(91);
             Rows[16].Columns[6].AddTopperTile(94);
-
-
             Rows[14].Columns[5].AddTopperTile(125);
 
+            //add multi-size tiles for trees
+            AddLargeLeavedTree(6, 8);
+            AddLargeLeavedTree(10, 10);
             AddLargeLeavedTree(20, 2, 0);
-            AddSmallConeTree(14, 5, 3);
-
             AddMediumConeTree(4, 0);
-
+            AddSmallConeTree(14, 5, 3);
             AddSmallConeTree(5, 0);
+
+            Rows[15].Columns[5].Walkable = false;
+            Rows[16].Columns[6].Walkable = false;
+
+            //Add a small hill
+            //topper tiles are added around the edges to create a sloping visual effect
+            Rows[12].Columns[9].AddHeightTile(34);
+            Rows[11].Columns[9].AddHeightTile(34);
+            Rows[11].Columns[8].AddHeightTile(34);
+            Rows[10].Columns[9].AddHeightTile(34);
+
+            Rows[12].Columns[8].AddTopperTile(31);
+            Rows[12].Columns[8].SlopeMap = 0;
+            Rows[13].Columns[8].AddTopperTile(31);
+            Rows[13].Columns[8].SlopeMap = 0;
+
+            Rows[12].Columns[10].AddTopperTile(32);
+            Rows[12].Columns[10].SlopeMap = 1;
+            Rows[13].Columns[9].AddTopperTile(32);
+            Rows[13].Columns[9].SlopeMap = 1;
+
+            Rows[14].Columns[9].AddTopperTile(30);
+            Rows[14].Columns[9].SlopeMap = 4;
 
             // End Create Sample Map Data
         }
 
-        //TODO: create a data loader configurable by text file, making new data addable w/o code change
+        #region METHODS
 
+        #region DATA ADDERS
+        //TODO: create a data loader configurable by text file, making new data addable w/o code change
         public void AddLargeLeavedTree(int row, int column, int height=0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(158, 0, 0, height);    //trunk
@@ -155,21 +161,21 @@ namespace BasicTile
             Rows[row].Columns[column].AddMultiSizeTile(149, -1, 1, height);   //branch middle right
             Rows[row].Columns[column].AddMultiSizeTile(159, -1, 0, height);   //branch middle right
         }
-
         public void AddMediumConeTree(int row, int column, int height=0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(122, 0, 1, height);    //trunk
             Rows[row].Columns[column].AddMultiSizeTile(132, 0, 0, height);    //middle
         }
-
         public void AddSmallConeTree(int row, int column, int height = 0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(123, 0, 1, height);    //trunk
             Rows[row].Columns[column].AddMultiSizeTile(133, 0, 0, height);    //middle
         }
+        #endregion
 
+        #region MAP CELL COORDINATE CONVERTERS
         //convert pixel-based location on the map into map-cell reference
-        //see : http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:7
+
         public Point WorldToMapCell(Point worldPoint, out Point localPoint)
         {
             //get the map cell from worldPoint
@@ -193,6 +199,7 @@ namespace BasicTile
             {
                 //extract a single pixel of map data from localPointX,Y
                 //store results in uint array
+                //TODO: use Color[] to get data so we don't need to bitmask off the colors below
                 //http://rbwhitaker.wikidot.com/extracting-texture-data
                 mouseMap.GetData(0, new Rectangle(localPointX, localPointY, 1, 1), myUint, 0, 1);
 
@@ -203,6 +210,8 @@ namespace BasicTile
                     case 0xFF0000FF:// Red
                         dx = -1;
                         dy = -1;
+
+                        //TODO: need a better understanding of this manipulation
                         localPointX = localPointX + (mouseMap.Width / 2);
                         localPointY = localPointY + (mouseMap.Height / 2);
                         break;
@@ -239,13 +248,89 @@ namespace BasicTile
 
             return mapCell;
         }
-
         //overload, simply return a point
         public Point WorldToMapCell(Point worldPoint)
         {
             Point dummy;
             return WorldToMapCell(worldPoint, out dummy);
         }
+
+        //overload using a Vector for worldPoint
+        public Point WorldToMapCell(Vector2 worldPoint)
+        {
+            return WorldToMapCell(new Point((int)worldPoint.X, (int)worldPoint.Y));
+        }
+
+        //uses the existing methods to look up the location of a map point and
+        //determining what actual map cell is at that point and returning it
+        public MapCell GetCellAtWorldPoint(Point worldPoint)
+        {
+            Point mapPoint = WorldToMapCell(worldPoint);
+            return Rows[mapPoint.Y].Columns[mapPoint.X];
+        }
+
+        //overload to use Vector
+        public MapCell GetCellAtWorldPoint(Vector2 worldPoint)
+        {
+            return GetCellAtWorldPoint(new Point((int)worldPoint.X, (int)worldPoint.Y));
+        }
+
+        //get a height of a point on a cell with slope
+        public int GetCellSlopeHeightAtWorldPoint(Point worldPoint)
+        {
+            Point localPoint;
+            Point mapPoint = WorldToMapCell(worldPoint, out localPoint);
+            int slopeMap = Rows[mapPoint.Y].Columns[mapPoint.X].SlopeMap;
+
+            return GetSlopeMapHeight(localPoint, slopeMap);
+        }
+
+        //overload to use Vector
+        public int GetCellSlopeHeightAtWorldPoint(Vector2 worldPoint)
+        {
+            return GetCellSlopeHeightAtWorldPoint(new Point((int)worldPoint.X, (int)worldPoint.Y));
+        }
+
+        //get height of a point in a sloped cell using local pixel and a slope map index (0 to 7)
+        public int GetSlopeMapHeight(Point localPixel, int slopeMap)
+        {
+            //get a point from the slope map offset by localPixel, assuming the width is the same as the mouse map
+            Point texturePoint = new Point(slopeMap * mouseMap.Width + localPixel.X, localPixel.Y);
+
+            Color[] slopeColor = new Color[1];
+
+            //check if the rectangle of the slope map contains the point specified by local pixel
+            if (new Rectangle(0, 0, slopeMaps.Width, slopeMaps.Height).Contains(texturePoint.X, texturePoint.Y))
+            {
+                //get the color of the point
+                slopeMaps.GetData(0, new Rectangle(texturePoint.X, texturePoint.Y, 1, 1), slopeColor, 0, 1);
+
+                //Get the height by scaling the height tile offset by a proportion of the slopeColor intensity
+                //represented by R. a slopeColor.R of 255(white) would give 0 offset, while a slopeColor of 0(black) would give 1.
+                return (int)(((float)(255 - slopeColor[0].R) / 255f) * Tile.HeightTileOffset);
+            }
+
+            return 0;
+        }
+
+        //get height of a point in terms of world coordinates
+        public int GetOverallHeight(Point worldPoint)
+        {
+            Point mapCellPoint = WorldToMapCell(worldPoint);
+            int height = Rows[mapCellPoint.Y].Columns[mapCellPoint.X].HeightTiles.Count * Tile.HeightTileOffset;
+            height += GetCellSlopeHeightAtWorldPoint(worldPoint);
+
+            return height;
+        }
+
+        //overload to use Vector
+        public int GetOverallHeight(Vector2 worldPoint)
+        {
+            return GetOverallHeight(new Point((int)worldPoint.X, (int)worldPoint.Y));
+        }
+        #endregion
+
+        #endregion
     }
 
     /// <summary>

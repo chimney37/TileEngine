@@ -8,11 +8,11 @@ using Microsoft.Xna.Framework;
 namespace BasicTile
 {
     /// <summary>
-    /// High Level Sprite Animation class. Uses the FrameAnimation class at lower levels.
+    /// High Level Sprite Animation class. Delegates lower level manipulations using the FrameAnimation class
     /// THis class is responsible for:
     ///    Tracking position of sprite on screen
     ///    Holdin actual sprite sheet that sprite is drawn from
-    ///    Managing all frameanimations associated with sprite
+    ///    Managing all frame animations associated with sprite
     ///    Handle automatic rotation if turned on
     /// References: 
     /// http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:8

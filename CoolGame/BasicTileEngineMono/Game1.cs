@@ -98,7 +98,9 @@ namespace BasicTile
             pericles6 = Content.Load<SpriteFont>(@"Fonts\Pericles6");
 
             //initialize TileMap
-            myMap = new TileMap(Content.Load<Texture2D>(@"Textures\TileSets\mousemap"));
+            myMap = new TileMap(
+                Content.Load<Texture2D>(@"Textures\TileSets\mousemap"),
+                Content.Load<Texture2D>(@"Textures\TileSets\part9_slopemaps"));
 
             //initialize camera
             Camera.ViewWidth = this.graphics.PreferredBackBufferWidth;
@@ -222,6 +224,15 @@ namespace BasicTile
                 moveVector += new Vector2(2, 1);
             }
 
+            //prevent from moving if not walkable
+            if (myMap.GetCellAtWorldPoint(vlad.Position + moveDir).Walkable == false)
+                moveDir = Vector2.Zero;
+
+            //set height restrictions if player attempts to make move that changes height abruptly
+            if (Math.Abs(myMap.GetOverallHeight(vlad.Position) - myMap.GetOverallHeight(vlad.Position + moveDir)) > 10)
+                moveDir = Vector2.Zero;
+
+            //if movement exists, call move and apply animation
             if (moveDir.Length() != 0)
             {
                 vlad.MoveBy((int)moveDir.X, (int)moveDir.Y);
@@ -308,6 +319,9 @@ namespace BasicTile
                     int mapy = (firstY + y);
                     float depthOffset = 0.7f - ((mapx + (mapy * Tile.TileWidth)) / maxdepth);
 
+                    //get the map cell where player is
+                    Point vladMapPoint = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
+
                     if (mapx >= myMap.MapWidth || mapy >= myMap.MapHeight)
                         continue;
 
@@ -373,6 +387,11 @@ namespace BasicTile
                     }
                     #endregion
 
+                    #region DETERMINE DRAW DEPTH OF PLAYER
+                    if ((mapx == vladMapPoint.X) && (mapy == vladMapPoint.Y))
+                        vlad.DrawDepth = depthOffset - (float)(heightRow + 2) * heightRowDepthMod;
+                    #endregion
+
                     #region DRAW MULTI SIZE TILES
                     //draw multi size tiles
                     foreach (Tuple<int, int, int, int> tile in myMap.Rows[mapy].Columns[mapx].MultiSizeTiles)
@@ -413,10 +432,8 @@ namespace BasicTile
             }
 
             #region DRAW PLAYER
-            Point vladStandingOn = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
-
-            int vladHeight = myMap.Rows[vladStandingOn.Y].Columns[vladStandingOn.X].HeightTiles.Count * Tile.HeightTileOffset;
-            vlad.Draw(spriteBatch, 0, -vladHeight);
+            //draw player according to where he's standing on
+            vlad.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vlad.Position));
             #endregion
 
             #region DRAW HILIGHT LOCATION OF MOUSE
