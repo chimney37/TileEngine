@@ -1,0 +1,24 @@
+﻿
+Game Concept - Some kind of Program that uses a tile engine - no good ideas yet
+				Maybe introducing users to what a tile engine is through a character
+
+
+
+Design
+	Render and Input Loop
+		Monogame handles in methods INITIALIZE, LOAD CONTENT, UPDATE (INPUT AND OBJECT STATE UPDATES), DRAW (RENDERING ROUTINE)
+
+	Game Core
+		Self-Implementation: Manages mundane tasks
+			StateManager
+				Handles all in game states using a stack
+			ProcessManager
+				Handles all in game processes (input, object state updates)
+
+	Game States
+		MenuScreen
+		GameScreen
+	Tile World Generation
+		Through Text File Maybe
+	Events and Characters
+		Interpreter based Scripting Language for scalability (no need to recompile main program)
