@@ -21,6 +21,11 @@ namespace BasicTile
         List<GameProcess> GameProcessList = new List<GameProcess>();
     }
 
+    public interface Context
+    {
+        void changeState(Type gameProcess);
+    }
+
     public abstract class GameProcess
     {
         public GameProcess()
@@ -29,7 +34,7 @@ namespace BasicTile
 
         public abstract void Initialize(Game game);
         public abstract void LoadContent(ContentManager Content, GraphicsDeviceManager graphics);
-        public abstract void Update(GameTime gameTime, out GameState state);
+        public abstract void Update(GameTime gameTime, Context context);
         public abstract void Render(GameTime gameTime, SpriteBatch spriteBatch);
     }
 
@@ -47,14 +52,14 @@ namespace BasicTile
             snippets14 = Content.Load<SpriteFont>(@"Fonts\Snippets14");
         }
 
-        public override void Update(GameTime gameTime, out GameState state)
+        public override void Update(GameTime gameTime, Context context)
         {
             //Exit this GameProcess, go to next
             KeyboardState ks = Keyboard.GetState();
             if (ks.IsKeyDown(Keys.Enter))
-                state = GameState.GameCore;
-            else
-                state = GameState.GameMenu;
+                context.changeState(typeof(GameCore));
+                
+                
         }
 
         public override void Render(GameTime gameTime, SpriteBatch spriteBatch)
@@ -88,6 +93,7 @@ namespace BasicTile
 
     public class GameCore: GameProcess
     {
+
         #region GAME CLIENT PROPERTIES
         //Default Tile Map: defines what's in a map
         //squaresAcross/Down : define how many tiles to show on screen at once
@@ -200,7 +206,7 @@ namespace BasicTile
             npc.IsAnimating = true;
         }
 
-        public override void Update(GameTime gameTime, out GameState state)
+        public override void Update(GameTime gameTime, Context context)
         {
 
             // TODO: Add your update logic here
@@ -328,15 +334,13 @@ namespace BasicTile
             #endregion
 
             #region OTHER KEY TOGGLING
+            //enable or disable debugging coordinates
             if (ks.IsKeyUp(Keys.Delete) && oldState.IsKeyDown(Keys.Delete))
                 EnableDebugging = !EnableDebugging;
 
-
-
+            //quit core to menu
             if (ks.IsKeyUp(Keys.Q) && oldState.IsKeyDown(Keys.Q))
-                state = GameState.GameMenu;
-            else
-                state = GameState.GameCore;
+                context.changeState(typeof(GameMenu));
 
             oldState = ks;
             #endregion

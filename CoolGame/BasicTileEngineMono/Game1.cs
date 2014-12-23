@@ -14,14 +14,13 @@ namespace BasicTile
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public class Game1 : Game
+    public class Game1 : Game, Context
     {
-        GraphicsDeviceManager graphics;
+        public GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        GameState gameState;
-        GameCore gameCore;
-        GameMenu gameMenu;
+        private List<GameProcess> states = new List<GameProcess>();
+        GameProcess currentState;
 
         public Game1()
             : base()
@@ -39,14 +38,15 @@ namespace BasicTile
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            gameCore = new GameCore();
-            gameCore.Initialize(this);
 
-            gameMenu = new GameMenu();
-            gameMenu.Initialize(this);
+            states.Add(new GameMenu());
+            states.Add(new GameCore());
 
-            gameState = GameState.GameMenu;
+            foreach (GameProcess g in states)
+                g.Initialize(this);
 
+            currentState = states.Find(x => x.GetType() == typeof(GameMenu));
+           
             base.Initialize();
         }
 
@@ -60,11 +60,8 @@ namespace BasicTile
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            gameCore.LoadContent(this.Content, this.graphics);
-
-            gameMenu.LoadContent(this.Content, this.graphics);
-            
-            
+            foreach (GameProcess g in states)
+                g.LoadContent(this.Content, this.graphics);                     
         }
 
         /// <summary>
@@ -87,16 +84,8 @@ namespace BasicTile
                 Exit();
 
             // TODO: Add your update logic here
+            currentState.Update(gameTime, this);
 
-            switch (gameState)
-            { 
-                case GameState.GameCore:
-                    gameCore.Update(gameTime, out gameState);
-                    break;
-                case GameState.GameMenu:
-                    gameMenu.Update(gameTime, out gameState);
-                    break;
-            }
 
             base.Update(gameTime);
         }
@@ -110,23 +99,15 @@ namespace BasicTile
             GraphicsDevice.Clear(Color.CornflowerBlue);
             // TODO: Add your drawing code here
 
-            switch (gameState)
-            {
-                case GameState.GameCore:
-                    gameCore.Render(gameTime, spriteBatch);
-                    break;
-                case GameState.GameMenu:
-                    gameMenu.Render(gameTime, spriteBatch);
-                    break;
-            }
+
+            currentState.Render(gameTime, spriteBatch);
 
             base.Draw(gameTime);
         }
-    }
 
-    public enum GameState
-    {
-        GameMenu,
-        GameCore
+        public void changeState(Type state)
+        {
+            this.currentState = states.Find(x => x.GetType() == state);
+        }
     }
 }
