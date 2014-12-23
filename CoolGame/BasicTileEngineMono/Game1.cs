@@ -19,7 +19,9 @@ namespace BasicTile
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        GameState gameState;
         GameCore gameCore;
+        GameMenu gameMenu;
 
         public Game1()
             : base()
@@ -40,6 +42,11 @@ namespace BasicTile
             gameCore = new GameCore();
             gameCore.Initialize(this);
 
+            gameMenu = new GameMenu();
+            gameMenu.Initialize(this);
+
+            gameState = GameState.GameMenu;
+
             base.Initialize();
         }
 
@@ -55,6 +62,9 @@ namespace BasicTile
             // TODO: use this.Content to load your game content here
             gameCore.LoadContent(this.Content, this.graphics);
 
+            gameMenu.LoadContent(this.Content, this.graphics);
+            
+            
         }
 
         /// <summary>
@@ -77,7 +87,16 @@ namespace BasicTile
                 Exit();
 
             // TODO: Add your update logic here
-            gameCore.Update(gameTime);
+
+            switch (gameState)
+            { 
+                case GameState.GameCore:
+                    gameCore.Update(gameTime, out gameState);
+                    break;
+                case GameState.GameMenu:
+                    gameMenu.Update(gameTime, out gameState);
+                    break;
+            }
 
             base.Update(gameTime);
         }
@@ -91,9 +110,23 @@ namespace BasicTile
             GraphicsDevice.Clear(Color.CornflowerBlue);
             // TODO: Add your drawing code here
 
-            gameCore.Render(gameTime, spriteBatch);
+            switch (gameState)
+            {
+                case GameState.GameCore:
+                    gameCore.Render(gameTime, spriteBatch);
+                    break;
+                case GameState.GameMenu:
+                    gameMenu.Render(gameTime, spriteBatch);
+                    break;
+            }
 
             base.Draw(gameTime);
         }
+    }
+
+    public enum GameState
+    {
+        GameMenu,
+        GameCore
     }
 }

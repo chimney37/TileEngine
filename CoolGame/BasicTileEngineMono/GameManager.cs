@@ -29,8 +29,61 @@ namespace BasicTile
 
         public abstract void Initialize(Game game);
         public abstract void LoadContent(ContentManager Content, GraphicsDeviceManager graphics);
-        public abstract void Update(GameTime gameTime);
+        public abstract void Update(GameTime gameTime, out GameState state);
         public abstract void Render(GameTime gameTime, SpriteBatch spriteBatch);
+    }
+
+    public class GameMenu : GameProcess
+    {
+        SpriteFont snippets14;
+
+        public override void Initialize(Game game)
+        {
+            game.IsMouseVisible = true;
+        }
+
+        public override void LoadContent(ContentManager Content, GraphicsDeviceManager graphics)
+        {
+            snippets14 = Content.Load<SpriteFont>(@"Fonts\Snippets14");
+        }
+
+        public override void Update(GameTime gameTime, out GameState state)
+        {
+            //Exit this GameProcess, go to next
+            KeyboardState ks = Keyboard.GetState();
+            if (ks.IsKeyDown(Keys.Enter))
+                state = GameState.GameCore;
+            else
+                state = GameState.GameMenu;
+        }
+
+        public override void Render(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            spriteBatch.Begin();
+            spriteBatch.DrawString(
+                            snippets14,
+                            "Tile Engine Ver 0.8",
+                            new Vector2(500, 390),
+                            Color.White,
+                            0f,
+                            Vector2.Zero,
+                            1.0f,
+                            SpriteEffects.None,
+                            0.0f);
+
+            spriteBatch.DrawString(
+                            snippets14,
+                            "Press Enter to Continue",
+                            new Vector2(450, 370),
+                            Color.White,
+                            0f,
+                            Vector2.Zero,
+                            1.0f,
+                            SpriteEffects.None,
+                            0.0f);
+
+            spriteBatch.End();
+        }
     }
 
     public class GameCore: GameProcess
@@ -50,6 +103,9 @@ namespace BasicTile
         int baseOffsetY = -64;
         float heightRowDepthMod = 0.0000001f;
 
+        //for keeping the first rendering square upper left of screen according to camera view
+        Vector2 firstSquare;
+
         //debugging tile locations on map
         SpriteFont pericles6;
         SpriteFont snippets14;
@@ -59,10 +115,9 @@ namespace BasicTile
         //highlighting tiles
         Texture2D hilight;
 
-        //example of movable player
-        Texture2D playerTexture;
-        AnimatedSprite playerAnimatedSprite;
-        Vector2 playerPosition = new Vector2(15, 15);
+        //NPC character
+        SpriteAnimation npc;
+        Point npcMapPoint;
 
         //player character
         SpriteAnimation vlad;
@@ -70,11 +125,13 @@ namespace BasicTile
 
         #endregion
 
+        Stack<GameProcess> gameStack = new Stack<GameProcess>();
+
+
         public override void Initialize(Game game)
         {
             //intialize old keyboard state
             oldState = Keyboard.GetState();
-
             //make mouse visible
             game.IsMouseVisible = true;
         }
@@ -83,10 +140,6 @@ namespace BasicTile
         {
             //Load tiles
             Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part4_tileset");
-
-            //load example player texture
-            playerTexture = Content.Load<Texture2D>(@"Textures\Characters\SmileyWalk");
-            playerAnimatedSprite = new AnimatedSprite(playerTexture, 4, 4);
 
             //load fonts
             pericles6 = Content.Load<SpriteFont>(@"Fonts\Pericles6");
@@ -111,6 +164,7 @@ namespace BasicTile
             vlad = new SpriteAnimation(Content.Load<Texture2D>(@"Textures\Characters\T_Vlad_Sword_Walking_48x48"));
 
             //TODO: maybe enuming the strings for runtime safety
+            //design note: 1 animation sequence per row in the image
             vlad.AddAnimation("WalkEast", 0, 48 * 0, 48, 48, 8, 0.1f);
             vlad.AddAnimation("WalkNorth", 0, 48 * 1, 48, 48, 8, 0.1f);
             vlad.AddAnimation("WalkNorthEast", 0, 48 * 2, 48, 48, 8, 0.1f);
@@ -133,9 +187,20 @@ namespace BasicTile
             vlad.DrawOffset = new Vector2(-24, -38);    //specifying position where character is standing
             vlad.CurrentAnimation = "WalkEast";
             vlad.IsAnimating = true;
+
+            //load NPC texture
+            npc = new SpriteAnimation(Content.Load<Texture2D>(@"Textures\Characters\SmileyWalk"));
+            npc.AddAnimation("Idle1", 0, 0, 64, 64, 4, 0.1f, "Idle2");
+            npc.AddAnimation("Idle2", 0, 64*1, 64, 64, 4, 0.1f, "Idle3");
+            npc.AddAnimation("Idle3", 0, 64*2, 64, 64, 4, 0.1f, "Idle4");
+            npc.AddAnimation("Idle4", 0, 64*3, 64, 64, 4, 0.1f, "Idle1");
+            npc.Position = new Vector2(200, 200);
+            npc.DrawOffset = new Vector2(-32, -32);
+            npc.CurrentAnimation = "Idle1";
+            npc.IsAnimating = true;
         }
 
-        public override void Update(GameTime gameTime)
+        public override void Update(GameTime gameTime, out GameState state)
         {
 
             // TODO: Add your update logic here
@@ -221,14 +286,10 @@ namespace BasicTile
                 vlad.CurrentAnimation = "Idle" + vlad.CurrentAnimation.Substring(4);
             #endregion
 
-            #region CLAMPING PLAYER POSITION WITHIN MAP AND GET MAP CELL INFORMATION
+            #region CLAMPING PLAYER POSITION WITHIN MAP
             vlad.Position = new Vector2(
                 MathHelper.Clamp(vlad.Position.X, vlad.DrawOffset.X + 64, Camera.WorldWidth - vlad.DrawOffset.X),
                 MathHelper.Clamp(vlad.Position.Y, vlad.DrawOffset.Y + 128, Camera.WorldHeight - vlad.DrawOffset.Y));
-            
-
-            //get the map cell where player is
-            vladMapPoint = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
             #endregion
 
             #region AUTO SCROLLING AS PLAYER APPROACH EDGE
@@ -245,38 +306,61 @@ namespace BasicTile
 
             if (testPos.Y > (Camera.ViewHeight - 100))
                 Camera.Move(new Vector2(0, testPos.Y - (Camera.ViewHeight - 100)));
-
             #endregion
 
             vlad.Update(gameTime);
 
-            #region TOGGLE DEBUGGING COORDINATES SHOW ON/OFF
-            if (ks.IsKeyUp(Keys.Delete) && oldState.IsKeyDown(Keys.Delete))
-                EnableDebugging = !EnableDebugging;
-            oldState = ks;
+            //update the map cell where player is
+            vladMapPoint = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
+
+            //if(npc.CurrentAnimation != "Idle")
+                //npc.CurrentAnimation = "Idle";
+
+            npc.Update(gameTime);
+
+
+
+            #region UPDATE THE FIRST SQUARE LOCATION
+            //Camera is intiially at 0,0 and camera can move around
+            //we need to enables pan to the location of the map where the camera points
+            //firstX and firstY are map square coordinates of the game map that camera points at
+            firstSquare = new Vector2(Camera.Location.X / Tile.TileStepX, Camera.Location.Y / Tile.TileStepY);
             #endregion
 
-            //update animation
-            playerAnimatedSprite.Update();
+            #region OTHER KEY TOGGLING
+            if (ks.IsKeyUp(Keys.Delete) && oldState.IsKeyDown(Keys.Delete))
+                EnableDebugging = !EnableDebugging;
+
+
+
+            if (ks.IsKeyUp(Keys.Q) && oldState.IsKeyDown(Keys.Q))
+                state = GameState.GameMenu;
+            else
+                state = GameState.GameCore;
+
+            oldState = ks;
+            #endregion
         }
 
         public override void Render(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            //Camera is intiially at 0,0 and camera can move around
-            //we need to enables pan to the location of the map where the camera points
-            //firstX and firstY are map square coordinates of the game map that camera points at
-            Vector2 firstSquare = new Vector2(Camera.Location.X / Tile.TileStepX, Camera.Location.Y / Tile.TileStepY);
+            #region PREPARATION
+            //get the first rendering square map cell coordinates
             int firstX = (int)firstSquare.X;
             int firstY = (int)firstSquare.Y;
 
             //compute the max depth count to draw any map (for 50x50 map this would be (51 + 51*64)*10=33150)
             float maxdepth = ((myMap.MapWidth + 1) + ((myMap.MapHeight + 1) * Tile.TileWidth)) * 10;
+            #endregion
 
+
+            //Set up sprite batch. Tells XNA/Monogame that we are going to specify layer depth (sorted from back(1.0f) to front(0.0f))
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+
+            #region DRAW TILES
             //zig-zag rendering approach
             //http://stackoverflow.com/questions/892811/drawing-isometric-game-worlds
 
-            //begin draw the tile map. Tells XNA/Monogame that we are going to specify layer depth (sorted from back(1.0f) to front(0.0f))
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
 
             //loop through map cells given current screenview
             for (int y = 0; y < squaresDown; y++)
@@ -402,6 +486,7 @@ namespace BasicTile
                     #endregion
                 }
             }
+            #endregion
 
             #region DRAW PLAYER
             //draw player according to where he's standing on
@@ -445,12 +530,13 @@ namespace BasicTile
                             0.0f);
             #endregion
 
+            #region DRAW NPCS
+            npc.Draw(spriteBatch, 0, 0);
+            #endregion
 
             spriteBatch.End();
 
-            #region DRAW NPCS
-            playerAnimatedSprite.Draw(spriteBatch, playerPosition);
-            #endregion
+
         }
     }
 }
