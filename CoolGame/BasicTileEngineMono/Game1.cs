@@ -19,8 +19,7 @@ namespace BasicTile
         public GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        private Stack<GameProcess> ProcessStack = new Stack<GameProcess>();
-        private List<GameProcess> states = new List<GameProcess>();
+        AbstractMonoGameProcessFactory gameFactory;
         GameProcess currentState;
 
         public Game1()
@@ -28,6 +27,8 @@ namespace BasicTile
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            gameFactory = GameProcessFactory.getFactory("BasicTile.GameProcessFactory");
         }
 
         /// <summary>
@@ -40,14 +41,10 @@ namespace BasicTile
         {
             // TODO: Add your initialization logic here
 
-            states.Add(new GameMenu());
-            states.Add(new GameCore());
-            states.Add(new GameMessageBox());
+            gameFactory.Create();
+            gameFactory.Initialize(this);
 
-            foreach (GameProcess g in states)
-                g.Initialize(this);
-
-            currentState = states.Find(x => x.GetType() == typeof(GameMenu));
+            currentState = gameFactory.GetGameProcess(typeof(GameMenu));
            
             base.Initialize();
         }
@@ -62,8 +59,7 @@ namespace BasicTile
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            foreach (GameProcess g in states)
-                g.LoadContent(this.Content, this.graphics);                     
+            gameFactory.LoadContent(this.Content, this.graphics);
         }
 
         /// <summary>
@@ -107,42 +103,18 @@ namespace BasicTile
             base.Draw(gameTime);
         }
 
-        public void changeState(Type state)
+
+
+        #region CONTEXT OPERATIONS
+        public void changeState(Type gameProcess)
         {
-            this.currentState = states.Find(x => x.GetType() == state);
+            this.currentState = gameFactory.GetGameProcess(gameProcess);
+        }
+        public GameMessageBox getMessageBox(string Content,string Title="Message:",int X=100, int Y=100 )
+        {
+            return gameFactory.GameMessageBox(Content, Title, X, Y);
         }
 
-        public GameProcess getState(Type state)
-        {
-            return states.Find(x => x.GetType() == state);
-        }
-
-        public int stackCount()
-        {
-            return ProcessStack.Count;
-        }
-
-        public void popProcess()
-        {
-            ProcessStack.Pop();
-        }
-
-        public void pushProcess(Type GameProcess)
-        {
-            ProcessStack.Push(states.Find(x => x.GetType() == GameProcess));
-        }
-        public void Push(GameProcess gameProcess)
-        {
-            ProcessStack.Push(gameProcess);
-        }
-        public GameProcess Peek()
-        {
-            return ProcessStack.Peek();
-        }
-
-        public Stack<GameProcess> GetStack()
-        {
-            return ProcessStack;
-        }
+        #endregion
     }
 }

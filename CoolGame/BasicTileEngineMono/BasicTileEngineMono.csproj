@@ -53,6 +53,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="GameCore.cs" />
+    <Compile Include="GameMenu.cs" />
+    <Compile Include="GameMessageBox.cs" />
+    <Compile Include="GameProcessFactory.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="Sprite\AnimatedSprite.cs" />
