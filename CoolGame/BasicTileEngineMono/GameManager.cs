@@ -403,14 +403,10 @@ namespace BasicTile
                 Camera.Move(new Vector2(0, testPos.Y - (Camera.ViewHeight - 100)));
             #endregion
 
-            vlad.Update(gameTime);
-
             //update the map cell where player is
             vladMapPoint = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
-
-            //if(npc.CurrentAnimation != "Idle")
-                //npc.CurrentAnimation = "Idle";
-
+            
+            vlad.Update(gameTime);
             npc.Update(gameTime);
 
 
