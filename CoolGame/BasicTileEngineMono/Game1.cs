@@ -19,6 +19,7 @@ namespace BasicTile
         public GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        private Stack<GameProcess> ProcessStack = new Stack<GameProcess>();
         private List<GameProcess> states = new List<GameProcess>();
         GameProcess currentState;
 
@@ -41,6 +42,7 @@ namespace BasicTile
 
             states.Add(new GameMenu());
             states.Add(new GameCore());
+            states.Add(new GameMessageBox());
 
             foreach (GameProcess g in states)
                 g.Initialize(this);
@@ -100,7 +102,7 @@ namespace BasicTile
             // TODO: Add your drawing code here
 
 
-            currentState.Render(gameTime, spriteBatch);
+            currentState.Render(gameTime, spriteBatch,this);
 
             base.Draw(gameTime);
         }
@@ -108,6 +110,39 @@ namespace BasicTile
         public void changeState(Type state)
         {
             this.currentState = states.Find(x => x.GetType() == state);
+        }
+
+        public GameProcess getState(Type state)
+        {
+            return states.Find(x => x.GetType() == state);
+        }
+
+        public int stackCount()
+        {
+            return ProcessStack.Count;
+        }
+
+        public void popProcess()
+        {
+            ProcessStack.Pop();
+        }
+
+        public void pushProcess(Type GameProcess)
+        {
+            ProcessStack.Push(states.Find(x => x.GetType() == GameProcess));
+        }
+        public void Push(GameProcess gameProcess)
+        {
+            ProcessStack.Push(gameProcess);
+        }
+        public GameProcess Peek()
+        {
+            return ProcessStack.Peek();
+        }
+
+        public Stack<GameProcess> GetStack()
+        {
+            return ProcessStack;
         }
     }
 }

@@ -8,23 +8,22 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
+using System.Diagnostics;
 
 namespace BasicTile
 {
-    class GameStateManager
-    {
-
-    }
-
-    public class GameProcessManager
-    {
-        List<GameProcess> GameProcessList = new List<GameProcess>();
-    }
-
     public interface Context
     {
         void changeState(Type gameProcess);
+        GameProcess getState(Type gameProcess);
+        int stackCount();
+        void pushProcess(Type gameProcess);
+        void Push(GameProcess gameProcess);
+        void popProcess();
+        GameProcess Peek();
+        Stack<GameProcess> GetStack();
     }
+
 
     public abstract class GameProcess
     {
@@ -35,12 +34,12 @@ namespace BasicTile
         public abstract void Initialize(Game game);
         public abstract void LoadContent(ContentManager Content, GraphicsDeviceManager graphics);
         public abstract void Update(GameTime gameTime, Context context);
-        public abstract void Render(GameTime gameTime, SpriteBatch spriteBatch);
+        public abstract void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context);
     }
 
     public class GameMenu : GameProcess
     {
-        SpriteFont snippets14;
+        protected SpriteFont snippets14;
 
         public override void Initialize(Game game)
         {
@@ -54,15 +53,33 @@ namespace BasicTile
 
         public override void Update(GameTime gameTime, Context context)
         {
-            //Exit this GameProcess, go to next
-            KeyboardState ks = Keyboard.GetState();
-            if (ks.IsKeyDown(Keys.Enter))
-                context.changeState(typeof(GameCore));
-                
-                
+            if (context.stackCount() > 0)
+            {
+                context.Peek().Update(gameTime, context);
+            }
+            else
+            {
+                //Exit this GameProcess, go to next
+                KeyboardState ks = Keyboard.GetState();
+                if (ks.IsKeyDown(Keys.Enter))
+                    context.changeState(typeof(GameCore));
+
+                if (ks.IsKeyDown(Keys.S))
+                    context.pushProcess(typeof(GameMessageBox));
+
+                if (ks.IsKeyDown(Keys.A))
+                {
+                    context.pushProcess(typeof(GameMessageBox));
+                    GameMessageBox message2 = (GameMessageBox)((GameMessageBox)context.getState(typeof(GameMessageBox))).Clone();
+                    message2.X = 100;
+                    message2.Y = 150;
+
+                    context.Push(message2);
+                }
+            }
         }
 
-        public override void Render(GameTime gameTime, SpriteBatch spriteBatch)
+        public override void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context)
         {
             spriteBatch.Begin();
             spriteBatch.DrawString(
@@ -88,6 +105,78 @@ namespace BasicTile
                             0.0f);
 
             spriteBatch.End();
+
+            foreach (GameProcess g in context.GetStack())
+                g.Render(gameTime, spriteBatch, context);
+        }
+    }
+
+    public class GameMessageBox : GameMenu, ICloneable
+    {
+        public int ID { get; set; }
+        KeyboardState oldState;
+
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public override void Initialize(Game game)
+        {
+            //intialize old keyboard state
+            oldState = Keyboard.GetState();
+            base.Initialize(game);
+        }
+
+        public override void LoadContent(ContentManager Content, GraphicsDeviceManager graphics)
+        {
+            base.LoadContent(Content, graphics);
+        }
+
+        public override void Update(GameTime gameTime, Context context)
+        {
+            //Exit this GameProcess, back
+            KeyboardState ks = Keyboard.GetState();
+            if (ks.IsKeyUp(Keys.B) && oldState.IsKeyDown(Keys.B))
+            {
+                Debug.WriteLine(string.Format("MessageBox Exit {0}", context.GetStack().Count));
+                context.popProcess();
+            }
+
+            oldState = ks;
+        }
+
+        public override void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context)
+        {
+            spriteBatch.Begin();
+            spriteBatch.DrawString(
+                            base.snippets14,
+                            "MessageBox:" + ID + ":",
+                            new Vector2(X + 100, Y + 190),
+                            Color.White,
+                            0f,
+                            Vector2.Zero,
+                            1.0f,
+                            SpriteEffects.None,
+                            0.0f);
+
+            spriteBatch.DrawString(
+                            base.snippets14,
+                            "Press B to Close",
+                            new Vector2(X + 150, Y + 170),
+                            Color.White,
+                            0f,
+                            Vector2.Zero,
+                            1.0f,
+                            SpriteEffects.None,
+                            0.0f);
+
+            spriteBatch.End();
+        }
+
+        public object Clone()
+        {
+            GameMessageBox clone = (GameMessageBox)this.MemberwiseClone();
+            clone.ID++;
+            return (object)clone;
         }
     }
 
@@ -342,11 +431,34 @@ namespace BasicTile
             if (ks.IsKeyUp(Keys.Q) && oldState.IsKeyDown(Keys.Q))
                 context.changeState(typeof(GameMenu));
 
+            if (context.stackCount() == 0)
+            {
+                //Show MessageBox 1
+                if (ks.IsKeyDown(Keys.S))
+                    context.pushProcess(typeof(GameMessageBox));
+
+                //Show Both MessageBoxes
+                if (ks.IsKeyDown(Keys.A))
+                {
+                    context.pushProcess(typeof(GameMessageBox));
+                    GameMessageBox message2 = (GameMessageBox)((GameMessageBox)context.getState(typeof(GameMessageBox))).Clone();
+                    message2.X = 100;
+                    message2.Y = 150;
+
+                    context.Push(message2);
+                }
+            }
+            else
+                context.Peek().Update(gameTime, context);
+
+
+            
+
             oldState = ks;
             #endregion
         }
 
-        public override void Render(GameTime gameTime, SpriteBatch spriteBatch)
+        public override void Render(GameTime gameTime, SpriteBatch spriteBatch,Context context)
         {
             #region PREPARATION
             //get the first rendering square map cell coordinates
@@ -540,6 +652,10 @@ namespace BasicTile
 
             spriteBatch.End();
 
+            #region DRAW STACK PROCESSED
+            foreach (GameProcess g in context.GetStack())
+                g.Render(gameTime, spriteBatch, context);
+            #endregion
 
         }
     }
