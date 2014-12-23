@@ -80,6 +80,7 @@
   <ItemGroup>
     <Content Include="Icon.ico" />
     <Content Include="PlanningDoc.txt" />
+    <Content Include="Text\kanjis.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\" />

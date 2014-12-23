@@ -266,21 +266,18 @@ namespace BasicTile
                 //Show MessageBox 1
                 if (ks.IsKeyDown(Keys.S))
                 {
-                    GameMessageBox message = context.getMessageBox("In Game Message Box");
+                    GameMessageBox message = context.getMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はBを押してください。", "メッセージ");
                     this.PushProcess(message);
                 }
 
                 //Show 2 MessageBoxes
                 if (ks.IsKeyDown(Keys.A))
                 {
-                    GameMessageBox message = context.getMessageBox("In Game Message Box");
-                    this.PushProcess(message);
-
-                    GameMessageBox message2 = context.getMessageBox("In Game Message Box");
-                    message2.X = 100;
-                    message2.Y = 150;
+                    GameMessageBox message2 = context.getMessageBox("タイルエンジン著作者：大朏　哲明", "メッセージ", 100,150);
+                    GameMessageBox message = context.getMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はBを押してください。","メッセージ",100,150);
 
                     this.PushProcess(message2);
+                    this.PushProcess(message);
                 }
             }
             oldState = ks;
