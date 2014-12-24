@@ -24,8 +24,6 @@ namespace BasicTile
         public int MapWidth = 50;
         public int MapHeight = 50;
 
-        public static float Scale { get; set; }
-
         public TileMap(Texture2D mouseMap, Texture2D slopeMap)
         {
             this.mouseMap = mouseMap;

@@ -30,7 +30,6 @@ namespace BasicTile
         int baseOffsetX = -32;
         int baseOffsetY = -64;
         float heightRowDepthMod = 0.0000001f;
-        float scale = 1.0f;
 
         //2D camera
         Camera camera;
@@ -49,6 +48,7 @@ namespace BasicTile
 
         //highlighting tiles
         Texture2D hilight;
+        Vector2 hilightLoc;
 
         //NPC character
         SpriteAnimation npc;
@@ -87,17 +87,12 @@ namespace BasicTile
                 Content.Load<Texture2D>(@"Textures\TileSets\mousemap"),
                 Content.Load<Texture2D>(@"Textures\TileSets\part9_slopemaps"));
 
-            TileMap.Scale = this.scale;
-
             //initialize camera
-            camera = new Camera();
-
-            camera.ViewWidth = graphics.PreferredBackBufferWidth;
-            camera.ViewHeight = graphics.PreferredBackBufferHeight;
-            camera.WorldWidth = ((myMap.MapWidth - 2) * Tile.TileStepX);
-            camera.WorldHeight = ((myMap.MapHeight - 2) * Tile.TileStepY);
-            camera.DisplayOffset = new Vector2(baseOffsetX, baseOffsetY);
-            camera.Scale = this.scale;
+            camera = new Camera(
+                graphics.GraphicsDevice.Viewport, 
+                new Vector2(baseOffsetX, baseOffsetY), 
+                new Rectangle(0,0,(myMap.MapWidth - 2) * Tile.TileStepX, (myMap.MapHeight - 2) * Tile.TileStepY),
+                1.0f);
 
             //intiliaze highlight
             hilight = Content.Load<Texture2D>(@"Textures\TileSets\hilight");
@@ -150,16 +145,9 @@ namespace BasicTile
             #region ZOOM CONTROL
             //TODO: mouse scroll for zooming in and out
             if (ms.ScrollWheelValue < oldMouseState.ScrollWheelValue)
-                scale += 0.5f;
+                camera.Scale += 0.1f;
             else if (ms.ScrollWheelValue > oldMouseState.ScrollWheelValue)
-                scale -= 0.5f;
-
-            //TODO: move clamp to camera
-            //clamp maximum zoom to 2.0 times
-            scale = MathHelper.Clamp(scale, 1.0f, 2.0f);
-
-            //scale tiling render dimensions
-            camera.Scale = this.scale;
+                camera.Scale -= 0.1f;
 
             #endregion
 
@@ -246,6 +234,7 @@ namespace BasicTile
             #endregion
 
             #region CLAMPING PLAYER POSITION WITHIN MAP
+
             vlad.Position = new Vector2(
                 MathHelper.Clamp(vlad.Position.X, vlad.DrawOffset.X + 64, camera.WorldWidth - vlad.DrawOffset.X),
                 MathHelper.Clamp(vlad.Position.Y, vlad.DrawOffset.Y + 128, camera.WorldHeight - vlad.DrawOffset.Y));
@@ -274,6 +263,8 @@ namespace BasicTile
             vlad.Update(gameTime);
             npc.Update(gameTime);
 
+
+            hilightLoc = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
 
 
             #region UPDATE THE FIRST SQUARE LOCATION
@@ -480,11 +471,10 @@ namespace BasicTile
             vlad.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vlad.Position));
             #endregion
 
-            #region DRAW HILIGHT LOCATION OF MOUSE
-            Vector2 hilightLoc = camera.ScreenToWorld(new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+            #region DRAW HILIGHT LOCATION (FROM MOUSE)
+            //get map cell coordinates of mouse point in Update
             Point hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
-
-            //calculate hilight row offset
+            //get hilight row offset
             int hilightrowOffset = ((hilightPoint.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
 
             spriteBatch.Draw(

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace BasicTile
 {
@@ -25,19 +26,38 @@ namespace BasicTile
                     MathHelper.Clamp(value.Y, 0f, WorldHeight - ViewHeight));
             }
         }
-        public Vector2 Origin { get; set; }
 
         public int ViewWidth { get; set; }
         public int ViewHeight { get; set; }
         public int WorldWidth { get; set; }
         public int WorldHeight { get; set; }
-        public float Scale { get; set; }
+        private Rectangle Bounds { get; set; }
+
+
+        float _Scale;
+        public float Scale 
+        { 
+            get
+            {
+                return _Scale;
+            }
+            set
+            {
+                _Scale = MathHelper.Clamp(value, 1.0f, 2.0f);
+            } 
+        }
 
         private Matrix _transform;
 
-        public Camera()
+        public Camera(Viewport viewport, Vector2 baseViewOffset, Rectangle WorldBounds, float Scale)
         {
-            Origin = Vector2.Zero;
+            Bounds = viewport.Bounds;
+            ViewWidth = Bounds.Width;
+            ViewHeight = Bounds.Height;
+            DisplayOffset = baseViewOffset;
+            WorldWidth = WorldBounds.Width;
+            WorldHeight = WorldBounds.Height;
+            this.Scale = Scale;
         }
 
 

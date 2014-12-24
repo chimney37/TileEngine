@@ -52,7 +52,7 @@ namespace BasicTile
         int iWidth;
         int iHeight;
 
-        // Vector2 representing the position of the sprite's upper left corner pixel.
+        // Vector2 representing the World Coordinate position of the sprite's upper left corner pixel.
         public Vector2 Position
         {
             get { return v2Position; }
@@ -60,6 +60,7 @@ namespace BasicTile
             {
                 v2LastPosition = v2Position;
                 v2Position = value;
+
                 UpdateRotation();
             }
         }
