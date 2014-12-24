@@ -24,6 +24,8 @@ namespace BasicTile
         public int MapWidth = 50;
         public int MapHeight = 50;
 
+        public static float Scale { get; set; }
+
         public TileMap(Texture2D mouseMap, Texture2D slopeMap)
         {
             this.mouseMap = mouseMap;
@@ -155,7 +157,9 @@ namespace BasicTile
         {
             Rows[row].Columns[column].AddMultiSizeTile(158, 0, 0, height);    //trunk
             Rows[row].Columns[column].AddMultiSizeTile(148, 0, 1, height);    //middle
-            Rows[row].Columns[column].AddMultiSizeTile(138, 0, 2, height);    //upp
+            Rows[row].Columns[column].AddMultiSizeTile(138, 0, 2, height);    //branch upper middle
+            Rows[row].Columns[column].AddMultiSizeTile(137, 1, 2, height);    //branch upper left
+            Rows[row].Columns[column].AddMultiSizeTile(139, -1, 2, height);   //branch upper right
             Rows[row].Columns[column].AddMultiSizeTile(157, 1, 0, height);    //branch lower left
             Rows[row].Columns[column].AddMultiSizeTile(147, 1, 1, height);    //branch middle left
             Rows[row].Columns[column].AddMultiSizeTile(149, -1, 1, height);   //branch middle right
@@ -176,13 +180,15 @@ namespace BasicTile
         #region MAP CELL COORDINATE CONVERTERS
         //convert pixel-based location on the map into map-cell reference
 
-        public Point WorldToMapCell(Point worldPoint, out Point localPoint)
+        private Point WorldToMapCell(Point worldPoint, out Point localPoint)
         {
             //get the map cell from worldPoint
             Point mapCell = new Point(
-               (int)(worldPoint.X / mouseMap.Width),
-               ((int)(worldPoint.Y / mouseMap.Height)) * 2
+                worldPoint.X / mouseMap.Width,
+               (worldPoint.Y / mouseMap.Height) * 2
                );
+
+            //this.mouseMap.
 
             //get local point within a map cell
             int localPointX = worldPoint.X % mouseMap.Width;
@@ -248,35 +254,15 @@ namespace BasicTile
 
             return mapCell;
         }
-        //overload, simply return a point
-        public Point WorldToMapCell(Point worldPoint)
-        {
-            Point dummy;
-            return WorldToMapCell(worldPoint, out dummy);
-        }
-
-        //overload using a Vector for worldPoint
-        public Point WorldToMapCell(Vector2 worldPoint)
-        {
-            return WorldToMapCell(new Point((int)worldPoint.X, (int)worldPoint.Y));
-        }
-
         //uses the existing methods to look up the location of a map point and
         //determining what actual map cell is at that point and returning it
-        public MapCell GetCellAtWorldPoint(Point worldPoint)
+        private MapCell GetCellAtWorldPoint(Point worldPoint)
         {
             Point mapPoint = WorldToMapCell(worldPoint);
             return Rows[mapPoint.Y].Columns[mapPoint.X];
         }
-
-        //overload to use Vector
-        public MapCell GetCellAtWorldPoint(Vector2 worldPoint)
-        {
-            return GetCellAtWorldPoint(new Point((int)worldPoint.X, (int)worldPoint.Y));
-        }
-
         //get a height of a point on a cell with slope
-        public int GetCellSlopeHeightAtWorldPoint(Point worldPoint)
+        private int GetCellSlopeHeightAtWorldPoint(Point worldPoint)
         {
             Point localPoint;
             Point mapPoint = WorldToMapCell(worldPoint, out localPoint);
@@ -284,15 +270,12 @@ namespace BasicTile
 
             return GetSlopeMapHeight(localPoint, slopeMap);
         }
-
-        //overload to use Vector
-        public int GetCellSlopeHeightAtWorldPoint(Vector2 worldPoint)
+        private int GetCellSlopeHeightAtWorldPoint(Vector2 worldPoint)
         {
             return GetCellSlopeHeightAtWorldPoint(new Point((int)worldPoint.X, (int)worldPoint.Y));
         }
-
         //get height of a point in a sloped cell using local pixel and a slope map index (0 to 7)
-        public int GetSlopeMapHeight(Point localPixel, int slopeMap)
+        private int GetSlopeMapHeight(Point localPixel, int slopeMap)
         {
             //get a point from the slope map offset by localPixel, assuming the width is the same as the mouse map
             Point texturePoint = new Point(slopeMap * mouseMap.Width + localPixel.X, localPixel.Y);
@@ -312,9 +295,8 @@ namespace BasicTile
 
             return 0;
         }
-
         //get height of a point in terms of world coordinates
-        public int GetOverallHeight(Point worldPoint)
+        private int GetOverallHeight(Point worldPoint)
         {
             Point mapCellPoint = WorldToMapCell(worldPoint);
             int height = Rows[mapCellPoint.Y].Columns[mapCellPoint.X].HeightTiles.Count * Tile.HeightTileOffset;
@@ -323,6 +305,23 @@ namespace BasicTile
             return height;
         }
 
+
+        //overload, simply return a point
+        public Point WorldToMapCell(Point worldPoint)
+        {
+            Point dummy;
+            return WorldToMapCell(worldPoint, out dummy);
+        }
+        //overload using a Vector for worldPoint
+        public Point WorldToMapCell(Vector2 worldPoint)
+        {
+            return WorldToMapCell(new Point((int)worldPoint.X, (int)worldPoint.Y));
+        }
+        //overload to use Vector
+        public MapCell GetCellAtWorldPoint(Vector2 worldPoint)
+        {
+            return GetCellAtWorldPoint(new Point((int)worldPoint.X, (int)worldPoint.Y));
+        }
         //overload to use Vector
         public int GetOverallHeight(Vector2 worldPoint)
         {

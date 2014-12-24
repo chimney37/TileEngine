@@ -13,7 +13,7 @@ namespace BasicTile
     /// </summary>
     static class Tile
     {
-        static public Texture2D TileSetTexture;
+        public static Texture2D TileSetTexture;
 
         //
         //begin-- 
@@ -21,24 +21,25 @@ namespace BasicTile
         //For square map (part2), replace TileWidth=48 and TileHeight=48
         //For hexagonal map (part3), TileWidth=33, TIleHeight=27
         //For isometric map (part 4), replace TileWdith,TIleHeight=64
-        static public int TileWidth = 64;
-        static public int TileHeight = 64;
+        public static int TileWidth = 64;
+        public static int TileHeight = 64;
 
         //For square map TileStepX = TileWidth, TileStepY = TileHeight
         //For hexagonal map:
         //horizontal: 33 (wdith of tile) + 19 (wdith of top side of tile) + 2 pixels spaces
         //vertical: 15 (half of height) + 2 pixels spaces
         //For isometric map: StepX=64, StepY=16
-        static public int TileStepX = 64;
-        static public int TileStepY = 16;
+        public static int TileStepX = 64;
+        public static int TileStepY = 16;
+
 
         //hexagonal map:
         // OddRowXOffset: every odd row would need to push to the side by width of top side: 19 + empty space along top right: 7 + 1 pixel space
         //isometric map:
         //XOffset 32
-        static public int OddRowXOffset = 32;
-        static public int HeightTileOffset = 32;
-        static public int MultiSizeTileOffset = 64;
+        public static int OddRowXOffset = 32;
+        public static int HeightTileOffset = 32;
+        public static int MultiSizeTileOffset = 64;
         //end --
 
         /// <summary>
@@ -48,7 +49,7 @@ namespace BasicTile
         /// </summary>
         /// <param name="tileIndex"></param>
         /// <returns></returns>
-        static public Rectangle GetSourceRectangle(int tileIndex)
+        public static Rectangle GetSourceRectangle(int tileIndex)
         {
             int tileY = tileIndex / (TileSetTexture.Width / TileWidth);
             int tileX = tileIndex % (TileSetTexture.Width / TileWidth);

@@ -4,7 +4,7 @@ Game Concept - Some kind of Program that uses a tile engine - no good ideas yet
 
 
 
-Design
+Engine Design
 	Render and Input Loop
 		Monogame handles in methods INITIALIZE, LOAD CONTENT, UPDATE (INPUT AND OBJECT STATE UPDATES), DRAW (RENDERING ROUTINE)
 
@@ -14,11 +14,34 @@ Design
 				Handles all in game states using a stack
 			ProcessManager
 				Handles all in game processes (input, object state updates)
+			Sub-Process Stack
+				Can add sub game processes to a Process and have top of stack executed and popped necessarily 
+				(e.g. to show a message box on a core game loop)
+			Sub-Process Queue
+				Can add sub game processes to a Process which all gets executed serially
+				(e.g. A.I, network processing)
 
-	Game States
-		MenuScreen
-		GameScreen
-	Tile World Generation
-		Through Text File Maybe
-	Events and Characters
+	Game States and Processors
+		GameMenu
+		GameCore
+		GameMessageBox
+
+	Tile World Design
+		Isometric 2.5D
+		Pseudo Height
+		Multi-Layering Support (Base, Height, Skins, Multi-Tile Size)
+		Animated Tile Support
+		Loadable through text data - no compile
+
+	Input and Feedback
+		Keyboard manager
+		Mouse manager
+			Click picking coordinates
+			Drag and Drop Support
+
+	Events and Entities Control
 		Interpreter based Scripting Language for scalability (no need to recompile main program)
+
+	Language and Fonts
+		SpriteFont for Japanese Text
+		Localization in Japanese Support

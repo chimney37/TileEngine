@@ -30,6 +30,10 @@ namespace BasicTile
         int baseOffsetX = -32;
         int baseOffsetY = -64;
         float heightRowDepthMod = 0.0000001f;
+        float scale = 1.0f;
+
+        //2D camera
+        Camera camera;
 
         //for keeping the first rendering square upper left of screen according to camera view
         Vector2 firstSquare;
@@ -38,7 +42,10 @@ namespace BasicTile
         SpriteFont pericles6;
         SpriteFont snippets14;
         bool EnableDebugging = false;
+
         KeyboardState oldState;
+        MouseState oldMouseState;
+        int prevMouseScrollValue;
 
         //highlighting tiles
         Texture2D hilight;
@@ -53,13 +60,15 @@ namespace BasicTile
 
         #endregion
 
-        Stack<GameProcess> gameStack = new Stack<GameProcess>();
-
 
         public override void Initialize(Game game)
         {
             //intialize old keyboard state
             oldState = Keyboard.GetState();
+
+            oldMouseState = Mouse.GetState();
+            prevMouseScrollValue = Mouse.GetState().ScrollWheelValue;
+
             //make mouse visible
             game.IsMouseVisible = true;
         }
@@ -78,12 +87,17 @@ namespace BasicTile
                 Content.Load<Texture2D>(@"Textures\TileSets\mousemap"),
                 Content.Load<Texture2D>(@"Textures\TileSets\part9_slopemaps"));
 
+            TileMap.Scale = this.scale;
+
             //initialize camera
-            Camera.ViewWidth = graphics.PreferredBackBufferWidth;
-            Camera.ViewHeight = graphics.PreferredBackBufferHeight;
-            Camera.WorldWidth = ((myMap.MapWidth - 2) * Tile.TileStepX);
-            Camera.WorldHeight = ((myMap.MapHeight - 2) * Tile.TileStepY);
-            Camera.DisplayOffset = new Vector2(baseOffsetX, baseOffsetY);
+            camera = new Camera();
+
+            camera.ViewWidth = graphics.PreferredBackBufferWidth;
+            camera.ViewHeight = graphics.PreferredBackBufferHeight;
+            camera.WorldWidth = ((myMap.MapWidth - 2) * Tile.TileStepX);
+            camera.WorldHeight = ((myMap.MapHeight - 2) * Tile.TileStepY);
+            camera.DisplayOffset = new Vector2(baseOffsetX, baseOffsetY);
+            camera.Scale = this.scale;
 
             //intiliaze highlight
             hilight = Content.Load<Texture2D>(@"Textures\TileSets\hilight");
@@ -130,14 +144,31 @@ namespace BasicTile
 
         public override void Update(GameTime gameTime, Context context)
         {
+            KeyboardState ks = Keyboard.GetState();
+            MouseState ms = Mouse.GetState();
+
+            #region ZOOM CONTROL
+            //TODO: mouse scroll for zooming in and out
+            if (ms.ScrollWheelValue < oldMouseState.ScrollWheelValue)
+                scale += 0.5f;
+            else if (ms.ScrollWheelValue > oldMouseState.ScrollWheelValue)
+                scale -= 0.5f;
+
+            //TODO: move clamp to camera
+            //clamp maximum zoom to 2.0 times
+            scale = MathHelper.Clamp(scale, 1.0f, 2.0f);
+
+            //scale tiling render dimensions
+            camera.Scale = this.scale;
+
+            #endregion
+
 
             // TODO: Add your update logic here
             #region SET DIRECTION AND MOVEMENT VECTORS PER KEY PRESS TYPE
             Vector2 moveVector = Vector2.Zero;
             Vector2 moveDir = Vector2.Zero;
             string animation = "";
-
-            KeyboardState ks = Keyboard.GetState();
 
             if (ks.IsKeyDown(Keys.NumPad7))
             {
@@ -216,24 +247,25 @@ namespace BasicTile
 
             #region CLAMPING PLAYER POSITION WITHIN MAP
             vlad.Position = new Vector2(
-                MathHelper.Clamp(vlad.Position.X, vlad.DrawOffset.X + 64, Camera.WorldWidth - vlad.DrawOffset.X),
-                MathHelper.Clamp(vlad.Position.Y, vlad.DrawOffset.Y + 128, Camera.WorldHeight - vlad.DrawOffset.Y));
+                MathHelper.Clamp(vlad.Position.X, vlad.DrawOffset.X + 64, camera.WorldWidth - vlad.DrawOffset.X),
+                MathHelper.Clamp(vlad.Position.Y, vlad.DrawOffset.Y + 128, camera.WorldHeight - vlad.DrawOffset.Y));
+
             #endregion
 
             #region AUTO SCROLLING AS PLAYER APPROACH EDGE
-            Vector2 testPos = Camera.WorldToScreen(vlad.Position);
+            Vector2 testPos = camera.WorldToScreen(vlad.Position);
 
             if (testPos.X < 100)
-                Camera.Move(new Vector2(testPos.X - 100, 0));
+                camera.Move(new Vector2(testPos.X - 100, 0));
 
-            if (testPos.X > (Camera.ViewWidth - 100))
-                Camera.Move(new Vector2(testPos.X - (Camera.ViewWidth - 100), 0));
+            if (testPos.X > (camera.ViewWidth - 100))
+                camera.Move(new Vector2(testPos.X - (camera.ViewWidth - 100), 0));
 
             if (testPos.Y < 100)
-                Camera.Move(new Vector2(0, testPos.Y - 100));
+                camera.Move(new Vector2(0, testPos.Y - 100));
 
-            if (testPos.Y > (Camera.ViewHeight - 100))
-                Camera.Move(new Vector2(0, testPos.Y - (Camera.ViewHeight - 100)));
+            if (testPos.Y > (camera.ViewHeight - 100))
+                camera.Move(new Vector2(0, testPos.Y - (camera.ViewHeight - 100)));
             #endregion
 
             //update the map cell where player is
@@ -248,7 +280,7 @@ namespace BasicTile
             //Camera is intiially at 0,0 and camera can move around
             //we need to enables pan to the location of the map where the camera points
             //firstX and firstY are map square coordinates of the game map that camera points at
-            firstSquare = new Vector2(Camera.Location.X / Tile.TileStepX, Camera.Location.Y / Tile.TileStepY);
+            firstSquare = new Vector2(camera.Location.X / Tile.TileStepX, camera.Location.Y / Tile.TileStepY);
             #endregion
 
             #region OTHER KEY TOGGLING
@@ -280,8 +312,11 @@ namespace BasicTile
                     this.PushProcess(message);
                 }
             }
-            oldState = ks;
             #endregion
+
+
+            oldState = ks;
+            oldMouseState = ms;
 
             base.Update(gameTime, context);
         }
@@ -332,7 +367,7 @@ namespace BasicTile
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
                             //use Camera functions for offsetting and global baseoffset
-                            Camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY)),
+                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY)),
                             //get source tile. 
                             Tile.GetSourceRectangle(tileID),
                             Color.White,
@@ -353,7 +388,7 @@ namespace BasicTile
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
                             //use Camera functions for offsetting and global baseoffset
-                            Camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY - (heightRow * Tile.HeightTileOffset))),
+                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY - (heightRow * Tile.HeightTileOffset))),
                             //get tile
                             Tile.GetSourceRectangle(tileID),
                             Color.White,
@@ -374,7 +409,7 @@ namespace BasicTile
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
                             //use Camera functions for offsetting and global baseoffset
-                            Camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY - (heightRow * Tile.HeightTileOffset))),
+                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY - (heightRow * Tile.HeightTileOffset))),
                             //get source tile
                             Tile.GetSourceRectangle(tileID),
                             Color.White,
@@ -399,7 +434,7 @@ namespace BasicTile
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
                             //use Camera functions for offsetting and global baseoffset
-                            Camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset - (tile.Item2 * Tile.MultiSizeTileOffset),
+                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset - (tile.Item2 * Tile.MultiSizeTileOffset),
                                 mapy * Tile.TileStepY - (tile.Item3 * Tile.MultiSizeTileOffset) - (tile.Item4 * Tile.HeightTileOffset))),
                             Tile.GetSourceRectangle(tile.Item1),
                             Color.White,
@@ -419,7 +454,7 @@ namespace BasicTile
                         spriteBatch.DrawString(
                             pericles6,
                             mapx.ToString() + ", " + mapy.ToString(),
-                            Camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset + 24,
+                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset + 24,
                                                              mapy * Tile.TileStepY + 48)),
                             Color.White,
                             0f,
@@ -434,11 +469,11 @@ namespace BasicTile
 
             #region DRAW PLAYER
             //draw player according to where he's standing on
-            vlad.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vlad.Position));
+            vlad.Draw(spriteBatch,camera, 0, -myMap.GetOverallHeight(vlad.Position));
             #endregion
 
             #region DRAW HILIGHT LOCATION OF MOUSE
-            Vector2 hilightLoc = Camera.ScreenToWorld(new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+            Vector2 hilightLoc = camera.ScreenToWorld(new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
             Point hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
 
             //calculate hilight row offset
@@ -446,7 +481,7 @@ namespace BasicTile
 
             spriteBatch.Draw(
                 hilight,
-                Camera.WorldToScreen(
+                camera.WorldToScreen(
                     new Vector2(
                         hilightPoint.X * Tile.TileStepX + hilightrowOffset,
                 //add 2 as image is only half of actual tiles
@@ -475,7 +510,7 @@ namespace BasicTile
             #endregion
 
             #region DRAW NPCS
-            npc.Draw(spriteBatch, 0, 0);
+            npc.Draw(spriteBatch,camera, 0, 0);
             #endregion
 
             spriteBatch.End();
