@@ -84,21 +84,34 @@ namespace BasicTile
 
             //add some stacking tiles for isometry
             Rows[16].Columns[4].AddHeightTile(54);
-
             Rows[17].Columns[3].AddHeightTile(54);
-
             Rows[15].Columns[3].AddHeightTile(54);
             Rows[16].Columns[3].AddHeightTile(53);
-
             Rows[15].Columns[4].AddHeightTile(54);
             Rows[15].Columns[4].AddHeightTile(54);
             Rows[15].Columns[4].AddHeightTile(51);
-
             Rows[18].Columns[3].AddHeightTile(51);
             Rows[19].Columns[3].AddHeightTile(50);
             Rows[18].Columns[4].AddHeightTile(55);
-
             Rows[14].Columns[4].AddHeightTile(54);
+
+            //add some stacking tiles for isometry
+            Rows[24].Columns[8].AddHeightTile(76);
+            Rows[23].Columns[8].AddHeightTile(76);
+            Rows[25].Columns[7].AddHeightTile(76);
+
+            Rows[24].Columns[8].AddHeightTile(77);
+            Rows[23].Columns[8].AddHeightTile(77);
+            Rows[25].Columns[7].AddHeightTile(77);
+            Rows[24].Columns[8].AddHeightTile(67);
+            Rows[23].Columns[8].AddHeightTile(68);
+            Rows[25].Columns[7].AddHeightTile(69);
+
+            Rows[26].Columns[7].AddHeightTile(76);
+            Rows[25].Columns[6].AddHeightTile(75);
+            Rows[24].Columns[6].AddHeightTile(75);
+            Rows[23].Columns[5].AddHeightTile(75);
+            Rows[22].Columns[5].AddHeightTile(75);
 
             //rocks stacking on top of one another
             Rows[14].Columns[5].AddHeightTile(62);

@@ -509,8 +509,9 @@ namespace BasicTile
                         spriteBatch.DrawString(
                             pericles6,
                             mapx.ToString() + ", " + mapy.ToString(),
-                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset + 24,
-                                                             mapy * Tile.TileStepY + 48)),
+                            new Vector2(
+                                mapx * Tile.TileStepX + rowOffset + 24,
+                                mapy * Tile.TileStepY + 48),
                             Color.White,
                             0f,
                             Vector2.Zero,
