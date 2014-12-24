@@ -334,7 +334,14 @@ namespace BasicTile
 
 
             //Set up sprite batch. Tells XNA/Monogame that we are going to specify layer depth (sorted from back(1.0f) to front(0.0f))
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+            spriteBatch.Begin(
+                SpriteSortMode.BackToFront, 
+                BlendState.AlphaBlend,
+                SamplerState.LinearWrap,
+                null,
+                null,
+                null,
+                camera.GetTransformation());
 
             #region DRAW TILES
             //zig-zag rendering approach
@@ -361,14 +368,13 @@ namespace BasicTile
                         continue;
 
                     #region DRAW BASE TILES
+                    
                     //draw base tiles
                     foreach (int tileID in myMap.Rows[mapy].Columns[mapx].BaseTiles)
                     {
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
-                            //use Camera functions for offsetting and global baseoffset
-                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY)),
-                            //get source tile. 
+                            new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY),
                             Tile.GetSourceRectangle(tileID),
                             Color.White,
                             0.0f,
@@ -377,6 +383,7 @@ namespace BasicTile
                             SpriteEffects.None,
                             1.0f);
                     }
+                    
                     #endregion
 
                     #region STACKED HEIGHT TILES
@@ -387,9 +394,7 @@ namespace BasicTile
                     {
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
-                            //use Camera functions for offsetting and global baseoffset
-                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY - (heightRow * Tile.HeightTileOffset))),
-                            //get tile
+                            new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY - (heightRow * Tile.HeightTileOffset)),
                             Tile.GetSourceRectangle(tileID),
                             Color.White,
                             0.0f,
@@ -403,13 +408,15 @@ namespace BasicTile
                     #endregion
 
                     #region DRAW TOPPER TILES (SKINS)
+
+                    
                     //draw topper tiles
                     foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].TopperTiles)
                     {
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
                             //use Camera functions for offsetting and global baseoffset
-                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY - (heightRow * Tile.HeightTileOffset))),
+                            new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY - (heightRow * Tile.HeightTileOffset)),
                             //get source tile
                             Tile.GetSourceRectangle(tileID),
                             Color.White,
@@ -427,15 +434,16 @@ namespace BasicTile
                         vlad.DrawDepth = depthOffset - (float)(heightRow + 2) * heightRowDepthMod;
                     #endregion
 
-                    #region DRAW MULTI SIZE TILES
+                    #region DRAW MULTI SIZE TILES                   
                     //draw multi size tiles
                     foreach (Tuple<int, int, int, int> tile in myMap.Rows[mapy].Columns[mapx].MultiSizeTiles)
                     {
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
                             //use Camera functions for offsetting and global baseoffset
-                            camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset - (tile.Item2 * Tile.MultiSizeTileOffset),
-                                mapy * Tile.TileStepY - (tile.Item3 * Tile.MultiSizeTileOffset) - (tile.Item4 * Tile.HeightTileOffset))),
+                            new Vector2(
+                                mapx * Tile.TileStepX + rowOffset - (tile.Item2 * Tile.MultiSizeTileOffset),
+                                mapy * Tile.TileStepY - (tile.Item3 * Tile.MultiSizeTileOffset) - (tile.Item4 * Tile.HeightTileOffset)),
                             Tile.GetSourceRectangle(tile.Item1),
                             Color.White,
                             0.0f,
@@ -445,11 +453,11 @@ namespace BasicTile
                             //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen
                             depthOffset - ((float)tile.Item4 * heightRowDepthMod));
                     }
+                    
                     #endregion
 
                     #region DEBUGGING
                     //debugging tile draw location
-
                     if (EnableDebugging)
                         spriteBatch.DrawString(
                             pericles6,
@@ -469,7 +477,7 @@ namespace BasicTile
 
             #region DRAW PLAYER
             //draw player according to where he's standing on
-            vlad.Draw(spriteBatch,camera, 0, -myMap.GetOverallHeight(vlad.Position));
+            vlad.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vlad.Position));
             #endregion
 
             #region DRAW HILIGHT LOCATION OF MOUSE
@@ -481,11 +489,10 @@ namespace BasicTile
 
             spriteBatch.Draw(
                 hilight,
-                camera.WorldToScreen(
                     new Vector2(
                         hilightPoint.X * Tile.TileStepX + hilightrowOffset,
                 //add 2 as image is only half of actual tiles
-                        (hilightPoint.Y + 2) * Tile.TileStepY)),
+                        (hilightPoint.Y + 2) * Tile.TileStepY),
                 new Rectangle(0, 0, 64, 32),
                 Color.White * 0.3f,
                 0.0f,
@@ -510,7 +517,7 @@ namespace BasicTile
             #endregion
 
             #region DRAW NPCS
-            npc.Draw(spriteBatch,camera, 0, 0);
+            npc.Draw(spriteBatch, 0, 0);
             #endregion
 
             spriteBatch.End();

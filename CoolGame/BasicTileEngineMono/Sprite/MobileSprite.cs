@@ -240,7 +240,7 @@ namespace BasicTile
         {
             if (bVisible)
             {
-                asSprite.Draw(spriteBatch,camera, 0, 0);
+                asSprite.Draw(spriteBatch, 0, 0);
             }
         }
         #endregion

@@ -256,12 +256,12 @@ namespace BasicTile
                 }
             }
         }
-        public void Draw(SpriteBatch spriteBatch,Camera camera, int XOffset, int YOffset)
+        public void Draw(SpriteBatch spriteBatch, int XOffset, int YOffset)
         {
             if (bAnimating)
                 spriteBatch.Draw(
                     t2dTexture,
-                    camera.WorldToScreen(v2Position) + v2Center + DrawOffset + new Vector2(XOffset, YOffset),
+                    v2Position + v2Center + DrawOffset + new Vector2(XOffset, YOffset),
                     CurrentFrameAnimation.FrameRectangle, 
                     colorTint,
                     fRotation, 

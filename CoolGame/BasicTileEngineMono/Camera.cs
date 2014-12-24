@@ -63,7 +63,8 @@ namespace BasicTile
         {
             _transform =
                 Matrix.CreateTranslation(new Vector3(-Location.X + DisplayOffset.X, -Location.Y + DisplayOffset.Y, 0)) *
-                Matrix.CreateScale(new Vector3(Scale, Scale, 1));
+                Matrix.CreateScale(new Vector3(Scale, Scale, 1)
+                );
 
             return _transform;
         }
