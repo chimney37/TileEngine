@@ -8,7 +8,7 @@ namespace BasicTile
     /// <summary>
     /// MapCell (itself managing an area of the map that represents a tile area, but not necessary a single tile)
     /// </summary>
-    public class MapCell
+    public class MapCell : PathNode
     {
         //list of tile ids can stack any number of tile images on the same space
         public List<int> BaseTiles = new List<int>();
@@ -20,7 +20,11 @@ namespace BasicTile
         public List<int> TopperTiles = new List<int>();
 
         //to specify walkable and unwalkable of a map cell
-        public bool Walkable { get; set; }
+        public bool Walkable 
+        {
+            get { return base.IsReachable; }
+            set { base.IsReachable = value; } 
+        }
 
         //to specify a cell as a slope in some direction (8 directions: 0 to 7)
         //reference: http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:9

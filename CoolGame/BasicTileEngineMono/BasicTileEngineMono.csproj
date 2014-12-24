@@ -60,6 +60,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="GameText.cs" />
+    <Compile Include="PathFinder.cs" />
     <Compile Include="Sprite\AnimatedSprite.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="MapCell.cs" />

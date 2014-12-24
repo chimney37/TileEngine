@@ -13,7 +13,7 @@ namespace BasicTile
     /// References: 
     /// Isometric picking : http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:7
     /// </summary>
-    class TileMap
+    public class TileMap
     {
         //manage a mouse map for isometric picking
         private Texture2D mouseMap;
@@ -40,6 +40,7 @@ namespace BasicTile
                 Rows.Add(thisRow);
             }
 
+            //TODO: should create a level editor
             //TODO: should enum tileIDs
             // Create Sample Map Data with other variations of data
             Rows[0].Columns[3].TileID = 3;
@@ -82,7 +83,7 @@ namespace BasicTile
             Rows[5].Columns[6].TileID = 2;
             Rows[5].Columns[7].TileID = 2;
 
-            //add some stacking tiles for isometry
+            //add some stacking tiles for isometric height
             Rows[16].Columns[4].AddHeightTile(54);
             Rows[17].Columns[3].AddHeightTile(54);
             Rows[15].Columns[3].AddHeightTile(54);
@@ -94,11 +95,27 @@ namespace BasicTile
             Rows[19].Columns[3].AddHeightTile(50);
             Rows[18].Columns[4].AddHeightTile(55);
             Rows[14].Columns[4].AddHeightTile(54);
+            //set unwalkable
+            Rows[16].Columns[4].Walkable = false;
+            Rows[17].Columns[3].Walkable = false;
+            Rows[15].Columns[3].Walkable = false;
+            Rows[16].Columns[3].Walkable = false;
+            Rows[15].Columns[4].Walkable = false;
+            Rows[15].Columns[4].Walkable = false;
+            Rows[15].Columns[4].Walkable = false;
+            Rows[18].Columns[3].Walkable = false;
+            Rows[19].Columns[3].Walkable = false;
+            Rows[18].Columns[4].Walkable = false;
+            Rows[14].Columns[4].Walkable = false;
 
-            //add some stacking tiles for isometry
+            //add some stacking tiles for isometric height
             Rows[24].Columns[8].AddHeightTile(76);
             Rows[23].Columns[8].AddHeightTile(76);
             Rows[25].Columns[7].AddHeightTile(76);
+            //set unwalkable terrain
+            Rows[24].Columns[8].Walkable = false;
+            Rows[23].Columns[8].Walkable = false;
+            Rows[25].Columns[7].Walkable = false;
 
             Rows[24].Columns[8].AddHeightTile(77);
             Rows[23].Columns[8].AddHeightTile(77);
@@ -106,6 +123,13 @@ namespace BasicTile
             Rows[24].Columns[8].AddHeightTile(67);
             Rows[23].Columns[8].AddHeightTile(68);
             Rows[25].Columns[7].AddHeightTile(69);
+            //set unwalkable terrain
+            Rows[24].Columns[8].Walkable = false;
+            Rows[23].Columns[8].Walkable = false;
+            Rows[25].Columns[7].Walkable = false;
+            Rows[24].Columns[8].Walkable = false;
+            Rows[23].Columns[8].Walkable = false;
+            Rows[25].Columns[7].Walkable = false;
 
             Rows[26].Columns[7].AddHeightTile(76);
             Rows[25].Columns[6].AddHeightTile(75);
@@ -113,10 +137,19 @@ namespace BasicTile
             Rows[23].Columns[5].AddHeightTile(75);
             Rows[22].Columns[5].AddHeightTile(75);
 
-            //rocks stacking on top of one another
+            //set unwalkable terrain
+            Rows[26].Columns[7].Walkable = false;
+            Rows[25].Columns[6].Walkable = false;
+            Rows[24].Columns[6].Walkable = false;
+            Rows[23].Columns[5].Walkable = false;
+            Rows[22].Columns[5].Walkable = false;
+
+            //multiple height stacking
             Rows[14].Columns[5].AddHeightTile(62);
             Rows[14].Columns[5].AddHeightTile(61);
             Rows[14].Columns[5].AddHeightTile(63);
+            //set unwalkable
+            Rows[14].Columns[5].Walkable = false;
 
             //add some topper tiles for isometry
             Rows[17].Columns[4].AddTopperTile(114);
@@ -188,9 +221,37 @@ namespace BasicTile
         }
         #endregion
 
-        #region MAP CELL COORDINATE CONVERTERS
-        //convert pixel-based location on the map into map-cell reference
+        #region MAP CELL COORDINATE FUNCTIONS
+        public MapCell GetMapCell(int MapCellX, int MapCellY)
+        {
+            return Rows[MapCellY].Columns[MapCellX];
+        }
 
+
+        //overload, simply return a point
+        public Point WorldToMapCell(Point worldPoint)
+        {
+            Point dummy;
+            return WorldToMapCell(worldPoint, out dummy);
+        }
+        //overload using a Vector for worldPoint
+        public Point WorldToMapCell(Vector2 worldPoint)
+        {
+            return WorldToMapCell(new Point((int)worldPoint.X, (int)worldPoint.Y));
+        }
+        //overload to use Vector
+        public MapCell GetCellAtWorldPoint(Vector2 worldPoint)
+        {
+            return GetCellAtWorldPoint(new Point((int)worldPoint.X, (int)worldPoint.Y));
+        }
+        //overload to use Vector
+        public int GetOverallHeight(Vector2 worldPoint)
+        {
+            return GetOverallHeight(new Point((int)worldPoint.X, (int)worldPoint.Y));
+        }
+
+
+        //convert pixel-based location on the map into map-cell reference
         private Point WorldToMapCell(Point worldPoint, out Point localPoint)
         {
             //get the map cell from worldPoint
@@ -317,28 +378,25 @@ namespace BasicTile
         }
 
 
-        //overload, simply return a point
-        public Point WorldToMapCell(Point worldPoint)
-        {
-            Point dummy;
-            return WorldToMapCell(worldPoint, out dummy);
-        }
-        //overload using a Vector for worldPoint
-        public Point WorldToMapCell(Vector2 worldPoint)
-        {
-            return WorldToMapCell(new Point((int)worldPoint.X, (int)worldPoint.Y));
-        }
-        //overload to use Vector
-        public MapCell GetCellAtWorldPoint(Vector2 worldPoint)
-        {
-            return GetCellAtWorldPoint(new Point((int)worldPoint.X, (int)worldPoint.Y));
-        }
-        //overload to use Vector
-        public int GetOverallHeight(Vector2 worldPoint)
-        {
-            return GetOverallHeight(new Point((int)worldPoint.X, (int)worldPoint.Y));
-        }
+
         #endregion
+
+
+        //returns the Lo Tile distance given a staggered isometric coordinate system
+        //reference:http://gamedev.stackexchange.com/questions/50668/distance-between-two-points-with-staggered-isometric-coordinate-system
+        public static int L0TileDistance(Point s, Point e)
+        {
+            return L0TileDistance(s.X, s.Y, e.X, e.Y);
+        }
+
+        public static int L0TileDistance(int sX, int sY, int eX, int eY)
+        {
+            int XDiff = Math.Abs(sX - eX);
+            int YDiff = Math.Abs(sY - eY);
+
+            int distance = Convert.ToInt32(Math.Ceiling(YDiff / 2.0 + XDiff));
+            return distance;
+        }
 
         #endregion
     }

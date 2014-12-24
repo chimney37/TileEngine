@@ -48,7 +48,7 @@ namespace BasicTile
 
         //highlighting tiles
         Texture2D hilight;
-        Vector2 hilightLoc;
+        Point hilightPoint;
 
         //NPC character
         SpriteAnimation npc;
@@ -60,8 +60,15 @@ namespace BasicTile
 
         Point vladMapPoint;
 
-
         bool ExecuteOnce = true;
+
+        //A* PathFinding variables
+        //TODO: implement the distance finding algorithm for staggered isometric
+        //TODO: implement the basic A* path finding algorithm
+        //TODO: get 2 test points within World Points
+        Point startMapPoint;
+        Point endMapPoint;
+
         #endregion
 
 
@@ -179,6 +186,7 @@ namespace BasicTile
             {
                 this.Enqueue(context.getFactory().GameText("Tile Engine Ver 0.01", 400, 400));
                 ExecuteOnce = false;
+                Console.WriteLine("Process queued");
             }
 
             // TODO: Add your update logic here
@@ -320,8 +328,9 @@ namespace BasicTile
             npc.Update(gameTime);
 
 
-            hilightLoc = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
-
+            Vector2 hilightLoc = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
+            //get map cell coordinates of mouse point in Update
+            hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
 
             #region UPDATE THE FIRST SQUARE LOCATION
             //Camera is intiially at 0,0 and camera can move around
@@ -339,6 +348,39 @@ namespace BasicTile
             if (ks.IsKeyUp(Keys.Q) && oldState.IsKeyDown(Keys.Q))
                 context.changeState(typeof(GameMenu));
 
+            //TODO: Experimental: calculate distance and pathfinding
+            //get destination point
+            if (ks.IsKeyUp(Keys.End) && oldState.IsKeyDown(Keys.End))
+                endMapPoint = hilightPoint;
+            //get start point
+            if(ks.IsKeyUp(Keys.Home) && oldState.IsKeyDown(Keys.Home))
+                startMapPoint = hilightPoint;
+            //calculate distance, path
+            if(ks.IsKeyUp(Keys.D) && oldState.IsKeyDown(Keys.D))
+            {
+                GameMessageBox message = context.getFactory().GameMessageBox(
+                    string.Format("({0},{1}) -> ({2},{3}) Distance={4}", 
+                    startMapPoint.X,
+                    startMapPoint.Y,
+                    endMapPoint.X,
+                    endMapPoint.Y,
+                    TileMap.L0TileDistance(startMapPoint, endMapPoint)
+                    ), "Debug");
+                this.PushProcess(message);
+            }
+
+            if (ks.IsKeyUp(Keys.P) && oldState.IsKeyDown(Keys.P))
+            {
+                PathFinder p = new PathFinder(myMap);
+
+                if (p.Search(startMapPoint.X, startMapPoint.Y, endMapPoint.X, endMapPoint.Y, myMap))
+                {
+                    GameMessageBox message = context.getFactory().GameMessageBox(
+                        string.Format("Path: {0}", p.ResultStringBackWards()), "Debug Message");
+                    this.PushProcess(message);
+                }
+            }
+
             //Sub-Process Stack Operations
             if (this.IsEmptySubProcessStack())
             {
@@ -353,7 +395,7 @@ namespace BasicTile
                 if (ks.IsKeyDown(Keys.A))
                 {
                     GameMessageBox message2 = context.getFactory().GameMessageBox("タイルエンジン著作者：大朏　哲明", "メッセージ", 100, 150);
-                    GameMessageBox message = context.getFactory().GameMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はBを押してください。", "メッセージ", 100, 150);
+                    GameMessageBox message = context.getFactory().GameMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はEnterを押してください。", "メッセージ", 100, 150);
 
                     this.PushProcess(message2);
                     this.PushProcess(message);
@@ -531,8 +573,7 @@ namespace BasicTile
             #endregion
 
             #region DRAW HILIGHT LOCATION (FROM MOUSE)
-            //get map cell coordinates of mouse point in Update
-            Point hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
+
             //get hilight row offset
             int hilightrowOffset = ((hilightPoint.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
 

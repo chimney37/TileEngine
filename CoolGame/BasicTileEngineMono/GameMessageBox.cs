@@ -73,7 +73,7 @@ namespace BasicTile
             var mousePosition = new Point(mouseState.X, mouseState.Y);
             
             //check if key pressed
-            if (ks.IsKeyUp(Keys.B) && oldKBState.IsKeyDown(Keys.B))
+            if (ks.IsKeyUp(Keys.Enter) && oldKBState.IsKeyDown(Keys.Enter))
                 this.IsAlive = false;
 
             //detect first mouse click on box
