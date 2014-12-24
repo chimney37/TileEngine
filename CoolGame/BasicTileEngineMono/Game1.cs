@@ -110,6 +110,11 @@ namespace BasicTile
         {
             this.currentState = gameFactory.GetGameProcess(gameProcess);
         }
+        public AbstractMonoGameProcessFactory getFactory()
+        {
+            return this.gameFactory;
+        }
+
         public GameMessageBox getMessageBox(string Content,string Title="Message:",int X=100, int Y=100 )
         {
             return gameFactory.GameMessageBox(Content, Title, X, Y);

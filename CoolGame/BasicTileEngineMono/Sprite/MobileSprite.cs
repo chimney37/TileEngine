@@ -236,11 +236,11 @@ namespace BasicTile
             if (bActive)
                 asSprite.Update(gameTime);
         }
-        public void Draw(SpriteBatch spriteBatch, Camera camera)
+        public void Draw(SpriteBatch spriteBatch, int XOffset, int YOffset)
         {
             if (bVisible)
             {
-                asSprite.Draw(spriteBatch, 0, 0);
+                asSprite.Draw(spriteBatch, XOffset, YOffset);
             }
         }
         #endregion

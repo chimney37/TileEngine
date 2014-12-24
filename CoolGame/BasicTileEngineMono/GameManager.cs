@@ -16,6 +16,7 @@ namespace BasicTile
     public interface Context
     {
         void changeState(Type gameProcess);
+        AbstractMonoGameProcessFactory getFactory();
         GameMessageBox getMessageBox(string Content,string Title = "Message:", int X = 100, int Y = 100);
     }
 
@@ -24,6 +25,7 @@ namespace BasicTile
     {
         protected bool IsAlive = true;
         private Stack<GameProcess> ProcessStack = new Stack<GameProcess>();
+        private Queue<GameProcess> ProcessQueue = new Queue<GameProcess>();
 
         public GameProcess()
         {
@@ -32,6 +34,11 @@ namespace BasicTile
         {
             return ProcessStack.Count > 0 ? false : true;
         }
+        protected bool IsEmptySubProcessQueue()
+        {
+            return ProcessQueue.Count > 0 ? false : true;
+        }
+
         protected void PushProcess(GameProcess gameProcess)
         {
             ProcessStack.Push(gameProcess);
@@ -39,6 +46,14 @@ namespace BasicTile
         protected void PopProcess()
         {
             ProcessStack.Pop();
+        }
+        protected void Enqueue(GameProcess gameProcess)
+        {
+            ProcessQueue.Enqueue(gameProcess);
+        }
+        protected void Dequeue(GameProcess gameProcess)
+        {
+            ProcessQueue.Dequeue();
         }
 
         public abstract void Initialize(Game game);
@@ -51,14 +66,20 @@ namespace BasicTile
                 ProcessStack.Peek().Update(gameTime, context);
 
                 if (!ProcessStack.Peek().IsAlive)
-                    ProcessStack.Pop();
+                    PopProcess();
             }
+
+            foreach (GameProcess g in ProcessQueue)
+                g.Update(gameTime, context);
         }
         public virtual void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context)
         {
             //Sub-Process Stack Render Ops
             if (!IsEmptySubProcessStack())
                 ProcessStack.Peek().Render(gameTime, spriteBatch, context);
+
+            foreach (GameProcess g in ProcessQueue)
+                g.Render(gameTime, spriteBatch,context);
         }
     }
 

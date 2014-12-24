@@ -56,8 +56,12 @@ namespace BasicTile
 
         //player character
         SpriteAnimation vlad;
+        MobileSprite vladMobile;
+
         Point vladMapPoint;
 
+
+        bool ExecuteOnce = true;
         #endregion
 
 
@@ -97,7 +101,7 @@ namespace BasicTile
             //intiliaze highlight
             hilight = Content.Load<Texture2D>(@"Textures\TileSets\hilight");
 
-            //create sprite and animations for player
+            //create sprite and animations for character
             vlad = new SpriteAnimation(Content.Load<Texture2D>(@"Textures\Characters\T_Vlad_Sword_Walking_48x48"));
 
             //TODO: maybe enuming the strings for runtime safety
@@ -125,6 +129,37 @@ namespace BasicTile
             vlad.CurrentAnimation = "WalkEast";
             vlad.IsAnimating = true;
 
+            //add an experimental Mobile sprite character
+            vladMobile = new MobileSprite(Content.Load<Texture2D>(@"Textures\Characters\T_Vlad_Sword_Walking_48x48"));
+            vladMobile.Sprite.AddAnimation("WalkEast", 0, 48 * 0, 48, 48, 8, 0.1f, "IdleEast");
+            vladMobile.Sprite.AddAnimation("WalkNorth", 0, 48 * 1, 48, 48, 8, 0.1f, "IdleNorth");
+            vladMobile.Sprite.AddAnimation("WalkNorthEast", 0, 48 * 2, 48, 48, 8, 0.1f, "IdleNorthEast");
+            vladMobile.Sprite.AddAnimation("WalkNorthWest", 0, 48 * 3, 48, 48, 8, 0.1f, "IdleNorthWest");
+            vladMobile.Sprite.AddAnimation("WalkSouth", 0, 48 * 4, 48, 48, 8, 0.1f, "IdleSouth");
+            vladMobile.Sprite.AddAnimation("WalkSouthEast", 0, 48 * 5, 48, 48, 8, 0.1f, "IdleSouthEast");
+            vladMobile.Sprite.AddAnimation("WalkSouthWest", 0, 48 * 6, 48, 48, 8, 0.1f, "IdleSouthWest");
+            vladMobile.Sprite.AddAnimation("WalkWest", 0, 48 * 7, 48, 48, 8, 0.1f, "IdleWest");
+            vladMobile.Sprite.AddAnimation("IdleEast", 0, 48 * 0, 48, 48, 1, 0.2f);
+            vladMobile.Sprite.AddAnimation("IdleNorth", 0, 48 * 1, 48, 48, 1, 0.2f);
+            vladMobile.Sprite.AddAnimation("IdleNorthEast", 0, 48 * 2, 48, 48, 1, 0.2f);
+            vladMobile.Sprite.AddAnimation("IdleNorthWest", 0, 48 * 3, 48, 48, 1, 0.2f);
+            vladMobile.Sprite.AddAnimation("IdleSouth", 0, 48 * 4, 48, 48, 1, 0.2f);
+            vladMobile.Sprite.AddAnimation("IdleSouthEast", 0, 48 * 5, 48, 48, 1, 0.2f);
+            vladMobile.Sprite.AddAnimation("IdleSouthWest", 0, 48 * 6, 48, 48, 1, 0.2f);
+            vladMobile.Sprite.AddAnimation("IdleWest", 0, 48 * 7, 48, 48, 1, 0.2f);
+            vladMobile.EndPathAnimation = "IdleEast";
+            vladMobile.Sprite.DrawOffset = new Vector2(-24, -38);
+            vladMobile.Sprite.CurrentAnimation = "IdleEast";
+
+
+            vladMobile.Sprite.AutoRotate = false;
+            vladMobile.Position = new Vector2(150, 150);
+            vladMobile.Target = vladMobile.Position;
+            vladMobile.Speed = 3;
+            vladMobile.IsPathing = false;
+            vladMobile.LoopPath = false;
+
+
             //load NPC texture
             npc = new SpriteAnimation(Content.Load<Texture2D>(@"Textures\Characters\SmileyWalk"));
             npc.AddAnimation("Idle1", 0, 0, 64, 64, 4, 0.1f, "Idle2");
@@ -139,6 +174,15 @@ namespace BasicTile
 
         public override void Update(GameTime gameTime, Context context)
         {
+            //Queue a Engine version text (JUST ONCE)
+            if (ExecuteOnce)
+            {
+                this.Enqueue(context.getFactory().GameText("Tile Engine Ver 0.01", 400, 400));
+                ExecuteOnce = false;
+            }
+
+            // TODO: Add your update logic here
+
             KeyboardState ks = Keyboard.GetState();
             MouseState ms = Mouse.GetState();
 
@@ -152,7 +196,19 @@ namespace BasicTile
             #endregion
 
 
-            // TODO: Add your update logic here
+
+            //TODO: long way to go, now animation of movement cannot be changed
+            #region SET THE MOBILE SPRITE DIRECTIONS USING MOUSE CLICKS
+           
+            if(ms.LeftButton == ButtonState.Pressed)
+                vladMobile.Target = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
+
+            Vector2 vladMobilemoveVector = vladMobile.Position - vladMobile.Target;
+
+
+            vladMobile.Update(gameTime);
+            #endregion
+
             #region SET DIRECTION AND MOVEMENT VECTORS PER KEY PRESS TYPE
             Vector2 moveVector = Vector2.Zero;
             Vector2 moveDir = Vector2.Zero;
@@ -289,15 +345,15 @@ namespace BasicTile
                 //Show MessageBox 1
                 if (ks.IsKeyDown(Keys.S))
                 {
-                    GameMessageBox message = context.getMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はBを押してください。", "メッセージ");
+                    GameMessageBox message = context.getFactory().GameMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はBを押してください。", "メッセージ");
                     this.PushProcess(message);
                 }
 
                 //Show 2 MessageBoxes
                 if (ks.IsKeyDown(Keys.A))
                 {
-                    GameMessageBox message2 = context.getMessageBox("タイルエンジン著作者：大朏　哲明", "メッセージ", 100,150);
-                    GameMessageBox message = context.getMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はBを押してください。","メッセージ",100,150);
+                    GameMessageBox message2 = context.getFactory().GameMessageBox("タイルエンジン著作者：大朏　哲明", "メッセージ", 100, 150);
+                    GameMessageBox message = context.getFactory().GameMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はBを押してください。", "メッセージ", 100, 150);
 
                     this.PushProcess(message2);
                     this.PushProcess(message);
@@ -469,6 +525,8 @@ namespace BasicTile
             #region DRAW PLAYER
             //draw player according to where he's standing on
             vlad.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vlad.Position));
+
+            vladMobile.Draw(spriteBatch, 0, 0 );
             #endregion
 
             #region DRAW HILIGHT LOCATION (FROM MOUSE)
@@ -493,18 +551,6 @@ namespace BasicTile
 
             #endregion
 
-            #region DRAW IN GAME MESSAGES
-            spriteBatch.DrawString(
-                            snippets14,
-                            "Tile Engine Ver 0.8",
-                            new Vector2(500, 390),
-                            Color.White,
-                            0f,
-                            Vector2.Zero,
-                            1.0f,
-                            SpriteEffects.None,
-                            0.0f);
-            #endregion
 
             #region DRAW NPCS
             npc.Draw(spriteBatch, 0, 0);

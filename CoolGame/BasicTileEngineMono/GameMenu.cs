@@ -39,16 +39,16 @@ namespace BasicTile
 
                 if (ks.IsKeyDown(Keys.S))
                 {
-                    GameMessageBox message = context.getMessageBox("Message Box Example:");
+                    GameMessageBox message = context.getFactory().GameMessageBox("Message Box Example:");
                     this.PushProcess(message);
                 }
 
                 if (ks.IsKeyDown(Keys.A))
                 {
-                    GameMessageBox message = context.getMessageBox("Message Box Example:");
+                    GameMessageBox message = context.getFactory().GameMessageBox("Message Box Example:");
                     this.PushProcess(message);
 
-                    GameMessageBox message2 = context.getMessageBox("Message Box Example:");
+                    GameMessageBox message2 = context.getFactory().GameMessageBox("Message Box Example:");
                     message2.X = 100;
                     message2.Y = 150;
 

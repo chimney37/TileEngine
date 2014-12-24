@@ -34,7 +34,8 @@ namespace BasicTile
         public abstract void Initialize(Game game);
         public abstract void LoadContent(ContentManager content, GraphicsDeviceManager graphics);
         public abstract GameProcess GetGameProcess(Type typeOfGameProcess);
-        public abstract GameMessageBox GameMessageBox(string Content, string Title, int X, int Y);
+        public abstract GameMessageBox GameMessageBox(string Content, string Title = "Message:", int X = 100, int Y = 100);
+        public abstract GameText GameText(string Text, int X, int Y);
     }
 
     public class GameProcessFactory : AbstractMonoGameProcessFactory
@@ -47,6 +48,7 @@ namespace BasicTile
             ProcessList.Add(new GameCore());
             ProcessList.Add(new GameMenu());
             ProcessList.Add(new GameMessageBox());
+            ProcessList.Add(new GameText());
         }
 
         public override void Initialize(Game game)
@@ -72,7 +74,12 @@ namespace BasicTile
             messageBox.Set(Content, Title, X, Y);
             return messageBox;
         }
-
+        public override GameText GameText(string Text, int X, int Y)
+        {
+            GameText gameText = (GameText)((GameText)GetGameProcess(typeof(GameText))).Clone();
+            gameText.Set(Text, X, Y);
+            return gameText;
+        }
         #endregion
     }
 }
