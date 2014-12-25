@@ -8,6 +8,8 @@ namespace BasicTile
 {
     /// <summary>
     /// Basic Implementation of Path Finding using A* Search
+    /// References:
+    /// http://www.policyalmanac.org/games/aStarTutorial.htm
     /// </summary>
     public class PathFinder
     {
@@ -18,11 +20,7 @@ namespace BasicTile
         {
             for (int y = 0; y < map.MapHeight; y++)
                 for (int x = 0; x < map.MapWidth; x++)
-                {
-                    map.GetMapCell(x, y).F = 0;
-                    map.GetMapCell(x, y).G = 0;
-                    map.GetMapCell(x, y).H = 0;
-                }
+                    map.GetMapCell(x, y).InitCostFunction();
         }
 
         public bool Search(int StartX, int StartY, int EndX, int EndY, TileMap map)
@@ -96,6 +94,10 @@ namespace BasicTile
         //search node
         private void SearchNode(PathNode curNode,int X, int Y,int EndX, int EndY, TileMap map)
         {
+            //if out of bounds, do not search
+            if (X < 0 || Y < 0 || X >= map.MapWidth || Y >= map.MapHeight)
+                return; 
+
             PathNode searchNode = map.GetMapCell(X, Y);
             searchNode.X = X;
             searchNode.Y = Y;
@@ -109,7 +111,8 @@ namespace BasicTile
                     searchNode.SetParentNode(curNode);
 
                     //Record F, G and H
-                    searchNode.G = searchNode.parentNode.G + 1;
+                    //G = cost of currentNode + cost from currentNode(Parent) to searchNode
+                    searchNode.G = curNode.G + PathNode.CalculateAdjCost(curNode.X, curNode.Y, X, Y);
                     searchNode.H = TileMap.L0TileDistance(X, Y, EndX, EndY);
                     searchNode.F = searchNode.G + searchNode.H;
 
@@ -119,30 +122,17 @@ namespace BasicTile
                 {
                     //if the path to the searchNode is better than going through the parent, then to the adjacent node
                     //then change the parent to the current square, reclculate G and F of square
-                    if (searchNode.G > curNode.G + 1)
+                    int PathG = curNode.G + PathNode.CalculateAdjCost(curNode.X, curNode.Y, X, Y);
+                    if (searchNode.G > PathG)
                     {
                         searchNode.SetParentNode(curNode);
 
-                        searchNode.G = curNode.G + 1;
+                        //G = cost of currentNode + cost from currentNode(Parent) to searchNode
+                        searchNode.G = PathG;
                         searchNode.F = searchNode.G + searchNode.H;
                     }
                 }
             }
-        }
-
-        private int CalculateG(int X1, int Y1, int X2, int Y2)
-        {
-            int DiffX = Math.Abs(X1 - X2);
-            int DiffY = Math.Abs(Y1 - Y2);
-
-            //diagonal move for an isometric staggered
-            if (DiffY > 1)
-                return 14;
-            //diagonal move
-            else if (DiffX == 1 && DiffY == 0)
-                return 14;
-            else
-                return 10;
         }
 
         private PathNode GetOpenListMinFNode()
@@ -193,14 +183,44 @@ namespace BasicTile
         public int Y { get; set; }
         public bool IsReachable { get; set; }
 
-        public bool IsWalkable(Object unused)
-        {
-            return IsReachable;
-        }
+        public abstract bool IsWalkable(Object obj);
+
 
         public void SetParentNode(PathNode parent)
         {
             parentNode = parent;
+        }
+
+        //Resets all cost to zero
+        public void InitCostFunction()
+        {
+            this.F = 0;
+            this.G = 0;
+            this.H = 0;
+        }
+
+        /// <summary>
+        /// Calculates cost to get to adjacent cell (only works for staggered isometric map)
+        /// returns correct cost ONLY for adjacent cell
+        /// </summary>
+        /// <param name="X1"></param>
+        /// <param name="Y1"></param>
+        /// <param name="X2"></param>
+        /// <param name="Y2"></param>
+        /// <returns></returns>
+        public static int CalculateAdjCost(int X1, int Y1, int X2, int Y2)
+        {
+            int DiffX = Math.Abs(X1 - X2);
+            int DiffY = Math.Abs(Y1 - Y2);
+
+            //diagonal move for an isometric staggered
+            if (DiffY > 1)
+                return 14;
+            //diagonal move
+            else if (DiffX == 1 && DiffY == 0)
+                return 14;
+            else
+                return 10;
         }
     }
 

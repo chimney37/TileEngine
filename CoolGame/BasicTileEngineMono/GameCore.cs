@@ -381,6 +381,33 @@ namespace BasicTile
                 }
             }
 
+            if(ks.IsKeyUp(Keys.B) && oldState.IsKeyDown(Keys.B))
+            {
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2,4), new Point(2,2)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(2, 3)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(3, 4)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(2, 5)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(2, 6)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(1, 5)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(1, 4)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(1, 3)));
+
+                Debug.WriteLine("");
+
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(2, 3)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(3, 4)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(3, 5)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(3, 6)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(2, 7)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(2, 6)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(1, 5)));
+                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(2, 4)));
+
+
+
+            }
+
+
             //Sub-Process Stack Operations
             if (this.IsEmptySubProcessStack())
             {
@@ -548,6 +575,8 @@ namespace BasicTile
                     #region DEBUGGING
                     //debugging tile draw location
                     if (EnableDebugging)
+                    {
+                        //draw isometric staggered coordinates
                         spriteBatch.DrawString(
                             pericles6,
                             mapx.ToString() + ", " + mapy.ToString(),
@@ -560,6 +589,21 @@ namespace BasicTile
                             1.0f,
                             SpriteEffects.None,
                             0.0f);
+
+                        //draw L0 distance from Source cell
+                        spriteBatch.DrawString(
+                            pericles6,
+                            TileMap.L0TileDistance(startMapPoint, new Point(mapx, mapy)).ToString(),
+                            new Vector2(
+                                mapx * Tile.TileStepX + rowOffset + 24,
+                                mapy * Tile.TileStepY + 32),
+                            Color.Aqua,
+                            0f,
+                            Vector2.Zero,
+                            1.0f,
+                            SpriteEffects.None,
+                            0.0f);
+                    }
                     #endregion
                 }
             }

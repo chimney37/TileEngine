@@ -389,12 +389,41 @@ namespace BasicTile
             return L0TileDistance(s.X, s.Y, e.X, e.Y);
         }
 
+        //override
         public static int L0TileDistance(int sX, int sY, int eX, int eY)
         {
+            int distance;
+
             int XDiff = Math.Abs(sX - eX);
             int YDiff = Math.Abs(sY - eY);
 
-            int distance = Convert.ToInt32(Math.Ceiling(YDiff / 2.0 + XDiff));
+            //vertical distance
+            if (XDiff == 0)
+                distance = Convert.ToInt32(Math.Ceiling(YDiff / 2.0));
+            //horizontal dist
+            else if (YDiff == 0)
+                distance = XDiff;
+            //diagonal and others
+            else
+            {
+                //handle special case when 2nd position is left of first
+                if (sX > eX)
+                {
+                    //handle odd or even row
+                    if (sY % 2 == 1)
+                        distance = Convert.ToInt32(Math.Ceiling(YDiff / 2.0 + XDiff));
+                    else
+                        distance = Convert.ToInt32(Math.Floor(YDiff / 2.0 + XDiff));
+                }
+                else
+                {
+                    if (sY % 2 == 1)
+                        distance = Convert.ToInt32(Math.Floor(YDiff / 2.0 + XDiff));
+                    else
+                        distance = Convert.ToInt32(Math.Ceiling(YDiff / 2.0 + XDiff));
+                }
+            }
+           
             return distance;
         }
 

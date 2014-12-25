@@ -86,5 +86,11 @@ namespace BasicTile
             MultiSizeTiles.Add(new Tuple<int, int, int,int>(tileID, CellOffsetX, CellOffsetY, CellOffsetZ));
         }
         #endregion
+
+        //determines if Map Cell is walkable depending on the type of object
+        public override bool IsWalkable(object obj)
+        {
+            return base.IsReachable;
+        }
     }
 }
