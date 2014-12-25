@@ -25,11 +25,17 @@ namespace BasicTile
 
         public bool Search(int StartX, int StartY, int EndX, int EndY, TileMap map)
         {
+            //init open and closed list
+            OpenList.Clear();
+            ClosedList.Clear();
+
+            //get start node
             PathNode startNode = map.GetMapCell(StartX, StartY);
             startNode.X = StartX;
             startNode.Y = StartY;
+            startNode.parentNode = null;
 
-            //add the starting node to the open list
+            //add the starting node to the open list, if this is not walkable, fail search
             if (startNode.IsWalkable(null))
                 OpenList.Add(startNode);
             else
@@ -155,19 +161,29 @@ namespace BasicTile
         public string ResultStringBackWards()
         {
             PathNode Current = ClosedList.Last();
-            PathNode Begin = ClosedList.First();
 
             StringBuilder sb = new StringBuilder();
 
-            while(Current != Begin)
+            while(Current != null)
             {
                 sb.Append(string.Format("({0},{1})", Current.X, Current.Y));
                 Current = Current.parentNode;
             }
 
-            sb.Append(string.Format("({0},{1})", Current.X, Current.Y));
-
             return sb.ToString();
+        }
+
+        public List<PathNode> PathResult()
+        {
+            List<PathNode> searchresult = new List<PathNode>();
+
+            PathNode Current = ClosedList.Last();
+            while (Current != null)
+            {
+                searchresult.Add(Current);
+                Current = Current.parentNode;
+            }
+            return searchresult;
         }
     }
 

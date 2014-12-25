@@ -69,6 +69,8 @@ namespace BasicTile
         Point startMapPoint;
         Point endMapPoint;
 
+        List<PathNode> foundPath = new List<PathNode>();
+
         #endregion
 
 
@@ -375,38 +377,13 @@ namespace BasicTile
 
                 if (p.Search(startMapPoint.X, startMapPoint.Y, endMapPoint.X, endMapPoint.Y, myMap))
                 {
+                    foundPath = p.PathResult();
+
                     GameMessageBox message = context.getFactory().GameMessageBox(
                         string.Format("Path: {0}", p.ResultStringBackWards()), "Debug Message");
                     this.PushProcess(message);
                 }
             }
-
-            if(ks.IsKeyUp(Keys.B) && oldState.IsKeyDown(Keys.B))
-            {
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2,4), new Point(2,2)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(2, 3)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(3, 4)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(2, 5)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(2, 6)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(1, 5)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(1, 4)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 4), new Point(1, 3)));
-
-                Debug.WriteLine("");
-
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(2, 3)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(3, 4)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(3, 5)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(3, 6)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(2, 7)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(2, 6)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(1, 5)));
-                Debug.WriteLine(TileMap.L0TileDistance(new Point(2, 5), new Point(2, 4)));
-
-
-
-            }
-
 
             //Sub-Process Stack Operations
             if (this.IsEmptySubProcessStack())
@@ -572,6 +549,7 @@ namespace BasicTile
                     
                     #endregion
 
+                  
                     #region DEBUGGING
                     //debugging tile draw location
                     if (EnableDebugging)
@@ -636,6 +614,38 @@ namespace BasicTile
                 0.0f);
 
             #endregion
+
+            #region DRAW SEARCHED PATH
+
+            if (!this.IsEmptySubProcessStack())
+                for (int i = 0; i < foundPath.Count(); i++)
+                {
+                    PathNode n = foundPath[i];
+
+                    int pathHilightrowOffset = ((n.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
+
+                    Color pathBaseColor = Color.Blue;
+                    float alpha = 0.5f;
+                    if (i == 0 || i == foundPath.Count() - 1)
+                        alpha = 0.8f;
+
+                    spriteBatch.Draw(
+                        hilight,
+                        new Vector2(
+                            n.X * Tile.TileStepX + pathHilightrowOffset,
+                        //add 2 as image is only half of actual tiles
+                            (n.Y + 2) * Tile.TileStepY),
+                        new Rectangle(0, 0, 64, 32),
+                        pathBaseColor * alpha,
+                        0.0f,
+                        Vector2.Zero,
+                        1.0f,
+                        SpriteEffects.None,
+                        0.0f);
+                }
+
+            #endregion
+
 
 
             #region DRAW NPCS
