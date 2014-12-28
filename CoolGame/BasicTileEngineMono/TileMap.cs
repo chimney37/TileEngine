@@ -227,6 +227,11 @@ namespace BasicTile
             return Rows[MapCellY].Columns[MapCellX];
         }
 
+        public Point MapCellToWorld(int MapCellX, int MapCellY)
+        {
+            int rowOffset = ((MapCellY) % 2 == 1) ? rowOffset = Tile.OddRowXOffset : 0;
+            return new Point(MapCellX * Tile.TileStepX + rowOffset, MapCellY * Tile.TileStepY);
+        }
 
         //overload, simply return a point
         public Point WorldToMapCell(Point worldPoint)

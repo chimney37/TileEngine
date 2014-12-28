@@ -162,11 +162,12 @@ namespace BasicTile
 
 
             vladMobile.Sprite.AutoRotate = false;
-            vladMobile.Position = new Vector2(150, 150);
+            vladMobile.Position = camera.ScreenToWorld(new Vector2(150, 150));
             vladMobile.Target = vladMobile.Position;
-            vladMobile.Speed = 3;
-            vladMobile.IsPathing = false;
+            vladMobile.Speed = 1;
+            vladMobile.IsPathing = true;
             vladMobile.LoopPath = false;
+
 
 
             //load NPC texture
@@ -183,6 +184,7 @@ namespace BasicTile
 
         public override void Update(GameTime gameTime, Context context)
         {
+            #region ONE TIME EXECUTION
             //Queue a Engine version text (JUST ONCE)
             if (ExecuteOnce)
             {
@@ -190,6 +192,7 @@ namespace BasicTile
                 ExecuteOnce = false;
                 Console.WriteLine("Process queued");
             }
+            #endregion
 
             // TODO: Add your update logic here
 
@@ -205,16 +208,29 @@ namespace BasicTile
 
             #endregion
 
-
-
-            //TODO: long way to go, now animation of movement cannot be changed
+            //TODO: long way to go, now buggy, dont' know why many positions get queued.
             #region SET THE MOBILE SPRITE DIRECTIONS USING MOUSE CLICKS
-           
-            if(ms.LeftButton == ButtonState.Pressed)
+
+            if (oldMouseState.LeftButton == ButtonState.Pressed && 
+                ms.LeftButton == ButtonState.Released)
+            {
+                vladMobile.IsActive = true;
                 vladMobile.Target = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
+                Point start = myMap.WorldToMapCell(vladMobile.Target);           
+                Point end = myMap.WorldToMapCell(vladMobile.Position);
 
-            Vector2 vladMobilemoveVector = vladMobile.Position - vladMobile.Target;
+                PathFinder p = new PathFinder(myMap);
 
+                if (p.Search(start.X, start.Y, end.X, end.Y, myMap))
+                {
+                    foundPath = p.PathResult();
+
+                    foreach (PathNode n in foundPath)
+                        vladMobile.AddPathNode(myMap.MapCellToWorld(n.X, n.Y));
+
+                    vladMobile.DeactivateAfterPathing = true;
+                }
+            }
 
             vladMobile.Update(gameTime);
             #endregion
@@ -323,16 +339,38 @@ namespace BasicTile
                 camera.Move(new Vector2(0, testPos.Y - (camera.ViewHeight - 100)));
             #endregion
 
+            #region MAP SCROLL USING MOUSE EXCEEDS EDGE
+            Point testPosMouse = ms.Position;
+
+            if (testPosMouse.X < 0)
+                camera.Move(new Vector2(testPosMouse.X - 10, 0));
+
+            if(testPosMouse.X > (camera.ViewWidth))
+                camera.Move(new Vector2(testPosMouse.X - (camera.ViewWidth - 10), 0));
+
+            if (testPosMouse.Y < 0)
+                camera.Move(new Vector2(0, testPosMouse.Y - 10));
+
+            if (testPosMouse.Y > (camera.ViewHeight))
+                camera.Move(new Vector2(0, testPosMouse.Y - (camera.ViewHeight - 10)));
+
+            #endregion
+
+            #region UPDATE CHARACTER POSITIONS
+
             //update the map cell where player is
             vladMapPoint = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
 
             vlad.Update(gameTime);
             npc.Update(gameTime);
 
+            #endregion
 
+            #region UPDATE MOUSE HILIGHT LOCATION
             Vector2 hilightLoc = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
             //get map cell coordinates of mouse point in Update
             hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
+            #endregion
 
             #region UPDATE THE FIRST SQUARE LOCATION
             //Camera is intiially at 0,0 and camera can move around
@@ -341,7 +379,7 @@ namespace BasicTile
             firstSquare = new Vector2(camera.Location.X / Tile.TileStepX, camera.Location.Y / Tile.TileStepY);
             #endregion
 
-            #region OTHER KEY TOGGLING
+            #region OTHER FUNCTIONS KEY TOGGLING
             //enable or disable debugging coordinates
             if (ks.IsKeyUp(Keys.Delete) && oldState.IsKeyDown(Keys.Delete))
                 EnableDebugging = !EnableDebugging;

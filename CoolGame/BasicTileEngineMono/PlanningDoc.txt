@@ -45,3 +45,8 @@ Engine Design
 	Language and Fonts
 		SpriteFont for Japanese Text
 		Localization in Japanese Support
+
+
+
+Content Build:
+	Enabling Code only builds: http://msdn.microsoft.com/en-us/library/bb976064.aspx

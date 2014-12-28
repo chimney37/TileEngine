@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 
 namespace BasicTile
 {
@@ -167,6 +169,10 @@ namespace BasicTile
         #endregion
 
         #region MEMBERS
+        public void AddPathNode(Point node)
+        {
+            queuePath.Enqueue(new Vector2(node.X, node.Y));
+        }
         public void AddPathNode(Vector2 node)
         {
             queuePath.Enqueue(node);
