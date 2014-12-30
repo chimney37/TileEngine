@@ -19,7 +19,7 @@ namespace BasicTile
         #region GAME CLIENT PROPERTIES
         //Default Tile Map: defines what's in a map
         //squaresAcross/Down : define how many tiles to show on screen at once
-        TileMap myMap;
+        protected TileMap myMap;
         int squaresAcross = 25;
         int squaresDown = 32;
 
@@ -32,7 +32,8 @@ namespace BasicTile
         float heightRowDepthMod = 0.0000001f;
 
         //2D camera
-        Camera camera;
+        protected Camera camera;
+        bool IsClampToCharOn = false;
 
         //for keeping the first rendering square upper left of screen according to camera view
         Vector2 firstSquare;
@@ -42,17 +43,12 @@ namespace BasicTile
         SpriteFont snippets14;
         bool EnableDebugging = false;
 
-        KeyboardState oldState;
-        MouseState oldMouseState;
-        int prevMouseScrollValue;
-
         //highlighting tiles
         Texture2D hilight;
-        Point hilightPoint;
+        protected Point hilightPoint;
 
         //NPC character
         SpriteAnimation npc;
-        Point npcMapPoint;
 
         //movable characters
         SpriteAnimation vlad;
@@ -62,9 +58,8 @@ namespace BasicTile
         Point vladMobileMapPoint;
         Queue<float> lastframesangles = new Queue<float>();
 
-
-        //singleton control variable
-        bool ExecuteOnce = true;
+        //Mode Text
+        int id;
 
         //A* PathFinding variables
         Point startMapPoint;
@@ -76,11 +71,9 @@ namespace BasicTile
 
         public override void Initialize(Game game)
         {
-            //intialize old keyboard state
+            //intialize old keyboard and mouse state
             oldState = Keyboard.GetState();
-
             oldMouseState = Mouse.GetState();
-            prevMouseScrollValue = Mouse.GetState().ScrollWheelValue;
 
             //make mouse visible
             game.IsMouseVisible = true;
@@ -90,6 +83,8 @@ namespace BasicTile
         {
             //Load tiles
             Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part4_tileset");
+            Tile.MaxTileHorizontalIndex = 10;
+            Tile.MaxTileVerticalIndex = 16;
 
             //load fonts
             pericles6 = Content.Load<SpriteFont>(@"Fonts\Pericles6");
@@ -186,20 +181,20 @@ namespace BasicTile
 
         public override void Update(GameTime gameTime, Context context)
         {
-            #region ONE TIME EXECUTION
-            //Queue a Engine version text (JUST ONCE)
-            if (ExecuteOnce)
+            // TODO: Add your update logic here
+            ks = Keyboard.GetState();
+            ms = Mouse.GetState();
+
+            #region GAME VERSION INFORMATION
+            if (ks.IsKeyUp(Keys.V) && oldState.IsKeyDown(Keys.V))
             {
-                this.Enqueue(context.getFactory().GameText("Tile Engine Ver 0.01", 400, 400));
-                ExecuteOnce = false;
-                Console.WriteLine("Process queued");
+                this.Remove(id);
+                GameText gametxt = context.getFactory().GameText("Tile Engine Ver 0.1", 400, 400);
+                this.Add(gametxt, gametxt.ID);
+                id = gametxt.ID;
+                Console.WriteLine(string.Format("Process queued: ID={0}", gametxt.ID));
             }
             #endregion
-
-            // TODO: Add your update logic here
-
-            KeyboardState ks = Keyboard.GetState();
-            MouseState ms = Mouse.GetState();
 
             #region ZOOM CONTROL
             //TODO: mouse scroll for zooming in and out
@@ -413,36 +408,14 @@ namespace BasicTile
 
             #endregion
 
-            #region AUTO SCROLLING AS PLAYER APPROACH EDGE
-            Vector2 testPos = camera.WorldToScreen(vlad.Position);
+            #region SCROLLING
 
-            if (testPos.X < 100)
-                camera.Move(new Vector2(testPos.X - 100, 0));
+            //scroll accrdoing to player position
+            if (IsClampToCharOn)
+                MapScrollPlayerView();
 
-            if (testPos.X > (camera.ViewWidth - 100))
-                camera.Move(new Vector2(testPos.X - (camera.ViewWidth - 100), 0));
-
-            if (testPos.Y < 100)
-                camera.Move(new Vector2(0, testPos.Y - 100));
-
-            if (testPos.Y > (camera.ViewHeight - 100))
-                camera.Move(new Vector2(0, testPos.Y - (camera.ViewHeight - 100)));
-            #endregion
-
-            #region MAP SCROLL USING MOUSE EXCEEDS EDGE
-            Point testPosMouse = ms.Position;
-
-            if (testPosMouse.X < 0)
-                camera.Move(new Vector2(testPosMouse.X - 10, 0));
-
-            if(testPosMouse.X > (camera.ViewWidth))
-                camera.Move(new Vector2(testPosMouse.X - (camera.ViewWidth - 10), 0));
-
-            if (testPosMouse.Y < 0)
-                camera.Move(new Vector2(0, testPosMouse.Y - 10));
-
-            if (testPosMouse.Y > (camera.ViewHeight))
-                camera.Move(new Vector2(0, testPosMouse.Y - (camera.ViewHeight - 10)));
+            //scroll according to mouse position
+            MapMouseScroll();
 
             #endregion
 
@@ -458,16 +431,14 @@ namespace BasicTile
             #endregion
 
             #region UPDATE MOUSE HILIGHT LOCATION
-            Vector2 hilightLoc = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
-            //get map cell coordinates of mouse point in Update
-            hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
+            UpdateHilight();
             #endregion
 
             #region UPDATE THE FIRST SQUARE LOCATION
             //Camera is intiially at 0,0 and camera can move around
             //we need to enables pan to the location of the map where the camera points
             //firstX and firstY are map square coordinates of the game map that camera points at
-            firstSquare = new Vector2(camera.Location.X / Tile.TileStepX, camera.Location.Y / Tile.TileStepY);
+            UpdateCameraFirstSquare();
             #endregion
 
             #region OTHER FUNCTIONS KEY TOGGLING
@@ -478,6 +449,10 @@ namespace BasicTile
             //quit core to menu
             if (ks.IsKeyUp(Keys.Q) && oldState.IsKeyDown(Keys.Q))
                 context.changeState(typeof(GameMenu));
+
+            //map editor mode
+            if (ks.IsKeyUp(Keys.E) && oldState.IsKeyDown(Keys.E))
+                context.changeState(typeof(GameMapEditor));
 
             //TODO: Experimental: calculate distance and pathfinding
             //get destination point
@@ -497,7 +472,7 @@ namespace BasicTile
                     endMapPoint.Y,
                     TileMap.L0TileDistance(startMapPoint, endMapPoint)
                     ), "Debug");
-                this.PushProcess(message);
+                this.Push(message);
             }
 
             if (ks.IsKeyUp(Keys.P) && oldState.IsKeyDown(Keys.P))
@@ -505,13 +480,7 @@ namespace BasicTile
                 PathFinder p = new PathFinder(myMap);
 
                 if (p.Search(startMapPoint.X, startMapPoint.Y, endMapPoint.X, endMapPoint.Y, myMap))
-                {
                     foundPath = p.PathResult();
-
-                    GameMessageBox message = context.getFactory().GameMessageBox(
-                        string.Format("Path: {0}", p.ResultStringBackWards()), "Debug Message");
-                    this.PushProcess(message);
-                }
             }
 
             //Sub-Process Stack Operations
@@ -521,7 +490,7 @@ namespace BasicTile
                 if (ks.IsKeyDown(Keys.S))
                 {
                     GameMessageBox message = context.getFactory().GameMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はBを押してください。", "メッセージ");
-                    this.PushProcess(message);
+                    this.Push(message);
                 }
 
                 //Show 2 MessageBoxes
@@ -530,8 +499,8 @@ namespace BasicTile
                     GameMessageBox message2 = context.getFactory().GameMessageBox("タイルエンジン著作者：大朏　哲明", "メッセージ", 100, 150);
                     GameMessageBox message = context.getFactory().GameMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はEnterを押してください。", "メッセージ", 100, 150);
 
-                    this.PushProcess(message2);
-                    this.PushProcess(message);
+                    this.Push(message2);
+                    this.Push(message);
                 }
             }
             #endregion
@@ -541,6 +510,63 @@ namespace BasicTile
             oldMouseState = ms;
 
             base.Update(gameTime, context);
+        }
+
+        protected void UpdateCameraFirstSquare()
+        {
+            firstSquare = new Vector2(camera.Location.X / Tile.TileStepX, camera.Location.Y / Tile.TileStepY);
+        }
+
+        protected void UpdateHilight()
+        {
+            Vector2 hilightLoc = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
+            //get map cell coordinates of mouse point in Update
+            hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
+        }
+
+        private void MapScrollPlayerView()
+        {
+            Vector2 testPos = camera.WorldToScreen(vlad.Position);
+
+            if (testPos.X < 100)
+                camera.Move(new Vector2(testPos.X - 100, 0));
+
+            if (testPos.X > (camera.ViewWidth - 100))
+                camera.Move(new Vector2(testPos.X - (camera.ViewWidth - 100), 0));
+
+            if (testPos.Y < 100)
+                camera.Move(new Vector2(0, testPos.Y - 100));
+
+            if (testPos.Y > (camera.ViewHeight - 100))
+                camera.Move(new Vector2(0, testPos.Y - (camera.ViewHeight - 100)));
+        }
+
+        //Scrolls map according to mouse position near edge
+        protected void MapMouseScroll()
+        {
+            int Multiplier = 1;
+            int Margin = 5;
+            Point testPosMouse = ms.Position;
+            Vector2 moveVec = Vector2.Zero;
+
+            if (testPosMouse.X < Margin)
+                moveVec = new Vector2(testPosMouse.X - Margin, 0);
+
+            if (testPosMouse.X > (camera.ViewWidth - Margin))
+                moveVec = new Vector2(testPosMouse.X - camera.ViewWidth + Margin, 0);
+
+            if (testPosMouse.Y < Margin)
+                moveVec = new Vector2(0, testPosMouse.Y - Margin);
+
+            if (testPosMouse.Y > (camera.ViewHeight - Margin))
+                moveVec = new Vector2(0, testPosMouse.Y - camera.ViewHeight + Margin);
+
+            moveVec.Y = MathHelper.Clamp(moveVec.Y, -5, 5);
+            moveVec.X = MathHelper.Clamp(moveVec.X, -10, 10);
+
+            moveVec *= Multiplier;
+
+            camera.Move(moveVec);
         }
 
         public override void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context)
@@ -629,9 +655,7 @@ namespace BasicTile
                     }
                     #endregion
 
-                    #region DRAW TOPPER TILES (SKINS)
-
-                    
+                    #region DRAW TOPPER TILES (SKINS)                
                     //draw topper tiles
                     foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].TopperTiles)
                     {
@@ -748,9 +772,22 @@ namespace BasicTile
 
             #endregion
 
+            spriteBatch.DrawString(
+                            pericles6,
+                            string.Format("Mouse Position: ({0},{1})", ms.Position.X, ms.Position.Y),
+                            camera.ScreenToWorld(new Vector2(10,560)),
+                            Color.White,
+                            0f,
+                            Vector2.Zero,
+                            1.0f,
+                            SpriteEffects.None,
+                            0.0f);
+
+
             #region DRAW SEARCHED PATH
 
-            if (!this.IsEmptySubProcessStack())
+            if (EnableDebugging)
+            {
                 for (int i = 0; i < foundPath.Count(); i++)
                 {
                     PathNode n = foundPath[i];
@@ -776,10 +813,8 @@ namespace BasicTile
                         SpriteEffects.None,
                         0.0f);
                 }
-
+            }
             #endregion
-
-
 
             #region DRAW NPCS
             npc.Draw(spriteBatch, 0, 0);

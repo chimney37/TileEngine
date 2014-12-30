@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -15,6 +16,7 @@ namespace BasicTile
     //To access game controller : changing states, getting game functionality etc.
     public interface Context
     {
+        GameProcess getCurrentState();
         void changeState(Type gameProcess);
         AbstractMonoGameProcessFactory getFactory();
         GameMessageBox getMessageBox(string Content,string Title = "Message:", int X = 100, int Y = 100);
@@ -23,9 +25,18 @@ namespace BasicTile
 
     public abstract class GameProcess
     {
+        public int ID { get; set; }
+
         protected bool IsAlive = true;
         private Stack<GameProcess> ProcessStack = new Stack<GameProcess>();
         private Queue<GameProcess> ProcessQueue = new Queue<GameProcess>();
+        private Dictionary<int, GameProcess> ProcessDict = new Dictionary<int, GameProcess>();
+
+        protected KeyboardState ks = Keyboard.GetState();
+        protected MouseState ms = Mouse.GetState();
+        protected KeyboardState oldState;
+        protected MouseState oldMouseState;
+        //protected int prevMouseScrollValue;
 
         public GameProcess()
         {
@@ -39,11 +50,11 @@ namespace BasicTile
             return ProcessQueue.Count > 0 ? false : true;
         }
 
-        protected void PushProcess(GameProcess gameProcess)
+        protected void Push(GameProcess gameProcess)
         {
             ProcessStack.Push(gameProcess);
         }
-        protected void PopProcess()
+        protected void Pop()
         {
             ProcessStack.Pop();
         }
@@ -53,8 +64,20 @@ namespace BasicTile
         }
         protected void Dequeue(GameProcess gameProcess)
         {
-            ProcessQueue.Dequeue();
+            if(ProcessQueue.Count() > 0)
+                ProcessQueue.Dequeue();
         }
+        protected void Add(GameProcess gameProcess, int ProcessID)
+        {
+            if (!ProcessDict.ContainsKey(ProcessID))
+                ProcessDict.Add(ProcessID, gameProcess);
+        }
+        protected void Remove(int ProcessID)
+        {
+            if (ProcessDict.ContainsKey(ProcessID))
+                ProcessDict.Remove(ProcessID);
+        }
+
 
         public abstract void Initialize(Game game);
         public abstract void LoadContent(ContentManager Content, GraphicsDeviceManager graphics);
@@ -66,11 +89,14 @@ namespace BasicTile
                 ProcessStack.Peek().Update(gameTime, context);
 
                 if (!ProcessStack.Peek().IsAlive)
-                    PopProcess();
+                    Pop();
             }
 
             foreach (GameProcess g in ProcessQueue)
                 g.Update(gameTime, context);
+
+            foreach (KeyValuePair<int, GameProcess> kvp in ProcessDict)
+                kvp.Value.Update(gameTime, context);
         }
         public virtual void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context)
         {
@@ -80,6 +106,9 @@ namespace BasicTile
 
             foreach (GameProcess g in ProcessQueue)
                 g.Render(gameTime, spriteBatch,context);
+
+            foreach (KeyValuePair<int, GameProcess> kvp in ProcessDict)
+                kvp.Value.Render(gameTime, spriteBatch, context);
         }
     }
 

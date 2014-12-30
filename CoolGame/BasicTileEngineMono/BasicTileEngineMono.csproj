@@ -59,6 +59,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="GameCore.cs" />
+    <Compile Include="GameMapEditor.cs" />
     <Compile Include="GameMenu.cs" />
     <Compile Include="GameMessageBox.cs" />
     <Compile Include="GameProcessFactory.cs" />
@@ -89,9 +90,7 @@
     <Content Include="PlanningDoc.txt" />
     <Content Include="Text\kanjis.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Content\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\BasicTileEngineMonoContent\BasicTileEngineMonoContent\BasicTileEngineMonoContent.csproj">
       <Project>{205f7e7e-54a4-455b-985f-db04532d9ac5}</Project>

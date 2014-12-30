@@ -71,6 +71,13 @@ namespace BasicTile
             BaseTiles.Add(tileID);
         }
 
+        public void RemoveBaseTile()
+        {
+            if(BaseTiles.Count() > 0)
+                BaseTiles.RemoveAt(BaseTiles.Count() - 1);
+        }
+
+
         public void AddHeightTile(int tileID)
         {
             HeightTiles.Add(tileID);

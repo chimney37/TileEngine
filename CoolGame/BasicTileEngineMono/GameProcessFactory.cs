@@ -46,6 +46,7 @@ namespace BasicTile
         public override void Create()
         {
             ProcessList.Add(new GameCore());
+            ProcessList.Add(new GameMapEditor());
             ProcessList.Add(new GameMenu());
             ProcessList.Add(new GameMessageBox());
             ProcessList.Add(new GameText());

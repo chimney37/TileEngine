@@ -151,7 +151,7 @@ namespace BasicTile
             //set unwalkable
             Rows[14].Columns[5].Walkable = false;
 
-            //add some topper tiles for isometry
+            //add some topper tiles
             Rows[17].Columns[4].AddTopperTile(114);
             Rows[16].Columns[5].AddTopperTile(115);
             Rows[14].Columns[4].AddTopperTile(125);
@@ -197,6 +197,15 @@ namespace BasicTile
 
         #region DATA ADDERS
         //TODO: create a data loader configurable by text file, making new data addable w/o code change
+        public void AddBaseTile(int mapx, int mapy, int id)
+        {
+            Rows[mapy].Columns[mapx].AddBaseTile(id);
+        }
+        public void RemoveBaseTile(int mapx, int mapy)
+        {
+            Rows[mapy].Columns[mapx].RemoveBaseTile();
+        }
+        
         public void AddLargeLeavedTree(int row, int column, int height=0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(158, 0, 0, height);    //trunk
@@ -219,6 +228,9 @@ namespace BasicTile
             Rows[row].Columns[column].AddMultiSizeTile(123, 0, 1, height);    //trunk
             Rows[row].Columns[column].AddMultiSizeTile(133, 0, 0, height);    //middle
         }
+
+
+
         #endregion
 
         #region MAP CELL COORDINATE FUNCTIONS

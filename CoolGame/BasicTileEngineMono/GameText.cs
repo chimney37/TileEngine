@@ -15,7 +15,6 @@ namespace BasicTile
     public class GameText : GameProcess, ICloneable
     {
         protected SpriteFont snippets14;
-        public int ID { get; set; }
         //Screen Coordinates
         Point Position;
 

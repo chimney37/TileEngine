@@ -15,9 +15,8 @@ namespace BasicTile
 
     public class GameMessageBox : GameProcess, ICloneable
     {
-        public int ID { get; set; }
+
         KeyboardState oldKBState;
-        MouseState oldMouseState;
 
         Texture2D MessageBoxTexture;
         protected int Width { get; set; }

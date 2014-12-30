@@ -42,6 +42,9 @@ namespace BasicTile
         public static int MultiSizeTileOffset = 64;
         //end --
 
+        public static int MaxTileHorizontalIndex = 10;
+        public static int MaxTileVerticalIndex = 15;
+
         /// <summary>
         /// Gets the type of tile according to an index.
         /// Notice that tile index can be 0,1,2 for a 3 tile set. See part1_tileset.png and
@@ -55,6 +58,11 @@ namespace BasicTile
             int tileX = tileIndex % (TileSetTexture.Width / TileWidth);
 
             return new Rectangle(tileX * TileWidth, tileY * TileHeight, TileWidth, TileHeight);
+        }
+
+        public static Rectangle GetSourceTileSet()
+        {
+            return new Rectangle(0, 0, TileSetTexture.Width, TileSetTexture.Height);
         }
     }
 }

@@ -26,6 +26,9 @@ namespace BasicTile
             : base()
         {
             graphics = new GraphicsDeviceManager(this);
+            graphics.PreferredBackBufferHeight = 800;
+            graphics.PreferredBackBufferWidth = 1000;
+
             Content.RootDirectory = "Content";
 
             gameFactory = GameProcessFactory.getFactory("BasicTile.GameProcessFactory");
@@ -109,6 +112,10 @@ namespace BasicTile
         public void changeState(Type gameProcess)
         {
             this.currentState = gameFactory.GetGameProcess(gameProcess);
+        }
+        public GameProcess getCurrentState()
+        {
+            return this.currentState;
         }
         public AbstractMonoGameProcessFactory getFactory()
         {
