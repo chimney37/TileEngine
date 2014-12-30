@@ -226,14 +226,18 @@ namespace BasicTile
         {
             return Rows[MapCellY].Columns[MapCellX];
         }
-
-        public Point MapCellToWorld(int MapCellX, int MapCellY)
+        //gets from MapCellToScreen coordinates
+        public Vector2 MapCellToScreen(int MapCellX, int MapCellY)
         {
             int rowOffset = ((MapCellY) % 2 == 1) ? rowOffset = Tile.OddRowXOffset : 0;
-            return new Point(MapCellX * Tile.TileStepX + rowOffset, MapCellY * Tile.TileStepY);
+            return new Vector2(MapCellX * Tile.TileStepX + rowOffset, MapCellY * Tile.TileStepY);
+        }
+        public Vector2 MapCellToScreen(Vector2 mapCellPoint)
+        {
+            return MapCellToScreen((int)mapCellPoint.X, (int)mapCellPoint.Y);
         }
 
-        //overload, simply return a point
+        //overload, return a point from world coordinates
         public Point WorldToMapCell(Point worldPoint)
         {
             Point dummy;

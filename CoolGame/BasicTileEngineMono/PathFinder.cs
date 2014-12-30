@@ -183,6 +183,9 @@ namespace BasicTile
                 searchresult.Add(Current);
                 Current = Current.parentNode;
             }
+
+            searchresult.Reverse();
+
             return searchresult;
         }
     }

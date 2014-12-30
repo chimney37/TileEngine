@@ -54,21 +54,21 @@ namespace BasicTile
         SpriteAnimation npc;
         Point npcMapPoint;
 
-        //player character
+        //movable characters
         SpriteAnimation vlad;
-        MobileSprite vladMobile;
-
         Point vladMapPoint;
 
+        MobileSprite vladMobile;
+        Point vladMobileMapPoint;
+        Queue<float> lastframesangles = new Queue<float>();
+
+
+        //singleton control variable
         bool ExecuteOnce = true;
 
         //A* PathFinding variables
-        //TODO: implement the distance finding algorithm for staggered isometric
-        //TODO: implement the basic A* path finding algorithm
-        //TODO: get 2 test points within World Points
         Point startMapPoint;
         Point endMapPoint;
-
         List<PathNode> foundPath = new List<PathNode>();
 
         #endregion
@@ -162,11 +162,13 @@ namespace BasicTile
 
 
             vladMobile.Sprite.AutoRotate = false;
-            vladMobile.Position = camera.ScreenToWorld(new Vector2(150, 150));
+            vladMobile.Position = camera.ScreenToWorld(myMap.MapCellToScreen(new Vector2(1,9))) + new Vector2(0,-16);
+            Debug.WriteLine(myMap.WorldToMapCell(vladMobile.Position));
             vladMobile.Target = vladMobile.Position;
-            vladMobile.Speed = 1;
+            vladMobile.Speed = 0.5f;
             vladMobile.IsPathing = true;
             vladMobile.LoopPath = false;
+            vladMobile.IsActive = false;
 
 
 
@@ -208,16 +210,17 @@ namespace BasicTile
 
             #endregion
 
-            //TODO: long way to go, now buggy, dont' know why many positions get queued.
             #region SET THE MOBILE SPRITE DIRECTIONS USING MOUSE CLICKS
 
             if (oldMouseState.LeftButton == ButtonState.Pressed && 
                 ms.LeftButton == ButtonState.Released)
             {
                 vladMobile.IsActive = true;
-                vladMobile.Target = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
-                Point start = myMap.WorldToMapCell(vladMobile.Target);           
-                Point end = myMap.WorldToMapCell(vladMobile.Position);
+                Point start = myMap.WorldToMapCell(vladMobile.Position);
+                Point end = myMap.WorldToMapCell(camera.ScreenToWorld(new Vector2(ms.X, ms.Y)));
+
+                Debug.WriteLine(string.Format("s:({0},{1})", start.X, start.Y));
+                Debug.WriteLine(string.Format("e:({0},{1})", end.X, end.Y));
 
                 PathFinder p = new PathFinder(myMap);
 
@@ -226,11 +229,90 @@ namespace BasicTile
                     foundPath = p.PathResult();
 
                     foreach (PathNode n in foundPath)
-                        vladMobile.AddPathNode(myMap.MapCellToWorld(n.X, n.Y));
-
+                    {
+                        Debug.WriteLine(string.Format("({0},{1})",n.X,n.Y));
+                        //TODO: A probable issue with mapcell -> screen coordinates causing path nodes to be slightly off from the mobile sprite animation coordinates
+                        vladMobile.AddPathNode(camera.ScreenToWorld(myMap.MapCellToScreen(n.X, n.Y)) + new Vector2(0, -16));
+                    }
                     vladMobile.DeactivateAfterPathing = true;
                 }
             }
+
+            //calculate angle between vladMobile heading direction and a vector facing N
+            Double vladmobileAngRad = MobileSprite.signedAngle(vladMobile.Delta, new Vector2(0, -1));
+            string animation = "";
+            string endanimation = "";
+
+
+            //smoothing function (average over a few frames, so we won't get jaggy animations)
+            if (!Double.IsNaN(vladmobileAngRad))
+            {
+                if (lastframesangles.Count < 10)
+                    lastframesangles.Enqueue((float)vladmobileAngRad);
+                else
+                {
+                    lastframesangles.Dequeue();
+                    lastframesangles.Enqueue((float)vladmobileAngRad);
+                    vladmobileAngRad = lastframesangles.Average();
+                }
+            }
+
+            if (Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > -Math.PI / 8)
+            {
+                animation = "WalkNorth";
+                endanimation = "IdleNorth";
+            }
+
+            //isometric angles is "flatter" than it looks
+            //eaxctly 67.5 deg won't work so make it abit bigger than (3/8) * pi
+            if (-3.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -Math.PI / 8)
+            {
+                animation = "WalkNorthEast";
+                endanimation = "IdleNorthEast";
+            }
+
+            //exactly (5/8) * pi won't work so make it a bit smaller
+            if (-4.9 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -3.5 * Math.PI / 8)
+            {
+                animation = "WalkEast";
+                endanimation = "IdleEast";
+            }
+
+            if (-7.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -4.9 * Math.PI / 8)
+            {
+                animation = "WalkSouthEast";
+                endanimation = "IdleSouthEast";
+            }
+
+            if (7 * Math.PI / 8 < vladmobileAngRad || vladmobileAngRad < -7.5 * Math.PI / 8)
+            {
+                animation = "WalkSouth";
+                endanimation = "IdleSouth";
+
+            }
+
+            if (7 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 4.9 * Math.PI / 8)
+            {
+                animation = "WalkSouthWest";
+                endanimation = "IdleSouthWest";
+            }
+
+            if (4.9 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 3.5 * Math.PI / 8)
+            {
+                animation = "WalkWest";
+                endanimation = "IdleWest";
+            }
+
+            if (3.5 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > Math.PI / 8)
+            {
+                animation = "WalkNorthWest";
+                endanimation = "IdleNorthWest";
+            }
+
+            if (vladMobile.Sprite.CurrentAnimation != animation)
+                vladMobile.Sprite.CurrentAnimation = animation;
+
+            vladMobile.EndPathAnimation = endanimation;
 
             vladMobile.Update(gameTime);
             #endregion
@@ -238,7 +320,7 @@ namespace BasicTile
             #region SET DIRECTION AND MOVEMENT VECTORS PER KEY PRESS TYPE
             Vector2 moveVector = Vector2.Zero;
             Vector2 moveDir = Vector2.Zero;
-            string animation = "";
+            
 
             if (ks.IsKeyDown(Keys.NumPad7))
             {
@@ -360,6 +442,7 @@ namespace BasicTile
 
             //update the map cell where player is
             vladMapPoint = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
+            vladMobileMapPoint = myMap.WorldToMapCell(new Point((int)vladMobile.Position.X, (int)vladMobile.Position.Y));
 
             vlad.Update(gameTime);
             npc.Update(gameTime);
@@ -563,6 +646,10 @@ namespace BasicTile
                     #region DETERMINE DRAW DEPTH OF PLAYER
                     if ((mapx == vladMapPoint.X) && (mapy == vladMapPoint.Y))
                         vlad.DrawDepth = depthOffset - (float)(heightRow + 2) * heightRowDepthMod;
+
+                    if((mapx == vladMobileMapPoint.X) && (mapy == vladMobileMapPoint.Y))
+                        vladMobile.Sprite.DrawDepth = depthOffset - (float)(heightRow + 2) * heightRowDepthMod;
+
                     #endregion
 
                     #region DRAW MULTI SIZE TILES                   
@@ -629,7 +716,7 @@ namespace BasicTile
             //draw player according to where he's standing on
             vlad.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vlad.Position));
 
-            vladMobile.Draw(spriteBatch, 0, 0 );
+            vladMobile.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vladMobile.Position));
             #endregion
 
             #region DRAW HILIGHT LOCATION (FROM MOUSE)

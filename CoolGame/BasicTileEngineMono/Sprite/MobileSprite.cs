@@ -79,7 +79,15 @@ namespace BasicTile
                     asSprite.Height - (2 * iCollisionBufferY));
             }
         }
-
+        public Vector2 Delta
+        {
+            get 
+            {
+                Vector2 delta = new Vector2(v2Target.X - asSprite.X, v2Target.Y - asSprite.Y);
+                delta.Normalize();
+                return delta; 
+            }
+        }
 
         #region BOOLEAN CHECKS
         // Determine the status of the sprite.  An inactive sprite will not be updated but will be drawn.
@@ -194,6 +202,8 @@ namespace BasicTile
                     // Get a vector pointing from the current location of the sprite to the destination.
                     Vector2 Delta = new Vector2(v2Target.X - asSprite.X, v2Target.Y - asSprite.Y);
 
+                    //Debug.WriteLine(signedAngle(this.Delta, new Vector2(0,-1)) );
+
                     //if distance is greater than speed for within an update cannot be reached
                     if (Delta.Length() > Speed)
                     {
@@ -213,6 +223,7 @@ namespace BasicTile
                                 if (queuePath.Count > 0)
                                 {
                                     v2Target = queuePath.Dequeue();
+                                    
                                     if (bLoopPath)
                                         queuePath.Enqueue(v2Target);
                                 }
@@ -248,6 +259,13 @@ namespace BasicTile
             {
                 asSprite.Draw(spriteBatch, XOffset, YOffset);
             }
+        }
+
+        public static float signedAngle(Vector2 v1, Vector2 v2)
+        {
+            float perpDot = v1.X * v2.Y - v1.Y * v2.X;
+
+            return (float)Math.Atan2(perpDot, Vector2.Dot(v1,v2));
         }
         #endregion
     }
