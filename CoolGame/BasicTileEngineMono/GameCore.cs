@@ -215,13 +215,20 @@ namespace BasicTile
             if (oldMouseState.LeftButton == ButtonState.Pressed && 
                 ms.LeftButton == ButtonState.Released)
             {
+                //activate mobile sprite
                 vladMobile.IsActive = true;
+                
+                //obtain start and end coordinates
                 Point start = myMap.WorldToMapCell(vladMobile.Position);
                 Point end = myMap.WorldToMapCell(camera.ScreenToWorld(new Vector2(ms.X, ms.Y)));
 
                 Debug.WriteLine(string.Format("s:({0},{1})", start.X, start.Y));
                 Debug.WriteLine(string.Format("e:({0},{1})", end.X, end.Y));
 
+                //clear current existing path (if navigating in progress)
+                vladMobile.ClearPathNodes();
+                
+                //set up new path finder
                 PathFinder p = new PathFinder(myMap);
 
                 if (p.Search(start.X, start.Y, end.X, end.Y, myMap))
@@ -310,9 +317,10 @@ namespace BasicTile
             }
 
             if (vladMobile.Sprite.CurrentAnimation != animation)
+            {
                 vladMobile.Sprite.CurrentAnimation = animation;
-
-            vladMobile.EndPathAnimation = endanimation;
+                vladMobile.EndPathAnimation = endanimation;
+            }
 
             vladMobile.Update(gameTime);
             #endregion
