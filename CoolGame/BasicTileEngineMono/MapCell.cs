@@ -70,27 +70,39 @@ namespace BasicTile
         {
             BaseTiles.Add(tileID);
         }
-
         public void RemoveBaseTile()
         {
-            if(BaseTiles.Count() > 0)
-                BaseTiles.RemoveAt(BaseTiles.Count() - 1);
+            RemoveTile(ref BaseTiles);
         }
-
-
         public void AddHeightTile(int tileID)
         {
             HeightTiles.Add(tileID);
         }
-
+        public void RemoveHeightTile()
+        {
+            RemoveTile(ref HeightTiles);
+        }
         public void AddTopperTile(int tileID)
         {
             TopperTiles.Add(tileID);
+        }
+        public void RemoveTopperTile()
+        {
+            RemoveTile(ref TopperTiles);
+        }
+        private void RemoveTile(ref List<int> list)
+        {
+            if (list.Count() > 0)
+                list.RemoveAt(list.Count() - 1);
         }
 
         public void AddMultiSizeTile(int tileID, int CellOffsetX, int CellOffsetY, int CellOffsetZ)
         {
             MultiSizeTiles.Add(new Tuple<int, int, int,int>(tileID, CellOffsetX, CellOffsetY, CellOffsetZ));
+        }
+        public void RemoveMultiSizeTiles()
+        {
+            MultiSizeTiles.RemoveRange(0, MultiSizeTiles.Count());
         }
         #endregion
 

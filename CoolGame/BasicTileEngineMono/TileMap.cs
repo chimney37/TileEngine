@@ -22,7 +22,7 @@ namespace BasicTile
 
         public List<MapRow> Rows = new List<MapRow>();
         public int MapWidth = 50;
-        public int MapHeight = 50;
+        public int MapHeight = 64;
 
         public TileMap(Texture2D mouseMap, Texture2D slopeMap)
         {
@@ -199,7 +199,7 @@ namespace BasicTile
         //TODO: create a data loader configurable by text file, making new data addable w/o code change
         public void AddBaseTile(int mapx, int mapy, int id)
         {
-            Rows[mapy].Columns[mapx].AddBaseTile(id);
+            Rows[mapy].Columns[mapx].TileID = id;
         }
         public void RemoveBaseTile(int mapx, int mapy)
         {

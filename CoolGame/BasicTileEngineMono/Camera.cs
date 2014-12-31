@@ -53,7 +53,7 @@ namespace BasicTile
         {
             Bounds = viewport.Bounds;
             ViewWidth = Bounds.Width;
-            ViewHeight = Bounds.Height*3/4;
+            ViewHeight = Bounds.Height;
             DisplayOffset = baseViewOffset;
             WorldWidth = WorldBounds.Width;
             WorldHeight = WorldBounds.Height;

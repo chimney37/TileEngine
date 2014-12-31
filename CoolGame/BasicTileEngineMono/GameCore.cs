@@ -21,7 +21,7 @@ namespace BasicTile
         //squaresAcross/Down : define how many tiles to show on screen at once
         protected TileMap myMap;
         int squaresAcross = 25;
-        int squaresDown = 32;
+        int squaresDown = 100;
 
         //for isometric map support
         //this isometric set, is by 64x64,but the image only occupies bottom 32 pixels of tile.
@@ -615,6 +615,11 @@ namespace BasicTile
                     if (mapx >= myMap.MapWidth || mapy >= myMap.MapHeight)
                         continue;
 
+                    //Clipping: if mapx hits view port size, don't render tiles
+                    Vector2 renderpoint = camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY));
+                    if( renderpoint.X >= camera.ViewWidth || renderpoint.Y >= camera.ViewHeight) 
+                        continue;
+
                     #region DRAW BASE TILES
                     
                     //draw base tiles
@@ -772,10 +777,33 @@ namespace BasicTile
 
             #endregion
 
+
             spriteBatch.DrawString(
                             pericles6,
                             string.Format("Mouse Position: ({0},{1})", ms.Position.X, ms.Position.Y),
                             camera.ScreenToWorld(new Vector2(10,560)),
+                            Color.White,
+                            0f,
+                            Vector2.Zero,
+                            1.0f,
+                            SpriteEffects.None,
+                            0.0f);
+
+            spriteBatch.DrawString(
+                            pericles6,
+                            string.Format("Camera Bounds: ({0},{1})", camera.ViewWidth, camera.ViewHeight),
+                            camera.ScreenToWorld(new Vector2(10, 574)),
+                            Color.White,
+                            0f,
+                            Vector2.Zero,
+                            1.0f,
+                            SpriteEffects.None,
+                            0.0f);
+
+            spriteBatch.DrawString(
+                            pericles6,
+                            string.Format("World Bounds: ({0},{1})", camera.WorldWidth, camera.WorldHeight),
+                            camera.ScreenToWorld(new Vector2(10, 588)),
                             Color.White,
                             0f,
                             Vector2.Zero,
