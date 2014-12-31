@@ -17,9 +17,12 @@ namespace BasicTile
         int TileVertIdx = 0;
         int TileIdx = 0;
         int OldTileIdx = 0;
+        int TypeIdx = 0;
+        TileType tileType;
 
+        Texture2D blankTexture;
 
-
+        bool ShowPreview = true;
         bool ShowTileMap = false;
         float currentTime = 0f;
         float maxTime = 5f;
@@ -27,6 +30,19 @@ namespace BasicTile
         int TileMapSX = 666;
         int TileMapSY = 200;
         float TileMapScale = 0.5f;
+
+        public override void LoadContent(Microsoft.Xna.Framework.Content.ContentManager Content, GraphicsDeviceManager graphics)
+        {
+            blankTexture = new Texture2D(graphics.GraphicsDevice, Tile.TileWidth, Tile.TileHeight, false, SurfaceFormat.Color);
+
+            Color[] color = new Color[Tile.TileWidth * Tile.TileHeight];
+            for(int i = 0; i < color.Length; i++)
+                color[i] = Color.White;
+
+            blankTexture.SetData(color);
+
+            base.LoadContent(Content, graphics);
+        }
 
         public override void Update(Microsoft.Xna.Framework.GameTime gameTime, Context context)
         {
@@ -49,16 +65,21 @@ namespace BasicTile
             OldTileIdx = TileIdx;
 
             if (ks.IsKeyUp(Keys.A) && oldState.IsKeyDown(Keys.A))
-                TileHoriIdx = (TileHoriIdx - 1) % Tile.MaxTileHorizontalIndex;
+                TileHoriIdx = (TileHoriIdx <= 0) ? Tile.MaxTileHorizontalIndex : TileHoriIdx - 1;
 
             if (ks.IsKeyUp(Keys.W) && oldState.IsKeyDown(Keys.W))
-                TileVertIdx = (TileVertIdx - 1) % Tile.MaxTileVerticalIndex;
+                TileVertIdx = (TileVertIdx <= 0) ? Tile.MaxTileVerticalIndex : TileVertIdx - 1;
 
             if (ks.IsKeyUp(Keys.S) && oldState.IsKeyDown(Keys.S))
                 TileVertIdx = (TileVertIdx + 1) % Tile.MaxTileVerticalIndex;
 
             if (ks.IsKeyUp(Keys.D) && oldState.IsKeyDown(Keys.D))
                 TileHoriIdx = (TileHoriIdx + 1) % Tile.MaxTileHorizontalIndex;
+
+            if(ks.IsKeyUp(Keys.Q) && oldState.IsKeyDown(Keys.Q))
+            {
+                tileType = (TileType)(++TypeIdx % Enum.GetNames(typeof(TileType)).Length);
+            }
 
             TileIdx = TileHoriIdx + TileVertIdx * Tile.MaxTileHorizontalIndex;
 
@@ -82,18 +103,64 @@ namespace BasicTile
             #endregion
 
             #region TILES ADDITION AND REMOVAL OPERATIONS WITH MOUSE CLICKS
-            if (oldMouseState.LeftButton == ButtonState.Pressed &&
+            if (ks.IsKeyUp(Keys.LeftShift) && 
+                oldMouseState.LeftButton == ButtonState.Pressed &&
                 ms.LeftButton == ButtonState.Released)
             {
-                myMap.AddBaseTile(this.hilightPoint.X, this.hilightPoint.Y, TileIdx);
+                switch (tileType)
+                {
+                    case TileType.Base:
+                        myMap.AddBaseTile(this.hilightPoint.X, this.hilightPoint.Y, TileIdx);
+                        break;
+                    case TileType.Height:
+                        myMap.AddHeightTile(this.hilightPoint.X, this.hilightPoint.Y, TileIdx);
+                        break;
+                    case TileType.Topper:
+                        myMap.AddTopperTile(this.hilightPoint.X, this.hilightPoint.Y, TileIdx);
+                        break;
+                    case TileType.Multi:
+                        myMap.AddMultiTile(this.hilightPoint.X, this.hilightPoint.Y, TileIdx);
+                        break;
+                    default:
+                        break;
+                }
             }
 
-            if (oldMouseState.RightButton == ButtonState.Pressed &&
-                ms.LeftButton == ButtonState.Released)
+            if (ks.IsKeyUp(Keys.LeftShift) && 
+                oldMouseState.RightButton == ButtonState.Pressed &&
+                ms.RightButton == ButtonState.Released)
             {
-                myMap.RemoveBaseTile(this.hilightPoint.X, this.hilightPoint.Y);
+                switch (tileType)
+                {
+                    case TileType.Base:
+                        myMap.RemoveBaseTile(this.hilightPoint.X, this.hilightPoint.Y);
+                        break;
+                    case TileType.Height:
+                        myMap.RemoveHeightTile(this.hilightPoint.X, this.hilightPoint.Y);
+                        break;
+                    case TileType.Topper:
+                        myMap.RemoveTopperTile(this.hilightPoint.X, this.hilightPoint.Y);
+                        break;
+                    case TileType.Multi:
+                        myMap.RemoveMultiTile(this.hilightPoint.X, this.hilightPoint.Y);
+                        break;
+                    default:
+                        break;
+                }
             }
             #endregion
+
+            if (ks.IsKeyDown(Keys.LeftShift))
+            {
+                ShowPreview = false;
+                base.UpdatePlayer(gameTime);
+            }
+
+            if (ks.IsKeyUp(Keys.LeftShift))
+                ShowPreview = true;
+
+
+
 
             base.UpdateCameraFirstSquare();
             base.UpdateHilight();
@@ -125,21 +192,24 @@ namespace BasicTile
             #region DRAW TILE PART (FROM MOUSE)
 
             //get hilight row offset
-            int hilightrowOffset = ((this.hilightPoint.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
 
-            spriteBatch.Draw(
-                Tile.TileSetTexture,
-                    new Vector2(
-                        hilightPoint.X * Tile.TileStepX + hilightrowOffset,
-                        hilightPoint.Y * Tile.TileStepY),
-                Tile.GetSourceRectangle(TileIdx),
-                Color.Aquamarine * 0.8f,
-                0.0f,
-                Vector2.Zero,
-                1.0f,
-                SpriteEffects.None,
-                0.0f);
+            if (ShowPreview)
+            {
+                int hilightrowOffset = ((this.hilightPoint.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
 
+                spriteBatch.Draw(
+                    Tile.TileSetTexture,
+                        new Vector2(
+                            hilightPoint.X * Tile.TileStepX + hilightrowOffset,
+                            hilightPoint.Y * Tile.TileStepY),
+                    Tile.GetSourceRectangle(TileIdx),
+                    Color.Aquamarine * 0.8f,
+                    0.0f,
+                    Vector2.Zero,
+                    1.0f,
+                    SpriteEffects.None,
+                    0.0f);
+            }
             #endregion
 
             #region DRAW TILE SET MAP
@@ -156,15 +226,15 @@ namespace BasicTile
                     Vector2.Zero,
                     TileMapScale,
                     SpriteEffects.None,
-                    0.0f);
+                    0.1f);
 
                 spriteBatch.Draw(
-                    Tile.TileSetTexture,
+                    blankTexture,
                         camera.ScreenToWorld(new Vector2(
                             TileMapSX + Tile.TileWidth*TileHoriIdx*TileMapScale,
                             TileMapSY + Tile.TileHeight*TileVertIdx*TileMapScale)),
-                    Tile.GetSourceRectangle(74),
-                    Color.Black,
+                    new Rectangle(0,0,blankTexture.Width,blankTexture.Height),
+                    Color.White * Alpha *0.2f,
                     0.0f,
                     Vector2.Zero,
                     TileMapScale,
@@ -173,7 +243,26 @@ namespace BasicTile
             }
             #endregion
 
+            spriteBatch.DrawString(
+                            base.pericles6,
+                            string.Format("Tile Type: ({0})", tileType.ToString()),
+                            camera.ScreenToWorld(new Vector2(10, 604)),
+                            Color.White,
+                            0f,
+                            Vector2.Zero,
+                            1.0f,
+                            SpriteEffects.None,
+                            0.0f);
+
             spriteBatch.End();
+        }
+
+        public enum TileType
+        {
+            Base,
+            Height,
+            Topper,
+            Multi
         }
     }
 }

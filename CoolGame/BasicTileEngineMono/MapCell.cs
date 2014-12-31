@@ -68,6 +68,7 @@ namespace BasicTile
         #region METHODS
         public void AddBaseTile(int tileID)
         {
+            //TODO: set unwalkable for Tile ID range
             BaseTiles.Add(tileID);
         }
         public void RemoveBaseTile()
@@ -76,6 +77,7 @@ namespace BasicTile
         }
         public void AddHeightTile(int tileID)
         {
+            //TODO: set slope map for Tile ID range that has slopes
             HeightTiles.Add(tileID);
         }
         public void RemoveHeightTile()

@@ -39,8 +39,8 @@ namespace BasicTile
         Vector2 firstSquare;
 
         //debugging tile locations on map
-        SpriteFont pericles6;
-        SpriteFont snippets14;
+        protected SpriteFont pericles6;
+        protected SpriteFont snippets14;
         bool EnableDebugging = false;
 
         //highlighting tiles
@@ -207,117 +207,7 @@ namespace BasicTile
 
             #region SET THE MOBILE SPRITE DIRECTIONS USING MOUSE CLICKS
 
-            if (oldMouseState.LeftButton == ButtonState.Pressed && 
-                ms.LeftButton == ButtonState.Released)
-            {
-                //activate mobile sprite
-                vladMobile.IsActive = true;
-                
-                //obtain start and end coordinates
-                Point start = myMap.WorldToMapCell(vladMobile.Position);
-                Point end = myMap.WorldToMapCell(camera.ScreenToWorld(new Vector2(ms.X, ms.Y)));
-
-                Debug.WriteLine(string.Format("s:({0},{1})", start.X, start.Y));
-                Debug.WriteLine(string.Format("e:({0},{1})", end.X, end.Y));
-
-                //clear current existing path (if navigating in progress)
-                vladMobile.ClearPathNodes();
-                
-                //set up new path finder
-                PathFinder p = new PathFinder(myMap);
-
-                if (p.Search(start.X, start.Y, end.X, end.Y, myMap))
-                {
-                    foundPath = p.PathResult();
-
-                    foreach (PathNode n in foundPath)
-                    {
-                        Debug.WriteLine(string.Format("({0},{1})",n.X,n.Y));
-                        //TODO: A probable issue with mapcell -> screen coordinates causing path nodes to be slightly off from the mobile sprite animation coordinates
-                        vladMobile.AddPathNode(camera.ScreenToWorld(myMap.MapCellToScreen(n.X, n.Y)) + new Vector2(0, -16));
-                    }
-                    vladMobile.DeactivateAfterPathing = true;
-                }
-            }
-
-            //calculate angle between vladMobile heading direction and a vector facing N
-            Double vladmobileAngRad = MobileSprite.signedAngle(vladMobile.Delta, new Vector2(0, -1));
-            string animation = "";
-            string endanimation = "";
-
-
-            //smoothing function (average over a few frames, so we won't get jaggy animations)
-            if (!Double.IsNaN(vladmobileAngRad))
-            {
-                if (lastframesangles.Count < 10)
-                    lastframesangles.Enqueue((float)vladmobileAngRad);
-                else
-                {
-                    lastframesangles.Dequeue();
-                    lastframesangles.Enqueue((float)vladmobileAngRad);
-                    vladmobileAngRad = lastframesangles.Average();
-                }
-            }
-
-            if (Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > -Math.PI / 8)
-            {
-                animation = "WalkNorth";
-                endanimation = "IdleNorth";
-            }
-
-            //isometric angles is "flatter" than it looks
-            //eaxctly 67.5 deg won't work so make it abit bigger than (3/8) * pi
-            if (-3.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -Math.PI / 8)
-            {
-                animation = "WalkNorthEast";
-                endanimation = "IdleNorthEast";
-            }
-
-            //exactly (5/8) * pi won't work so make it a bit smaller
-            if (-4.9 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -3.5 * Math.PI / 8)
-            {
-                animation = "WalkEast";
-                endanimation = "IdleEast";
-            }
-
-            if (-7.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -4.9 * Math.PI / 8)
-            {
-                animation = "WalkSouthEast";
-                endanimation = "IdleSouthEast";
-            }
-
-            if (7 * Math.PI / 8 < vladmobileAngRad || vladmobileAngRad < -7.5 * Math.PI / 8)
-            {
-                animation = "WalkSouth";
-                endanimation = "IdleSouth";
-
-            }
-
-            if (7 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 4.9 * Math.PI / 8)
-            {
-                animation = "WalkSouthWest";
-                endanimation = "IdleSouthWest";
-            }
-
-            if (4.9 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 3.5 * Math.PI / 8)
-            {
-                animation = "WalkWest";
-                endanimation = "IdleWest";
-            }
-
-            if (3.5 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > Math.PI / 8)
-            {
-                animation = "WalkNorthWest";
-                endanimation = "IdleNorthWest";
-            }
-
-            if (vladMobile.Sprite.CurrentAnimation != animation)
-            {
-                vladMobile.Sprite.CurrentAnimation = animation;
-                vladMobile.EndPathAnimation = endanimation;
-            }
-
-            vladMobile.Update(gameTime);
+            string animation = UpdatePlayer(gameTime);
             #endregion
 
             #region SET DIRECTION AND MOVEMENT VECTORS PER KEY PRESS TYPE
@@ -510,6 +400,122 @@ namespace BasicTile
             oldMouseState = ms;
 
             base.Update(gameTime, context);
+        }
+
+        protected string UpdatePlayer(GameTime gameTime)
+        {
+            if (oldMouseState.LeftButton == ButtonState.Pressed &&
+                ms.LeftButton == ButtonState.Released)
+            {
+                //activate mobile sprite
+                vladMobile.IsActive = true;
+
+                //obtain start and end coordinates
+                Point start = myMap.WorldToMapCell(vladMobile.Position);
+                Point end = myMap.WorldToMapCell(camera.ScreenToWorld(new Vector2(ms.X, ms.Y)));
+
+                Debug.WriteLine(string.Format("s:({0},{1})", start.X, start.Y));
+                Debug.WriteLine(string.Format("e:({0},{1})", end.X, end.Y));
+
+                //clear current existing path (if navigating in progress)
+                vladMobile.ClearPathNodes();
+
+                //set up new path finder
+                PathFinder p = new PathFinder(myMap);
+
+                if (p.Search(start.X, start.Y, end.X, end.Y, myMap))
+                {
+                    foundPath = p.PathResult();
+
+                    foreach (PathNode n in foundPath)
+                    {
+                        Debug.WriteLine(string.Format("({0},{1})", n.X, n.Y));
+                        //TODO: A probable issue with mapcell -> screen coordinates causing path nodes to be slightly off from the mobile sprite animation coordinates
+                        vladMobile.AddPathNode(camera.ScreenToWorld(myMap.MapCellToScreen(n.X, n.Y)) + new Vector2(0, -16));
+                    }
+                    vladMobile.DeactivateAfterPathing = true;
+                }
+            }
+
+            //calculate angle between vladMobile heading direction and a vector facing N
+            Double vladmobileAngRad = MobileSprite.signedAngle(vladMobile.Delta, new Vector2(0, -1));
+            string animation = "";
+            string endanimation = "";
+
+
+            //smoothing function (average over a few frames, so we won't get jaggy animations)
+            if (!Double.IsNaN(vladmobileAngRad))
+            {
+                if (lastframesangles.Count < 10)
+                    lastframesangles.Enqueue((float)vladmobileAngRad);
+                else
+                {
+                    lastframesangles.Dequeue();
+                    lastframesangles.Enqueue((float)vladmobileAngRad);
+                    vladmobileAngRad = lastframesangles.Average();
+                }
+            }
+
+            if (Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > -Math.PI / 8)
+            {
+                animation = "WalkNorth";
+                endanimation = "IdleNorth";
+            }
+
+            //isometric angles is "flatter" than it looks
+            //eaxctly 67.5 deg won't work so make it abit bigger than (3/8) * pi
+            if (-3.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -Math.PI / 8)
+            {
+                animation = "WalkNorthEast";
+                endanimation = "IdleNorthEast";
+            }
+
+            //exactly (5/8) * pi won't work so make it a bit smaller
+            if (-4.9 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -3.5 * Math.PI / 8)
+            {
+                animation = "WalkEast";
+                endanimation = "IdleEast";
+            }
+
+            if (-7.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -4.9 * Math.PI / 8)
+            {
+                animation = "WalkSouthEast";
+                endanimation = "IdleSouthEast";
+            }
+
+            if (7 * Math.PI / 8 < vladmobileAngRad || vladmobileAngRad < -7.5 * Math.PI / 8)
+            {
+                animation = "WalkSouth";
+                endanimation = "IdleSouth";
+
+            }
+
+            if (7 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 4.9 * Math.PI / 8)
+            {
+                animation = "WalkSouthWest";
+                endanimation = "IdleSouthWest";
+            }
+
+            if (4.9 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 3.5 * Math.PI / 8)
+            {
+                animation = "WalkWest";
+                endanimation = "IdleWest";
+            }
+
+            if (3.5 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > Math.PI / 8)
+            {
+                animation = "WalkNorthWest";
+                endanimation = "IdleNorthWest";
+            }
+
+            if (vladMobile.Sprite.CurrentAnimation != animation)
+            {
+                vladMobile.Sprite.CurrentAnimation = animation;
+                vladMobile.EndPathAnimation = endanimation;
+            }
+
+            vladMobile.Update(gameTime);
+            return animation;
         }
 
         protected void UpdateCameraFirstSquare()

@@ -205,7 +205,33 @@ namespace BasicTile
         {
             Rows[mapy].Columns[mapx].RemoveBaseTile();
         }
-        
+        public void AddHeightTile(int mapx, int mapy, int id)
+        {
+            Rows[mapy].Columns[mapx].AddHeightTile(id);
+        }
+        public void RemoveHeightTile(int mapx, int mapy)
+        {
+            Rows[mapy].Columns[mapx].RemoveHeightTile();
+        }
+        public void AddTopperTile(int mapx, int mapy, int id)
+        {
+            Rows[mapy].Columns[mapx].AddTopperTile(id);
+        }
+        public void RemoveTopperTile(int mapx, int mapy)
+        {
+            Rows[mapy].Columns[mapx].RemoveTopperTile();
+        }
+        public void AddMultiTile(int mapx, int mapy, int id)
+        {
+            if(id == 123 || id == 133)
+                AddSmallConeTree(mapy, mapx, Rows[mapy].Columns[mapx].HeightTiles.Count());
+        }
+        public void RemoveMultiTile(int mapx, int mapy)
+        {
+            Rows[mapy].Columns[mapx].RemoveMultiSizeTiles();
+        }
+
+
         public void AddLargeLeavedTree(int row, int column, int height=0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(158, 0, 0, height);    //trunk
