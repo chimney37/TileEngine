@@ -24,6 +24,14 @@ namespace BasicTile
         public int MapWidth = 50;
         public int MapHeight = 64;
 
+        //manage multisize Tile objects
+        public delegate void AddMultiSizeDelegate(int row, int column, int height);
+        public delegate void AddMultiSizeTileDelegate(int row, int column, int height, int id, int Xoffset, int Yoffest);
+
+        Dictionary<int, string> ObjectDictionary = new Dictionary<int, string>();
+        Dictionary<string, List<Tuple<int, int, int>>> ObjectDataDictionary = new Dictionary<string, List<Tuple<int, int, int>>>();
+        Dictionary<int, AddMultiSizeDelegate> MultiTileAdderDictionary = new Dictionary<int, AddMultiSizeDelegate>();
+
         public TileMap(Texture2D mouseMap, Texture2D slopeMap)
         {
             this.mouseMap = mouseMap;
@@ -223,8 +231,10 @@ namespace BasicTile
         }
         public void AddMultiTile(int mapx, int mapy, int id)
         {
-            if(id == 123 || id == 133)
-                AddSmallConeTree(mapy, mapx, Rows[mapy].Columns[mapx].HeightTiles.Count());
+            AddFromConfigurationFile(mapy, mapx, @"./Config/TileSet4.ini", "LargeLeavedTree");
+
+            //if (MultiTileAdderDictionary.ContainsKey(id))
+            //    MultiTileAdderDictionary[id](mapy, mapx, Rows[mapy].Columns[mapx].HeightTiles.Count());
         }
         public void RemoveMultiTile(int mapx, int mapy)
         {
@@ -243,19 +253,92 @@ namespace BasicTile
             Rows[row].Columns[column].AddMultiSizeTile(147, 1, 1, height);    //branch middle left
             Rows[row].Columns[column].AddMultiSizeTile(149, -1, 1, height);   //branch middle right
             Rows[row].Columns[column].AddMultiSizeTile(159, -1, 0, height);   //branch middle right
+
+            RegisterMultiTileFunction(row, column, new AddMultiSizeDelegate(AddLargeLeavedTree));
+
         }
         public void AddMediumConeTree(int row, int column, int height=0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(122, 0, 1, height);    //trunk
             Rows[row].Columns[column].AddMultiSizeTile(132, 0, 0, height);    //middle
+
+            RegisterMultiTileFunction(row, column, new AddMultiSizeDelegate(AddMediumConeTree));
         }
         public void AddSmallConeTree(int row, int column, int height = 0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(123, 0, 1, height);    //trunk
             Rows[row].Columns[column].AddMultiSizeTile(133, 0, 0, height);    //middle
+
+            RegisterMultiTileFunction(row, column, new AddMultiSizeDelegate(AddSmallConeTree));
+        }
+
+        /// <summary>
+        /// Registers data added mappings of multi-sized tiles from configuration file
+        /// </summary>
+        public void RegisterConfigurationFile()
+        {
+            IniFile ini = new IniFile(@"./Config/TileSet4.ini");
+
+            foreach (var section in ini.ReadIni())
+            {
+                string sectionname = section.Key;
+
+                foreach (var pair in section.Value)
+                {
+                    int idx = 0, xoffset = 0, yoffset = 0;
+
+                    try
+                    {
+                        string[] val = pair.Value.Split('|');
+                        foreach (string s in val)
+                        {
+                            string[] frag = s.Split(',');
+
+                            idx = int.Parse(frag[0]);
+                            xoffset = int.Parse(frag[1]);
+                            yoffset = int.Parse(frag[2]);
+
+                            Tuple<int,int,int> data = new Tuple<int,int,int>(idx,xoffset,yoffset);
+
+                            if (!ObjectDictionary.ContainsKey(idx))
+                                ObjectDictionary.Add(idx, sectionname);
+
+                            if (!ObjectDataDictionary.ContainsKey(sectionname))
+                                ObjectDataDictionary.Add(sectionname, new List<Tuple<int, int, int>>());
+
+                            ObjectDataDictionary[sectionname].Add(data);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        throw new Exception("MultiSize Tile Settings ini file error.");
+                    }
+                }
+            }
+
         }
 
 
+        public void AddFromConfigurationFile(int row, int column, string Path, string SectionName)
+        {
+            IniFile ini = new IniFile(@"./Config/TileSet4.ini");
+
+            //TODO: load sections data according to what's loaded from ini file
+        }
+
+        private void RegisterMultiTileFunction(int row, int column, AddMultiSizeDelegate Adder)
+        {
+            foreach (Tuple<int, int, int, int> t in Rows[row].Columns[column].MultiSizeTiles)
+            {
+                if (!MultiTileAdderDictionary.ContainsKey(t.Item1))
+                    MultiTileAdderDictionary.Add(t.Item1, Adder);
+            }
+        }
+
+        private void RegisterMultiTile(string name, int id, int Xoffset, int Yoffset)
+        {
+
+        }
 
         #endregion
 

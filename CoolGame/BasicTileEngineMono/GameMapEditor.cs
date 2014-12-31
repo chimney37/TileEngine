@@ -42,6 +42,8 @@ namespace BasicTile
             blankTexture.SetData(color);
 
             base.LoadContent(Content, graphics);
+
+            myMap.RegisterConfigurationFile();
         }
 
         public override void Update(Microsoft.Xna.Framework.GameTime gameTime, Context context)

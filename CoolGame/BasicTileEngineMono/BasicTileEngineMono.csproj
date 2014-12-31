@@ -66,6 +66,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="GameText.cs" />
+    <Compile Include="IniFile.cs" />
     <Compile Include="PathFinder.cs" />
     <Compile Include="Sprite\AnimatedSprite.cs" />
     <Compile Include="Camera.cs" />
@@ -90,7 +91,11 @@
     <Content Include="PlanningDoc.txt" />
     <Content Include="Text\kanjis.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Config\TileSet4.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BasicTileEngineMonoContent\BasicTileEngineMonoContent\BasicTileEngineMonoContent.csproj">
       <Project>{205f7e7e-54a4-455b-985f-db04532d9ac5}</Project>
