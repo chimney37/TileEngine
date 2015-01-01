@@ -62,6 +62,7 @@
     <Compile Include="GameMapEditor.cs" />
     <Compile Include="GameMenu.cs" />
     <Compile Include="GameMessageBox.cs" />
+    <Compile Include="GameObject.cs" />
     <Compile Include="GameProcessFactory.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameManager.cs" />
@@ -89,7 +90,6 @@
   <ItemGroup>
     <Content Include="Icon.ico" />
     <Content Include="PlanningDoc.txt" />
-    <Content Include="Text\kanjis.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Config\TileSet4.ini">
@@ -101,6 +101,9 @@
       <Project>{205f7e7e-54a4-455b-985f-db04532d9ac5}</Project>
       <Name>BasicTileEngineMonoContent</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Text\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

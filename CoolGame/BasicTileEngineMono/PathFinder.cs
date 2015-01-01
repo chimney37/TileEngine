@@ -190,7 +190,7 @@ namespace BasicTile
         }
     }
 
-    public abstract class PathNode : IPathNode<Object>
+    public abstract class PathNode :GameObject,IPathNode<Object>
     {
         public PathNode parentNode { get; set; }
 

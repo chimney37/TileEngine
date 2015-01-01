@@ -15,6 +15,7 @@ namespace BasicTile
     /// </summary>
     public class TileMap
     {
+        #region PROPERTIES
         //manage a mouse map for isometric picking
         private Texture2D mouseMap;
         //manage slopes on map
@@ -26,12 +27,43 @@ namespace BasicTile
 
         //manage multisize Tile objects
         public delegate void AddMultiSizeDelegate(int row, int column, int height);
-        public delegate void AddMultiSizeTileDelegate(int row, int column, int height, int id, int Xoffset, int Yoffest);
 
-        Dictionary<int, string> ObjectDictionary = new Dictionary<int, string>();
-        Dictionary<string, List<Tuple<int, int, int>>> ObjectDataDictionary = new Dictionary<string, List<Tuple<int, int, int>>>();
+        //manage a list of tile logical objects managed by IDs
+        protected Dictionary<int, GameLogicalObject> ObjectDictionary = new Dictionary<int, GameLogicalObject>();
         Dictionary<int, AddMultiSizeDelegate> MultiTileAdderDictionary = new Dictionary<int, AddMultiSizeDelegate>();
 
+
+        public int MaxTileHorizontalIndex = 10;
+        public int MaxTileVerticalIndex = 16;
+
+        private int _HorizontalIndex = 0;
+        private int _VerticalIndex = 0;
+        public int HorizontalIndex
+        {
+            get { return _HorizontalIndex; }
+            set
+            {
+                OldTileIdx = TileIndex;
+                _HorizontalIndex = (value < 0) ? this.MaxTileHorizontalIndex - 1 : value % this.MaxTileHorizontalIndex;
+            }
+        }
+        public int VerticalIndex
+        {
+            get { return _VerticalIndex; }
+            set
+            {
+                OldTileIdx = TileIndex;
+                _VerticalIndex = (value < 0) ? this.MaxTileVerticalIndex - 1 : value % this.MaxTileVerticalIndex;
+            }
+        }
+        public int TileIndex
+        {
+            get { return HorizontalIndex + VerticalIndex * this.MaxTileHorizontalIndex; }
+        }
+        public int OldTileIdx { get; set; }
+        #endregion
+
+        #region CONSTRUCTORS
         public TileMap(Texture2D mouseMap, Texture2D slopeMap)
         {
             this.mouseMap = mouseMap;
@@ -200,10 +232,11 @@ namespace BasicTile
 
             // End Create Sample Map Data
         }
+        #endregion
 
         #region METHODS
 
-        #region DATA ADDERS
+        #region DATA ADDERS AND REMOVALS
         //TODO: create a data loader configurable by text file, making new data addable w/o code change
         public void AddBaseTile(int mapx, int mapy, int id)
         {
@@ -231,10 +264,7 @@ namespace BasicTile
         }
         public void AddMultiTile(int mapx, int mapy, int id)
         {
-            AddFromConfigurationFile(mapy, mapx, @"./Config/TileSet4.ini", "LargeLeavedTree");
-
-            //if (MultiTileAdderDictionary.ContainsKey(id))
-            //    MultiTileAdderDictionary[id](mapy, mapx, Rows[mapy].Columns[mapx].HeightTiles.Count());
+            AddFromTileMapConfig(mapy, mapx, id);
         }
         public void RemoveMultiTile(int mapx, int mapy)
         {
@@ -242,7 +272,7 @@ namespace BasicTile
         }
 
 
-        public void AddLargeLeavedTree(int row, int column, int height=0)
+        protected void AddLargeLeavedTree(int row, int column, int height=0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(158, 0, 0, height);    //trunk
             Rows[row].Columns[column].AddMultiSizeTile(148, 0, 1, height);    //middle
@@ -254,22 +284,19 @@ namespace BasicTile
             Rows[row].Columns[column].AddMultiSizeTile(149, -1, 1, height);   //branch middle right
             Rows[row].Columns[column].AddMultiSizeTile(159, -1, 0, height);   //branch middle right
 
-            RegisterMultiTileFunction(row, column, new AddMultiSizeDelegate(AddLargeLeavedTree));
-
         }
-        public void AddMediumConeTree(int row, int column, int height=0)
+        protected void AddMediumConeTree(int row, int column, int height = 0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(122, 0, 1, height);    //trunk
             Rows[row].Columns[column].AddMultiSizeTile(132, 0, 0, height);    //middle
 
-            RegisterMultiTileFunction(row, column, new AddMultiSizeDelegate(AddMediumConeTree));
+
         }
-        public void AddSmallConeTree(int row, int column, int height = 0)
+        protected void AddSmallConeTree(int row, int column, int height = 0)
         {
             Rows[row].Columns[column].AddMultiSizeTile(123, 0, 1, height);    //trunk
             Rows[row].Columns[column].AddMultiSizeTile(133, 0, 0, height);    //middle
 
-            RegisterMultiTileFunction(row, column, new AddMultiSizeDelegate(AddSmallConeTree));
         }
 
         /// <summary>
@@ -282,31 +309,37 @@ namespace BasicTile
             foreach (var section in ini.ReadIni())
             {
                 string sectionname = section.Key;
+                GameMapEditor.TileType tileType = GameMapEditor.TileType.Base;
+
+                GameLogicalObject logicalObj = new GameLogicalObject() { Name = sectionname };
 
                 foreach (var pair in section.Value)
                 {
-                    int idx = 0, xoffset = 0, yoffset = 0;
-
                     try
                     {
-                        string[] val = pair.Value.Split('|');
-                        foreach (string s in val)
+                        //resolve Key : TileType
+                        if (pair.Key == "TileType")
+                            tileType = (GameMapEditor.TileType)Enum.Parse(typeof(GameMapEditor.TileType), pair.Value);
+
+                        //resolve Key : DataIndex
+                        if (pair.Key == "DataIndex")
                         {
-                            string[] frag = s.Split(',');
+                            string[] val = pair.Value.Split('|');
+                            foreach (string s in val)
+                            {
+                                string[] frag = s.Split(',');
 
-                            idx = int.Parse(frag[0]);
-                            xoffset = int.Parse(frag[1]);
-                            yoffset = int.Parse(frag[2]);
+                                GameTileInfo data = new GameTileInfo() { TileType = tileType };
 
-                            Tuple<int,int,int> data = new Tuple<int,int,int>(idx,xoffset,yoffset);
+                                data.TileID = int.Parse(frag[0]);
+                                data.TileXOffset = int.Parse(frag[1]);
+                                data.TileYOffset = int.Parse(frag[2]);
 
-                            if (!ObjectDictionary.ContainsKey(idx))
-                                ObjectDictionary.Add(idx, sectionname);
+                                if (!ObjectDictionary.ContainsKey(data.TileID))
+                                    ObjectDictionary.Add(data.TileID, logicalObj);
 
-                            if (!ObjectDataDictionary.ContainsKey(sectionname))
-                                ObjectDataDictionary.Add(sectionname, new List<Tuple<int, int, int>>());
-
-                            ObjectDataDictionary[sectionname].Add(data);
+                                logicalObj.Add(data);
+                            }
                         }
                     }
                     catch (Exception)
@@ -318,12 +351,27 @@ namespace BasicTile
 
         }
 
-
-        public void AddFromConfigurationFile(int row, int column, string Path, string SectionName)
+        /// <summary>
+        /// Adds data according to data found in configuration
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="column"></param>
+        /// <param name="id"></param>
+        public void AddFromTileMapConfig(int row, int column, int id)
         {
-            IniFile ini = new IniFile(@"./Config/TileSet4.ini");
-
             //TODO: load sections data according to what's loaded from ini file
+            if(ObjectDictionary.ContainsKey(id))
+            {
+                foreach (GameTileInfo t in ObjectDictionary[id].GetEnumerable())
+                {
+                    switch(t.TileType)
+                    {
+                        case GameMapEditor.TileType.Multi:
+                            Rows[row].Columns[column].AddMultiSizeTile(t.TileID, t.TileXOffset, t.TileYOffset, Rows[row].Columns[column].HeightTiles.Count());
+                        break;
+                    }
+                }
+            }
         }
 
         private void RegisterMultiTileFunction(int row, int column, AddMultiSizeDelegate Adder)
@@ -335,9 +383,65 @@ namespace BasicTile
             }
         }
 
-        private void RegisterMultiTile(string name, int id, int Xoffset, int Yoffset)
-        {
+        #endregion
 
+        #region TILE MAP OPERATIONS
+
+        public List<int> GetTileMapHilightIndexes(int id)
+        {
+            if (ObjectDictionary.ContainsKey(id))
+            {
+                return (from data in ObjectDictionary[id].GetEnumerable()
+                        select data.TileID).ToList();
+            }
+            else
+                return new List<int>() { id };
+        }
+        public IEnumerable<GameTileInfo> GetGameTileInfoList(int id)
+        {
+            if (ObjectDictionary.ContainsKey(id))
+            {
+                return ObjectDictionary[id].GetEnumerable();
+            }
+            else
+                return new [] { new GameTileInfo(){ TileID = id, TileXOffset = 0, TileYOffset = 0} };
+        }
+
+        public string GetTileMapLogicalObjName(int id)
+        {
+            if (ObjectDictionary.ContainsKey(id))
+                return ObjectDictionary[id].Name;
+            else
+                return id.ToString();
+        }
+
+        public void GetLeftTileIndex()
+        {
+            string objname = GetTileMapLogicalObjName(TileIndex);
+
+            while (GetTileMapLogicalObjName(TileIndex) == objname)
+                --HorizontalIndex;           
+        }
+        public void GetRightTileIndex()
+        {
+            string objname = GetTileMapLogicalObjName(TileIndex);
+
+            while (GetTileMapLogicalObjName(TileIndex) == objname)
+                ++HorizontalIndex;   
+        }
+        public void GetUpTileIndex()
+        {
+            string objname = GetTileMapLogicalObjName(TileIndex);
+
+            while (GetTileMapLogicalObjName(TileIndex) == objname)
+                --VerticalIndex; 
+        }
+        public void GetDownTileIndex()
+        {
+            string objname = GetTileMapLogicalObjName(TileIndex);
+
+            while (GetTileMapLogicalObjName(TileIndex) == objname)
+                ++VerticalIndex;
         }
 
         #endregion
@@ -498,7 +602,7 @@ namespace BasicTile
             return 0;
         }
         //get height of a point in terms of world coordinates
-        private int GetOverallHeight(Point worldPoint)
+        public int GetOverallHeight(Point worldPoint)
         {
             Point mapCellPoint = WorldToMapCell(worldPoint);
             int height = Rows[mapCellPoint.Y].Columns[mapCellPoint.X].HeightTiles.Count * Tile.HeightTileOffset;
@@ -506,12 +610,17 @@ namespace BasicTile
 
             return height;
         }
+        public int GetOverallCenterHeight(int row, int column)
+        {
+            int height = Rows[row].Columns[column].HeightTiles.Count * Tile.HeightTileOffset;
+            int slopeMap = Rows[row].Columns[row].SlopeMap;
+            height += GetSlopeMapHeight(new Point(mouseMap.Width / 2, mouseMap.Height / 2), slopeMap);
 
-
-
+            return height;
+        }
         #endregion
 
-
+        #region DISTANCE FUNCTIONS
         //returns the Lo Tile distance given a staggered isometric coordinate system
         //reference:http://gamedev.stackexchange.com/questions/50668/distance-between-two-points-with-staggered-isometric-coordinate-system
         public static int L0TileDistance(Point s, Point e)
@@ -556,6 +665,7 @@ namespace BasicTile
            
             return distance;
         }
+        #endregion
 
         #endregion
     }

@@ -13,10 +13,6 @@ namespace BasicTile
     {
         int id;
 
-        int TileHoriIdx = 0;
-        int TileVertIdx = 0;
-        int TileIdx = 0;
-        int OldTileIdx = 0;
         int TypeIdx = 0;
         TileType tileType;
 
@@ -25,34 +21,43 @@ namespace BasicTile
         bool ShowPreview = true;
         bool ShowTileMap = false;
         float currentTime = 0f;
-        float maxTime = 5f;
+        float maxTime = 10f;
         float Alpha = 1.0f;
         int TileMapSX = 666;
         int TileMapSY = 200;
         float TileMapScale = 0.5f;
 
+        bool IsConfigLoaded = false;
+
         public override void LoadContent(Microsoft.Xna.Framework.Content.ContentManager Content, GraphicsDeviceManager graphics)
         {
+            base.LoadContent(Content, graphics);
+
             blankTexture = new Texture2D(graphics.GraphicsDevice, Tile.TileWidth, Tile.TileHeight, false, SurfaceFormat.Color);
 
             Color[] color = new Color[Tile.TileWidth * Tile.TileHeight];
-            for(int i = 0; i < color.Length; i++)
+            for (int i = 0; i < color.Length; i++)
                 color[i] = Color.White;
 
             blankTexture.SetData(color);
-
-            base.LoadContent(Content, graphics);
-
-            myMap.RegisterConfigurationFile();
         }
 
         public override void Update(Microsoft.Xna.Framework.GameTime gameTime, Context context)
         {
+            if (!IsConfigLoaded)
+            {
+                myMap.RegisterConfigurationFile();
+                IsConfigLoaded = true;
+            }
+
             ks = Keyboard.GetState();
             ms = Mouse.GetState();
 
             if (ks.IsKeyUp(Keys.E) && oldState.IsKeyDown(Keys.E))
+            {
+                IsConfigLoaded = false;
                 context.changeState(typeof(GameCore));
+            }
 
             if (ks.IsKeyUp(Keys.V) && oldState.IsKeyDown(Keys.V))
             {
@@ -64,29 +69,30 @@ namespace BasicTile
             }
 
             #region UPDATE TILE INDEX
-            OldTileIdx = TileIdx;
+            myMap.OldTileIdx = myMap.TileIndex;
 
             if (ks.IsKeyUp(Keys.A) && oldState.IsKeyDown(Keys.A))
-                TileHoriIdx = (TileHoriIdx <= 0) ? Tile.MaxTileHorizontalIndex : TileHoriIdx - 1;
+                myMap.GetLeftTileIndex();
 
             if (ks.IsKeyUp(Keys.W) && oldState.IsKeyDown(Keys.W))
-                TileVertIdx = (TileVertIdx <= 0) ? Tile.MaxTileVerticalIndex : TileVertIdx - 1;
+                myMap.GetUpTileIndex();
 
             if (ks.IsKeyUp(Keys.S) && oldState.IsKeyDown(Keys.S))
-                TileVertIdx = (TileVertIdx + 1) % Tile.MaxTileVerticalIndex;
+                myMap.GetDownTileIndex();
 
             if (ks.IsKeyUp(Keys.D) && oldState.IsKeyDown(Keys.D))
-                TileHoriIdx = (TileHoriIdx + 1) % Tile.MaxTileHorizontalIndex;
+                myMap.GetRightTileIndex();
 
             if(ks.IsKeyUp(Keys.Q) && oldState.IsKeyDown(Keys.Q))
-            {
                 tileType = (TileType)(++TypeIdx % Enum.GetNames(typeof(TileType)).Length);
-            }
-
-            TileIdx = TileHoriIdx + TileVertIdx * Tile.MaxTileHorizontalIndex;
+            
+            //fix tile type if required given the index
+            TileType t = myMap.GetGameTileInfoList(myMap.TileIndex).ElementAt(0).TileType;
+            if (t == TileType.Multi)
+                tileType = t;
 
             //Show Tile Map for 1 seconds
-            if (OldTileIdx != TileIdx)
+            if (myMap.OldTileIdx != myMap.TileIndex)
             {
                 ShowTileMap = true;
                 currentTime = 0;
@@ -112,16 +118,16 @@ namespace BasicTile
                 switch (tileType)
                 {
                     case TileType.Base:
-                        myMap.AddBaseTile(this.hilightPoint.X, this.hilightPoint.Y, TileIdx);
+                        myMap.AddBaseTile(this.hilightPoint.X, this.hilightPoint.Y, myMap.TileIndex);
                         break;
                     case TileType.Height:
-                        myMap.AddHeightTile(this.hilightPoint.X, this.hilightPoint.Y, TileIdx);
+                        myMap.AddHeightTile(this.hilightPoint.X, this.hilightPoint.Y, myMap.TileIndex);
                         break;
                     case TileType.Topper:
-                        myMap.AddTopperTile(this.hilightPoint.X, this.hilightPoint.Y, TileIdx);
+                        myMap.AddTopperTile(this.hilightPoint.X, this.hilightPoint.Y, myMap.TileIndex);
                         break;
                     case TileType.Multi:
-                        myMap.AddMultiTile(this.hilightPoint.X, this.hilightPoint.Y, TileIdx);
+                        myMap.AddMultiTile(this.hilightPoint.X, this.hilightPoint.Y, myMap.TileIndex);
                         break;
                     default:
                         break;
@@ -199,18 +205,21 @@ namespace BasicTile
             {
                 int hilightrowOffset = ((this.hilightPoint.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
 
-                spriteBatch.Draw(
-                    Tile.TileSetTexture,
-                        new Vector2(
-                            hilightPoint.X * Tile.TileStepX + hilightrowOffset,
-                            hilightPoint.Y * Tile.TileStepY),
-                    Tile.GetSourceRectangle(TileIdx),
-                    Color.Aquamarine * 0.8f,
-                    0.0f,
-                    Vector2.Zero,
-                    1.0f,
-                    SpriteEffects.None,
-                    0.0f);
+                foreach (GameTileInfo t in myMap.GetGameTileInfoList(myMap.TileIndex))
+                {
+                    spriteBatch.Draw(
+                        Tile.TileSetTexture,
+                            new Vector2(
+                                hilightPoint.X * Tile.TileStepX + hilightrowOffset - t.TileXOffset*Tile.MultiSizeTileOffset,
+                                hilightPoint.Y * Tile.TileStepY - t.TileYOffset * Tile.MultiSizeTileOffset - myMap.GetOverallCenterHeight(hilightPoint.Y, hilightPoint.X) ),
+                        Tile.GetSourceRectangle(t.TileID),
+                        Color.Aquamarine * 0.8f,
+                        0.0f,
+                        Vector2.Zero,
+                        1.0f,
+                        SpriteEffects.None,
+                        0.0f);
+                }
             }
             #endregion
 
@@ -230,24 +239,27 @@ namespace BasicTile
                     SpriteEffects.None,
                     0.1f);
 
-                spriteBatch.Draw(
-                    blankTexture,
-                        camera.ScreenToWorld(new Vector2(
-                            TileMapSX + Tile.TileWidth*TileHoriIdx*TileMapScale,
-                            TileMapSY + Tile.TileHeight*TileVertIdx*TileMapScale)),
-                    new Rectangle(0,0,blankTexture.Width,blankTexture.Height),
-                    Color.White * Alpha *0.2f,
-                    0.0f,
-                    Vector2.Zero,
-                    TileMapScale,
-                    SpriteEffects.None,
-                    0.0f);
+                foreach (int id in myMap.GetTileMapHilightIndexes(myMap.TileIndex))
+                {
+                    spriteBatch.Draw(
+                        blankTexture,
+                            camera.ScreenToWorld(new Vector2(
+                                TileMapSX + Tile.TileWidth * (id % myMap.MaxTileHorizontalIndex) * TileMapScale,
+                                TileMapSY + Tile.TileHeight * (id / myMap.MaxTileHorizontalIndex) * TileMapScale)),
+                        new Rectangle(0, 0, blankTexture.Width, blankTexture.Height),
+                        Color.White * Alpha * 0.2f,
+                        0.0f,
+                        Vector2.Zero,
+                        TileMapScale,
+                        SpriteEffects.None,
+                        0.0f);
+                }
             }
             #endregion
 
             spriteBatch.DrawString(
                             base.pericles6,
-                            string.Format("Tile Type: ({0})", tileType.ToString()),
+                            string.Format("Tile Type: ({0}), Index={1}, ObjectName={2}", tileType.ToString(), myMap.TileIndex, myMap.GetTileMapLogicalObjName(myMap.TileIndex)),
                             camera.ScreenToWorld(new Vector2(10, 604)),
                             Color.White,
                             0f,

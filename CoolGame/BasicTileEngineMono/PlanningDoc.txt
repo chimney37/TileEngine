@@ -32,6 +32,11 @@ Engine Design
 		Multi-Layering Support (Base, Height, Skins, Multi-Tile Size)
 		Animated Tile Support
 		Loadable through text data - no compile
+			INI based design with extension
+				sections
+					key values
+					duplicate key support
+					comments, start with (; #) and trailing (;)
 
 	Input and Feedback
 		Keyboard manager

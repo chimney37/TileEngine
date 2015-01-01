@@ -45,6 +45,7 @@ namespace BasicTile
 
         //highlighting tiles
         Texture2D hilight;
+        protected Vector2 hilightLoc;
         protected Point hilightPoint;
 
         //NPC character
@@ -83,8 +84,6 @@ namespace BasicTile
         {
             //Load tiles
             Tile.TileSetTexture = Content.Load<Texture2D>(@"Textures\TileSets\part4_tileset");
-            Tile.MaxTileHorizontalIndex = 10;
-            Tile.MaxTileVerticalIndex = 16;
 
             //load fonts
             pericles6 = Content.Load<SpriteFont>(@"Fonts\Pericles6");
@@ -94,6 +93,9 @@ namespace BasicTile
             myMap = new TileMap(
                 Content.Load<Texture2D>(@"Textures\TileSets\mousemap"),
                 Content.Load<Texture2D>(@"Textures\TileSets\part9_slopemaps"));
+
+            myMap.MaxTileHorizontalIndex = 10;
+            myMap.MaxTileVerticalIndex = 16;
 
             //initialize camera
             camera = new Camera(
@@ -525,7 +527,7 @@ namespace BasicTile
 
         protected void UpdateHilight()
         {
-            Vector2 hilightLoc = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
+            hilightLoc = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
             //get map cell coordinates of mouse point in Update
             hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
         }
@@ -666,7 +668,8 @@ namespace BasicTile
                     }
                     #endregion
 
-                    #region DRAW TOPPER TILES (SKINS)                
+                    #region DRAW TOPPER TILES (SKINS) 
+                    int topperCount = 0;
                     //draw topper tiles
                     foreach (int tileID in myMap.Rows[y + firstY].Columns[x + firstX].TopperTiles)
                     {
@@ -682,7 +685,7 @@ namespace BasicTile
                             1.0f,
                             SpriteEffects.None,
                             //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen
-                            depthOffset - ((float)heightRow * heightRowDepthMod));
+                            depthOffset - ((float)(heightRow + ++topperCount) * heightRowDepthMod));
                     }
                     #endregion
 
@@ -695,8 +698,9 @@ namespace BasicTile
 
                     #endregion
 
-                    #region DRAW MULTI SIZE TILES                   
+                    #region DRAW MULTI SIZE TILES
                     //draw multi size tiles
+                    int multidrawcount = 1;
                     foreach (Tuple<int, int, int, int> tile in myMap.Rows[mapy].Columns[mapx].MultiSizeTiles)
                     {
                         spriteBatch.Draw(
@@ -704,7 +708,7 @@ namespace BasicTile
                             //use Camera functions for offsetting and global baseoffset
                             new Vector2(
                                 mapx * Tile.TileStepX + rowOffset - (tile.Item2 * Tile.MultiSizeTileOffset),
-                                mapy * Tile.TileStepY - (tile.Item3 * Tile.MultiSizeTileOffset) - (tile.Item4 * Tile.HeightTileOffset)),
+                                mapy * Tile.TileStepY - (tile.Item3 * Tile.MultiSizeTileOffset) - myMap.GetOverallCenterHeight(mapy,mapx)),
                             Tile.GetSourceRectangle(tile.Item1),
                             Color.White,
                             0.0f,
@@ -712,8 +716,9 @@ namespace BasicTile
                             1.0f,
                             SpriteEffects.None,
                             //Every time we draw a height tile, we will move the layer depth 0.0000001f closer to the screen
-                            depthOffset - ((float)tile.Item4 * heightRowDepthMod));
+                            depthOffset - ((float)myMap.GetOverallCenterHeight(mapy,mapx) + topperCount + multidrawcount) * heightRowDepthMod);
                     }
+                    multidrawcount++;
                     
                     #endregion
 
