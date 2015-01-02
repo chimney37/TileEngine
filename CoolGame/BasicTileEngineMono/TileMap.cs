@@ -22,6 +22,9 @@ namespace BasicTile
         private Texture2D slopeMaps;
 
         public List<MapRow> Rows = new List<MapRow>();
+
+
+        //Map Width/Height : the size of the entire map
         public int MapWidth = 25;
         public int MapHeight = 64;
 
@@ -620,7 +623,7 @@ namespace BasicTile
         public int GetOverallCenterHeight(int row, int column)
         {
             int height = Rows[row].Columns[column].HeightTiles.Count * Tile.HeightTileOffset;
-            int slopeMap = Rows[row].Columns[row].SlopeMap;
+            int slopeMap = Rows[row].Columns[column].SlopeMap;
             height += GetSlopeMapHeight(new Point(mouseMap.Width / 2, mouseMap.Height / 2), slopeMap);
 
             return height;

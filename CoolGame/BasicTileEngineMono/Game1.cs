@@ -27,7 +27,7 @@ namespace BasicTile
         {
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferHeight = 800;
-            graphics.PreferredBackBufferWidth = 800;
+            graphics.PreferredBackBufferWidth = 1000;
 
             Content.RootDirectory = "Content";
 

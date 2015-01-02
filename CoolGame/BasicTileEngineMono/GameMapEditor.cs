@@ -161,7 +161,7 @@ namespace BasicTile
             if (ks.IsKeyDown(Keys.LeftShift))
             {
                 ShowPreview = false;
-                base.UpdatePlayer(gameTime);
+                base.UpdatePlayerByMouse(gameTime);
             }
 
             if (ks.IsKeyUp(Keys.LeftShift))
@@ -177,7 +177,8 @@ namespace BasicTile
             oldState = ks;
             oldMouseState = ms;
 
-
+            //string text = base.InformationalTxt;
+            base.InformationalTxt = string.Format("\nTile Type: ({0}), Index={1}, ObjectName={2}", tileType.ToString(), myMap.TileIndex, myMap.GetTileMapLogicalObjName(myMap.TileIndex));
 
             //base.Update(gameTime, context);
         }
@@ -256,17 +257,6 @@ namespace BasicTile
                 }
             }
             #endregion
-
-            spriteBatch.DrawString(
-                            base.pericles6,
-                            string.Format("Tile Type: ({0}), Index={1}, ObjectName={2}", tileType.ToString(), myMap.TileIndex, myMap.GetTileMapLogicalObjName(myMap.TileIndex)),
-                            camera.ScreenToWorld(new Vector2(10, 604)),
-                            Color.White,
-                            0f,
-                            Vector2.Zero,
-                            1.0f,
-                            SpriteEffects.None,
-                            0.0f);
 
             spriteBatch.End();
         }
