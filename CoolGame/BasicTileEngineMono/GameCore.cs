@@ -166,8 +166,9 @@ namespace BasicTile
             #endregion
 
             #region MOVE PLAYER BY MOUSE OR BY KEY
-            UpdatePlayerByMouse(gameTime);
+
             UpdatePlayerByKey(gameTime);
+            UpdatePlayerByMouse(gameTime);
 
             #endregion
 
@@ -282,84 +283,94 @@ namespace BasicTile
             else if (ms.ScrollWheelValue > oldMouseState.ScrollWheelValue)
                 camera.Scale -= 0.1f;
         }
-        private string UpdatePlayerByKey(GameTime gameTime)
+        private void UpdatePlayerByKey(GameTime gameTime)
         {
             string animation = "";
-            Vector2 moveVector = Vector2.Zero;
             Vector2 moveDir = Vector2.Zero;
             if (ks.IsKeyDown(Keys.NumPad7))
             {
                 moveDir = new Vector2(-2, -1);
                 animation = "WalkNorthWest";
-                moveVector += new Vector2(-2, -1);
             }
 
             if (ks.IsKeyDown(Keys.NumPad8))
             {
                 moveDir = new Vector2(0, -1);
                 animation = "WalkNorth";
-                moveVector += new Vector2(0, -1);
             }
 
             if (ks.IsKeyDown(Keys.NumPad9))
             {
                 moveDir = new Vector2(2, -1);
                 animation = "WalkNorthEast";
-                moveVector += new Vector2(2, -1);
             }
 
             if (ks.IsKeyDown(Keys.NumPad4))
             {
                 moveDir = new Vector2(-2, 0);
                 animation = "WalkWest";
-                moveVector += new Vector2(-2, 0);
             }
 
             if (ks.IsKeyDown(Keys.NumPad6))
             {
                 moveDir = new Vector2(2, 0);
                 animation = "WalkEast";
-                moveVector += new Vector2(2, 0);
             }
 
             if (ks.IsKeyDown(Keys.NumPad1))
             {
                 moveDir = new Vector2(-2, 1);
                 animation = "WalkSouthWest";
-                moveVector += new Vector2(-2, 1);
             }
 
             if (ks.IsKeyDown(Keys.NumPad2))
             {
                 moveDir = new Vector2(0, 1);
                 animation = "WalkSouth";
-                moveVector += new Vector2(0, 1);
             }
 
             if (ks.IsKeyDown(Keys.NumPad3))
             {
                 moveDir = new Vector2(2, 1);
                 animation = "WalkSouthEast";
-                moveVector += new Vector2(2, 1);
             }
 
+            //check walkability
+            if (myMap.GetCellAtWorldPoint(vladMobile.Position + moveDir).Walkable == false)
+                moveDir = Vector2.Zero;
+            
+
+            //prevent movement into positions which have abrupt changes in height
+            if (Math.Abs(myMap.GetOverallHeight(vladMobile.Position) - myMap.GetOverallHeight(vladMobile.Position + moveDir)) > 10)
+                moveDir = Vector2.Zero;
+            
+            //direct sprite control : to not interfere with mobile sprite updates in the same loop (active -> mobile sprite is animating)
             if (!vladMobile.IsActive)
             {
-                vladMobile.Position += moveVector;
-                if (vladMobile.Sprite.CurrentAnimation != animation)
-                    vladMobile.Sprite.CurrentAnimation = animation;
+                if (moveDir.Length() != 0)
+                {
+                    vladMobile.Sprite.MoveBy((int)moveDir.X, (int)moveDir.Y);
+                    if (vladMobile.Sprite.CurrentAnimation != animation)
+                        vladMobile.Sprite.CurrentAnimation = animation;
+                }
+                else
+                {
+                    vladMobile.Sprite.CurrentAnimation = "Idle" + vladMobile.Sprite.CurrentAnimation.Substring(4);
+                }
 
                 vladMobile.Sprite.Update(gameTime);
             }
-            return animation;
+
         }
-        protected string UpdatePlayerByMouse(GameTime gameTime)
+        protected void UpdatePlayerByMouse(GameTime gameTime)
         {
             if (oldMouseState.LeftButton == ButtonState.Pressed &&
                 ms.LeftButton == ButtonState.Released)
             {
                 //activate mobile sprite
                 vladMobile.IsActive = true;
+
+                vladMobile.Target = vladMobile.Position;
 
                 //obtain start and end coordinates
                 Point start = myMap.WorldToMapCell(vladMobile.Position);
@@ -390,85 +401,88 @@ namespace BasicTile
                 }
             }
 
-            //calculate angle between vladMobile heading direction and a vector facing N
-            Double vladmobileAngRad = MobileSprite.signedAngle(vladMobile.Delta, new Vector2(0, -1));
-            string animation = "";
-            string endanimation = "";
-
-
-            //smoothing function (average over a few frames, so we won't get jaggy animations)
-            if (!Double.IsNaN(vladmobileAngRad))
+            if (vladMobile.IsActive)
             {
-                if (lastframesangles.Count < 10)
-                    lastframesangles.Enqueue((float)vladmobileAngRad);
-                else
+
+                //calculate angle between vladMobile heading direction and a vector facing N
+                Double vladmobileAngRad = MobileSprite.signedAngle(vladMobile.Delta, new Vector2(0, -1));
+                string animation = "";
+                string endanimation = "";
+
+
+                //smoothing function (average over a few frames, so we won't get jaggy animations)
+                if (!Double.IsNaN(vladmobileAngRad))
                 {
-                    lastframesangles.Dequeue();
-                    lastframesangles.Enqueue((float)vladmobileAngRad);
-                    vladmobileAngRad = lastframesangles.Average();
+                    if (lastframesangles.Count < 10)
+                        lastframesangles.Enqueue((float)vladmobileAngRad);
+                    else
+                    {
+                        lastframesangles.Dequeue();
+                        lastframesangles.Enqueue((float)vladmobileAngRad);
+                        vladmobileAngRad = lastframesangles.Average();
+                    }
                 }
+
+                if (Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > -Math.PI / 8)
+                {
+                    animation = "WalkNorth";
+                    endanimation = "IdleNorth";
+                }
+
+                //isometric angles is "flatter" than it looks
+                //eaxctly 67.5 deg won't work so make it abit bigger than (3/8) * pi
+                if (-3.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -Math.PI / 8)
+                {
+                    animation = "WalkNorthEast";
+                    endanimation = "IdleNorthEast";
+                }
+
+                //exactly (5/8) * pi won't work so make it a bit smaller
+                if (-4.9 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -3.5 * Math.PI / 8)
+                {
+                    animation = "WalkEast";
+                    endanimation = "IdleEast";
+                }
+
+                if (-7.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -4.9 * Math.PI / 8)
+                {
+                    animation = "WalkSouthEast";
+                    endanimation = "IdleSouthEast";
+                }
+
+                if (7 * Math.PI / 8 < vladmobileAngRad || vladmobileAngRad < -7.5 * Math.PI / 8)
+                {
+                    animation = "WalkSouth";
+                    endanimation = "IdleSouth";
+
+                }
+
+                if (7 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 4.9 * Math.PI / 8)
+                {
+                    animation = "WalkSouthWest";
+                    endanimation = "IdleSouthWest";
+                }
+
+                if (4.9 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 3.5 * Math.PI / 8)
+                {
+                    animation = "WalkWest";
+                    endanimation = "IdleWest";
+                }
+
+                if (3.5 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > Math.PI / 8)
+                {
+                    animation = "WalkNorthWest";
+                    endanimation = "IdleNorthWest";
+                }
+
+                if (vladMobile.Sprite.CurrentAnimation != animation)
+                {
+                    vladMobile.Sprite.CurrentAnimation = animation;
+                    vladMobile.EndPathAnimation = endanimation;
+                }
+
+                vladMobile.Update(gameTime);
             }
-
-            if (Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > -Math.PI / 8)
-            {
-                animation = "WalkNorth";
-                endanimation = "IdleNorth";
-            }
-
-            //isometric angles is "flatter" than it looks
-            //eaxctly 67.5 deg won't work so make it abit bigger than (3/8) * pi
-            if (-3.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -Math.PI / 8)
-            {
-                animation = "WalkNorthEast";
-                endanimation = "IdleNorthEast";
-            }
-
-            //exactly (5/8) * pi won't work so make it a bit smaller
-            if (-4.9 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -3.5 * Math.PI / 8)
-            {
-                animation = "WalkEast";
-                endanimation = "IdleEast";
-            }
-
-            if (-7.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -4.9 * Math.PI / 8)
-            {
-                animation = "WalkSouthEast";
-                endanimation = "IdleSouthEast";
-            }
-
-            if (7 * Math.PI / 8 < vladmobileAngRad || vladmobileAngRad < -7.5 * Math.PI / 8)
-            {
-                animation = "WalkSouth";
-                endanimation = "IdleSouth";
-
-            }
-
-            if (7 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 4.9 * Math.PI / 8)
-            {
-                animation = "WalkSouthWest";
-                endanimation = "IdleSouthWest";
-            }
-
-            if (4.9 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 3.5 * Math.PI / 8)
-            {
-                animation = "WalkWest";
-                endanimation = "IdleWest";
-            }
-
-            if (3.5 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > Math.PI / 8)
-            {
-                animation = "WalkNorthWest";
-                endanimation = "IdleNorthWest";
-            }
-
-            if (vladMobile.Sprite.CurrentAnimation != animation)
-            {
-                vladMobile.Sprite.CurrentAnimation = animation;
-                vladMobile.EndPathAnimation = endanimation;
-            }
-
-            vladMobile.Update(gameTime);
-            return animation;
         }
         protected void UpdateCameraFirstSquare()
         {
