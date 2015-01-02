@@ -22,7 +22,7 @@ namespace BasicTile
         private Texture2D slopeMaps;
 
         public List<MapRow> Rows = new List<MapRow>();
-        public int MapWidth = 50;
+        public int MapWidth = 25;
         public int MapHeight = 64;
 
         //manage multisize Tile objects
@@ -451,15 +451,22 @@ namespace BasicTile
         {
             return Rows[MapCellY].Columns[MapCellX];
         }
-        //gets from MapCellToScreen coordinates
-        public Vector2 MapCellToScreen(int MapCellX, int MapCellY)
+        //gets from MapCell To Screen (Center of rombus)
+        public Vector2 MapCellToScreen(Camera camera, int MapCellX, int MapCellY)
         {
-            int rowOffset = ((MapCellY) % 2 == 1) ? rowOffset = Tile.OddRowXOffset : 0;
-            return new Vector2(MapCellX * Tile.TileStepX + rowOffset, MapCellY * Tile.TileStepY);
+            Vector2 FirstMapCell = GetCameraFirstSquare(camera);
+
+            int rowOffset = (MapCellY % 2 == 1) ? rowOffset = Tile.OddRowXOffset : 0;
+            return new Vector2((MapCellX - FirstMapCell.X) * mouseMap.Width + rowOffset, (MapCellY - FirstMapCell.Y) * mouseMap.Height / 2 - 16);
         }
-        public Vector2 MapCellToScreen(Vector2 mapCellPoint)
+        public Vector2 MapCellToScreen(Camera camera, Vector2 mapCellPoint)
         {
-            return MapCellToScreen((int)mapCellPoint.X, (int)mapCellPoint.Y);
+            return MapCellToScreen(camera, (int)mapCellPoint.X, (int)mapCellPoint.Y);
+        }
+
+        public Vector2 GetCameraFirstSquare(Camera camera)
+        {
+            return new Vector2(camera.Location.X / Tile.TileStepX, camera.Location.Y / Tile.TileStepY);
         }
 
         //overload, return a point from world coordinates

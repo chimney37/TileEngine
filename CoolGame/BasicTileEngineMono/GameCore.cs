@@ -52,9 +52,6 @@ namespace BasicTile
         SpriteAnimation npc;
 
         //movable characters
-        SpriteAnimation vlad;
-        Point vladMapPoint;
-
         MobileSprite vladMobile;
         Point vladMobileMapPoint;
         Queue<float> lastframesangles = new Queue<float>();
@@ -108,33 +105,6 @@ namespace BasicTile
             hilight = Content.Load<Texture2D>(@"Textures\TileSets\hilight");
 
             //create sprite and animations for character
-            vlad = new SpriteAnimation(Content.Load<Texture2D>(@"Textures\Characters\T_Vlad_Sword_Walking_48x48"));
-
-            //TODO: maybe enuming the strings for runtime safety
-            //design note: 1 animation sequence per row in the image
-            vlad.AddAnimation("WalkEast", 0, 48 * 0, 48, 48, 8, 0.1f);
-            vlad.AddAnimation("WalkNorth", 0, 48 * 1, 48, 48, 8, 0.1f);
-            vlad.AddAnimation("WalkNorthEast", 0, 48 * 2, 48, 48, 8, 0.1f);
-            vlad.AddAnimation("WalkNorthWest", 0, 48 * 3, 48, 48, 8, 0.1f);
-            vlad.AddAnimation("WalkSouth", 0, 48 * 4, 48, 48, 8, 0.1f);
-            vlad.AddAnimation("WalkSouthEast", 0, 48 * 5, 48, 48, 8, 0.1f);
-            vlad.AddAnimation("WalkSouthWest", 0, 48 * 6, 48, 48, 8, 0.1f);
-            vlad.AddAnimation("WalkWest", 0, 48 * 7, 48, 48, 8, 0.1f);
-
-            vlad.AddAnimation("IdleEast", 0, 48 * 0, 48, 48, 1, 0.2f);
-            vlad.AddAnimation("IdleNorth", 0, 48 * 1, 48, 48, 1, 0.2f);
-            vlad.AddAnimation("IdleNorthEast", 0, 48 * 2, 48, 48, 1, 0.2f);
-            vlad.AddAnimation("IdleNorthWest", 0, 48 * 3, 48, 48, 1, 0.2f);
-            vlad.AddAnimation("IdleSouth", 0, 48 * 4, 48, 48, 1, 0.2f);
-            vlad.AddAnimation("IdleSouthEast", 0, 48 * 5, 48, 48, 1, 0.2f);
-            vlad.AddAnimation("IdleSouthWest", 0, 48 * 6, 48, 48, 1, 0.2f);
-            vlad.AddAnimation("IdleWest", 0, 48 * 7, 48, 48, 1, 0.2f);
-
-            vlad.Position = new Vector2(100, 100);
-            vlad.DrawOffset = new Vector2(-24, -38);    //specifying position where character is standing
-            vlad.CurrentAnimation = "WalkEast";
-            vlad.IsAnimating = true;
-
             //add an experimental Mobile sprite character
             vladMobile = new MobileSprite(Content.Load<Texture2D>(@"Textures\Characters\T_Vlad_Sword_Walking_48x48"));
             vladMobile.Sprite.AddAnimation("WalkEast", 0, 48 * 0, 48, 48, 8, 0.1f, "IdleEast");
@@ -159,10 +129,10 @@ namespace BasicTile
 
 
             vladMobile.Sprite.AutoRotate = false;
-            vladMobile.Position = camera.ScreenToWorld(myMap.MapCellToScreen(new Vector2(1,9))) + new Vector2(0,-16);
+            vladMobile.Position = camera.ScreenToWorld(myMap.MapCellToScreen(camera,new Vector2(1,9)));
             Debug.WriteLine(myMap.WorldToMapCell(vladMobile.Position));
             vladMobile.Target = vladMobile.Position;
-            vladMobile.Speed = 0.5f;
+            vladMobile.Speed = 2f;
             vladMobile.IsPathing = true;
             vladMobile.LoopPath = false;
             vladMobile.IsActive = false;
@@ -272,40 +242,11 @@ namespace BasicTile
                 animation = "WalkSouthEast";
                 moveVector += new Vector2(2, 1);
             }
-
-            //prevent from moving if not walkable
-            if (myMap.GetCellAtWorldPoint(vlad.Position + moveDir).Walkable == false)
-                moveDir = Vector2.Zero;
-
-            //set height restrictions if player attempts to make move that changes height abruptly
-            if (Math.Abs(myMap.GetOverallHeight(vlad.Position) - myMap.GetOverallHeight(vlad.Position + moveDir)) > 10)
-                moveDir = Vector2.Zero;
-
-            //if movement exists, call move and apply animation
-            if (moveDir.Length() != 0)
-            {
-                vlad.MoveBy((int)moveDir.X, (int)moveDir.Y);
-                if (vlad.CurrentAnimation != animation)
-                    vlad.CurrentAnimation = animation;
-            }
-            else
-                vlad.CurrentAnimation = "Idle" + vlad.CurrentAnimation.Substring(4);
-            #endregion
-
-            #region CLAMPING PLAYER POSITION WITHIN MAP
-
-            vlad.Position = new Vector2(
-                MathHelper.Clamp(vlad.Position.X, vlad.DrawOffset.X + 64, camera.WorldWidth - vlad.DrawOffset.X),
-                MathHelper.Clamp(vlad.Position.Y, vlad.DrawOffset.Y + 128, camera.WorldHeight - vlad.DrawOffset.Y));
-
             #endregion
 
             #region SCROLLING
 
-            //scroll accrdoing to player position
-            if (IsClampToCharOn)
-                MapScrollPlayerView();
-
+            //MapScrollPlayerView();
             //scroll according to mouse position
             MapMouseScroll();
 
@@ -314,10 +255,8 @@ namespace BasicTile
             #region UPDATE CHARACTER POSITIONS
 
             //update the map cell where player is
-            vladMapPoint = myMap.WorldToMapCell(new Point((int)vlad.Position.X, (int)vlad.Position.Y));
             vladMobileMapPoint = myMap.WorldToMapCell(new Point((int)vladMobile.Position.X, (int)vladMobile.Position.Y));
 
-            vlad.Update(gameTime);
             npc.Update(gameTime);
 
             #endregion
@@ -431,9 +370,11 @@ namespace BasicTile
 
                     foreach (PathNode n in foundPath)
                     {
-                        Debug.WriteLine(string.Format("({0},{1})", n.X, n.Y));
-                        //TODO: A probable issue with mapcell -> screen coordinates causing path nodes to be slightly off from the mobile sprite animation coordinates
-                        vladMobile.AddPathNode(camera.ScreenToWorld(myMap.MapCellToScreen(n.X, n.Y)) + new Vector2(0, -16));
+                        Vector2 nodevec = camera.ScreenToWorld(myMap.MapCellToScreen(camera,n.X, n.Y));
+
+                        Debug.WriteLine(string.Format("({0},{1})", nodevec.X, nodevec.Y));
+                        //TODO: A probable issue with mapcell -> screen coordinates 
+                        vladMobile.AddPathNode(nodevec);
                     }
                     vladMobile.DeactivateAfterPathing = true;
                 }
@@ -522,7 +463,7 @@ namespace BasicTile
 
         protected void UpdateCameraFirstSquare()
         {
-            firstSquare = new Vector2(camera.Location.X / Tile.TileStepX, camera.Location.Y / Tile.TileStepY);
+            firstSquare = myMap.GetCameraFirstSquare(camera);
         }
 
         protected void UpdateHilight()
@@ -534,7 +475,7 @@ namespace BasicTile
 
         private void MapScrollPlayerView()
         {
-            Vector2 testPos = camera.WorldToScreen(vlad.Position);
+            Vector2 testPos = camera.WorldToScreen(vladMobile.Position);
 
             if (testPos.X < 100)
                 camera.Move(new Vector2(testPos.X - 100, 0));
@@ -690,9 +631,6 @@ namespace BasicTile
                     #endregion
 
                     #region DETERMINE DRAW DEPTH OF PLAYER
-                    if ((mapx == vladMapPoint.X) && (mapy == vladMapPoint.Y))
-                        vlad.DrawDepth = depthOffset - (float)(heightRow + 2) * heightRowDepthMod;
-
                     if((mapx == vladMobileMapPoint.X) && (mapy == vladMobileMapPoint.Y))
                         vladMobile.Sprite.DrawDepth = depthOffset - (float)(heightRow + 2) * heightRowDepthMod;
 
@@ -762,8 +700,6 @@ namespace BasicTile
 
             #region DRAW PLAYER
             //draw player according to where he's standing on
-            vlad.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vlad.Position));
-
             vladMobile.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vladMobile.Position));
             #endregion
 
@@ -790,31 +726,15 @@ namespace BasicTile
 
 
             spriteBatch.DrawString(
-                            pericles6,
-                            string.Format("Mouse Position: ({0},{1})", ms.Position.X, ms.Position.Y),
+                            snippets14,
+                            string.Format("Mouse Position(W): ({0},{1})", camera.ScreenToWorld(ms.Position).X,camera.ScreenToWorld(ms.Position).Y) +
+                            string.Format("\nMouse Position(S): ({0},{1})", ms.Position.X, ms.Position.Y) +
+                            string.Format("\nMouse Cell Position(Cell): ({0},{1})", hilightPoint.X, hilightPoint.Y) +
+                            string.Format("\nMouse Cell Position(W): ({0})", camera.ScreenToWorld(myMap.MapCellToScreen(camera, new Vector2(hilightPoint.X, hilightPoint.Y)))) +
+                            string.Format("\nCamera Position(W): ({0})", camera.Location) +
+                            string.Format("\nWorld Bounds: ({0},{1})", camera.WorldWidth, camera.WorldHeight) +
+                            string.Format("\nPlayer Position(W): ({0},{1})", vladMobile.Position.X, vladMobile.Position.Y),
                             camera.ScreenToWorld(new Vector2(10,560)),
-                            Color.White,
-                            0f,
-                            Vector2.Zero,
-                            1.0f,
-                            SpriteEffects.None,
-                            0.0f);
-
-            spriteBatch.DrawString(
-                            pericles6,
-                            string.Format("Camera Bounds: ({0},{1})", camera.ViewWidth, camera.ViewHeight),
-                            camera.ScreenToWorld(new Vector2(10, 574)),
-                            Color.White,
-                            0f,
-                            Vector2.Zero,
-                            1.0f,
-                            SpriteEffects.None,
-                            0.0f);
-
-            spriteBatch.DrawString(
-                            pericles6,
-                            string.Format("World Bounds: ({0},{1})", camera.WorldWidth, camera.WorldHeight),
-                            camera.ScreenToWorld(new Vector2(10, 588)),
                             Color.White,
                             0f,
                             Vector2.Zero,

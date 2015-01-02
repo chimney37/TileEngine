@@ -73,6 +73,10 @@ namespace BasicTile
         {
             return Vector2.Transform(screenPosition , Matrix.Invert(GetTransformation()) );
         }
+        public Vector2 ScreenToWorld(Point screenPosition)
+        {
+            return ScreenToWorld(new Vector2(screenPosition.X, screenPosition.Y));
+        }
 
         public void Move(Vector2 offset)
         {
