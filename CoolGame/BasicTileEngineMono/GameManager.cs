@@ -27,7 +27,7 @@ namespace BasicTile
     {
         public int ID { get; set; }
 
-        protected bool IsAlive = true;
+        public bool IsAlive = true;
         private Stack<GameProcess> ProcessStack = new Stack<GameProcess>();
         private Queue<GameProcess> ProcessQueue = new Queue<GameProcess>();
         private Dictionary<int, GameProcess> ProcessDict = new Dictionary<int, GameProcess>();
@@ -41,11 +41,11 @@ namespace BasicTile
         public GameProcess()
         {
         }
-        protected bool IsEmptySubProcessStack()
+        public bool IsEmptySubProcessStack()
         {
             return ProcessStack.Count > 0 ? false : true;
         }
-        protected bool IsEmptySubProcessQueue()
+        public bool IsEmptySubProcessQueue()
         {
             return ProcessQueue.Count > 0 ? false : true;
         }

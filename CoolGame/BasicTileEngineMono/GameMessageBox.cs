@@ -15,8 +15,7 @@ namespace BasicTile
 
     public class GameMessageBox : GameProcess, ICloneable
     {
-
-        KeyboardState oldKBState;
+        GameInput gameInput;
 
         Texture2D MessageBoxTexture;
         protected int Width { get; set; }
@@ -34,11 +33,9 @@ namespace BasicTile
         public int X { get; set; }
         public int Y { get; set; }
 
-        Point firstMouseClickPosition = new Point(0, 0);
-        protected Vector2 ClickOffset = new Vector2(0, 0);
-        protected bool FirstTime = true;
-
-        Rectangle destinationRectangle;
+        public Vector2 ClickOffset { get; set; }
+        public Rectangle DestinationRectangle;
+        private Rectangle SourceRectangle;
 
         public override void Initialize(Game game)
         {
@@ -51,89 +48,42 @@ namespace BasicTile
             TransparencyFactor = 0.5f;
             FontSizeScale = 0.5f;
 
-            //intialize old keyboard state
-            oldKBState = Keyboard.GetState();
+            //initialize input handler
+            gameInput = new GameInput();
+            gameInput._buttonEnter_PR = new MessageBoxCloseCommand();
+            gameInput._mouseLeft_PR_S = new MessageBoxCloseOnClickCommand(gameInput);
+            gameInput._mouseLeft_P = new MessageBoxGetClickOffsetCommand(gameInput);
+            gameInput._mouseLeft_P_Hld = new MessageBoxMoveCommand(gameInput);
         }
 
         public override void LoadContent(ContentManager Content, GraphicsDeviceManager graphics)
         {
             MessageBoxTexture = Content.Load<Texture2D>(@"Textures\UI\MessageBox1");
             Messagerical = Content.Load<SpriteFont>(@"Fonts\MessagFont");
+
+            //get message box dimensions
+            this.Width = MessageBoxTexture.Width;
+            this.Height = MessageBoxTexture.Height;
+            SourceRectangle = new Rectangle(0, 0, Width, Height);
+
+            this.maxLineWidth = this.Width * 0.9f;
         }
 
         public override void Update(GameTime gameTime, Context context)
         {
-            //Reference:
-            //http://stackoverflow.com/questions/9712932/2d-xna-game-mouse-clicking
-            //Exit this GameProcess, back
-            KeyboardState ks = Keyboard.GetState();
-            MouseState mouseState = Mouse.GetState();
-
-            var mousePosition = new Point(mouseState.X, mouseState.Y);
-            
-            //check if key pressed
-            if (ks.IsKeyUp(Keys.Enter) && oldKBState.IsKeyDown(Keys.Enter))
-                this.IsAlive = false;
-
-            //detect first mouse click on box
-            if (destinationRectangle.Contains(mousePosition) &&
-                mouseState.LeftButton == ButtonState.Pressed &&
-                FirstTime)
+            Queue<Command> cmds = gameInput.HandleInput();
+            foreach (Command cmd in cmds)
             {
-                firstMouseClickPosition = mousePosition;
-                ClickOffset = new Vector2(firstMouseClickPosition.X, firstMouseClickPosition.Y) - new Vector2(X, Y);
-                FirstTime = false;
+                if (cmd != null)
+                {
+                    cmd.Execute(this);
+                }
             }
-
-            //check if mouse clicked on location
-            if (destinationRectangle.Contains(mousePosition) &&
-                mouseState.LeftButton == ButtonState.Released &&
-                oldMouseState.LeftButton == ButtonState.Pressed &&
-                !MouseMoved(firstMouseClickPosition,mousePosition))
-                this.IsAlive = false;
-
-       
-            //TODO: implement draggable messageBox, need to update firstMouseClickPosition
-            if (destinationRectangle.Contains(mousePosition) &&
-                mouseState.LeftButton == ButtonState.Pressed &&
-                oldMouseState.LeftButton == ButtonState.Pressed)
-            {
-                this.X = mousePosition.X - (int)ClickOffset.X;
-                this.Y = mousePosition.Y - (int)ClickOffset.Y;
-
-                destinationRectangle.X = this.X;
-                destinationRectangle.Y = this.Y;
-            }
-
-            //reset firstMouseClickLocation
-            if (mouseState.LeftButton == ButtonState.Released &&
-                oldMouseState.LeftButton == ButtonState.Pressed)
-            {
-                FirstTime = true;
-            }
-
-            oldKBState = ks;
-            oldMouseState = mouseState;
-        }
-
-        private bool MouseMoved(Point one, Point two)
-        {
-            if (Math.Abs(one.X - two.X) > 5 || Math.Abs(one.Y - two.Y) > 5)
-                return true;
-            else
-                return false;
         }
 
         public override void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context)
         {
-            //get message box dimensions
-            Width = MessageBoxTexture.Width;
-            Height = MessageBoxTexture.Height;
-
-            this.maxLineWidth = this.Width * 0.9f;
-
-            Rectangle sourceRectangle = new Rectangle(0, 0, Width, Height);
-            destinationRectangle = new Rectangle(X, Y, Width, Height);
+            this.DestinationRectangle = new Rectangle(X, Y, Width, Height);
 
             //adjust text length and new lines
             string TextContent = WrapJPText();
@@ -141,7 +91,7 @@ namespace BasicTile
 
             //draw the messagebox frame
             spriteBatch.Begin();
-            spriteBatch.Draw(MessageBoxTexture, destinationRectangle, sourceRectangle, Color.White * TransparencyFactor);
+            spriteBatch.Draw(MessageBoxTexture, DestinationRectangle, SourceRectangle, Color.White * TransparencyFactor);
             spriteBatch.End();
 
 

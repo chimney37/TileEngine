@@ -32,7 +32,7 @@ namespace BasicTile
             gameInput = new GameInput();
 
             //assign message box command to a specific key
-            MessageBoxCommand messageBox = new MessageBoxCommand(this, "About", "これはタイルエンジンのデモです。\n著作者：大朏哲明", 200, 200);
+            MessageBoxCommand messageBox = new MessageBoxCommand(this, "About", "これはタイルエンジンのデモです。著作者：大朏哲明", 200, 200);
             gameInput._buttonA_PR = messageBox;
 
             game.IsMouseVisible = true;
@@ -46,13 +46,11 @@ namespace BasicTile
         public override void Update(GameTime gameTime, Context context)
         {
             //Check if anything on the Sub-Process Stack
-            if (this.IsEmptySubProcessStack())
-            {
-                //State Changes and Sub-Processes
-                KeyboardState ks = Keyboard.GetState();
 
-                Command cmd = gameInput.HandleInput();
-                if(cmd != null)
+            Queue<Command> cmds = gameInput.HandleInput();
+            foreach (Command cmd in cmds)
+            {
+                if (cmd != null)
                 {
                     cmd.Execute(this);
                     cmd.Execute(context);

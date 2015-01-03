@@ -165,13 +165,15 @@ namespace BasicTile
 
             #region GENERAL INPUT HANDLING
             //TODO: migrate input code to here
-            Command cmd = gameInput.HandleInput();
-
-            if(cmd != null)
+            Queue<Command> cmds = gameInput.HandleInput();
+            foreach (Command cmd in cmds)
             {
-                cmd.Execute(camera);
-                cmd.Execute(this);
-                cmd.Execute(context);
+                if (cmd != null)
+                {
+                    cmd.Execute(camera);
+                    cmd.Execute(this);
+                    cmd.Execute(context);
+                }
             }
 
             #endregion
