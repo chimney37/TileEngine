@@ -8,6 +8,10 @@ Engine Design
 	Render and Input Loop
 		Monogame handles in methods INITIALIZE, LOAD CONTENT, UPDATE (INPUT AND OBJECT STATE UPDATES), DRAW (RENDERING ROUTINE)
 
+	Command Pattern Design
+		Decouple input from actions
+
+
 	Game Core
 		Self-Implementation: Manages mundane tasks
 			StateManager

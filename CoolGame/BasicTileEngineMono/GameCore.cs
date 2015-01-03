@@ -17,6 +17,10 @@ namespace BasicTile
     {
 
         #region GAME CLIENT PROPERTIES
+        //Input Handler
+        GameInput gameInput;
+
+
         //Default Tile Map: defines what's in a map
         protected TileMap myMap;
 
@@ -68,7 +72,10 @@ namespace BasicTile
 
         public override void Initialize(Game game)
         {
-            //intialize old keyboard and mouse state
+            //Initialize InputHandler
+            gameInput = new GameInput();
+
+            //TODO: deprecate : intialize old keyboard and mouse state
             oldState = Keyboard.GetState();
             oldMouseState = Mouse.GetState();
 
@@ -154,8 +161,16 @@ namespace BasicTile
             ks = Keyboard.GetState();
             ms = Mouse.GetState();
 
-            #region ZOOMING
-            UpdateScreenZoom();
+            #region GENERAL INPUT HANDLING
+            //TODO: migrate input code to here
+            Command cmd = gameInput.HandleInput();
+
+            if(cmd != null)
+            {
+                cmd.Execute(camera);
+            }
+
+            //UpdateScreenZoom();
             #endregion
 
             #region SCROLLING
@@ -275,7 +290,7 @@ namespace BasicTile
 
 
         #region UPDATE SUB
-        private void UpdateScreenZoom()
+        public void UpdateScreenZoom()
         {
             //TODO: mouse scroll for zooming in and out
             if (ms.ScrollWheelValue < oldMouseState.ScrollWheelValue)

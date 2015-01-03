@@ -58,7 +58,9 @@
     <SkipNestedContentBuild>true</SkipNestedContentBuild>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="GameCommand.cs" />
     <Compile Include="GameCore.cs" />
+    <Compile Include="GameInput.cs" />
     <Compile Include="GameMapEditor.cs" />
     <Compile Include="GameMenu.cs" />
     <Compile Include="GameMessageBox.cs" />
