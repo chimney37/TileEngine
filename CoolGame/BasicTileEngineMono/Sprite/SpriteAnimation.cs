@@ -18,7 +18,7 @@ namespace BasicTile
     /// http://xnaresources.com/default.asp?page=Tutorial:TileEngineSeries:8
     /// http://www.xnaresources.com/default.asp?page=Tutorial:SpriteEngine:3
     /// </summary>
-    class SpriteAnimation
+    public class SpriteAnimation
     {
         #region PROPERTIES
         // The texture that holds the images for this sprite

@@ -18,7 +18,7 @@ namespace BasicTile
     /// http://www.xnaresources.com/default.asp?page=Tutorial:SpriteEngine:1
     /// http://www.xnaresources.com/default.asp?page=Tutorial:SpriteEngine:2
     /// </summary>
-    class FrameAnimation : ICloneable
+    public class FrameAnimation : ICloneable
     {
         #region MEMBERS, PROPERTIES
         // The first frame of the Animation.  We will calculate other frames on the fly based on this frame.

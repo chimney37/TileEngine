@@ -18,11 +18,16 @@ namespace BasicTile
 
         #region GAME CLIENT PROPERTIES
         //Input Handler
-        GameInput gameInput;
+        public GameInput gameInput;
+
 
 
         //Default Tile Map: defines what's in a map
         protected TileMap myMap;
+        public TileMap GameMap
+        {
+            get { return myMap; }
+        }
 
         //for isometric map support
         //this isometric set, is by 64x64,but the image only occupies bottom 32 pixels of tile.
@@ -37,7 +42,11 @@ namespace BasicTile
         int SquaresDown = 50;
 
         //2D camera
-        protected Camera camera;
+        protected Camera _camera;
+        public Camera GameCamera
+        {
+            get { return _camera; }
+        }
 
         //for keeping the first rendering square upper left of screen according to camera view
         Vector2 firstSquare;
@@ -51,29 +60,48 @@ namespace BasicTile
         Texture2D hilight;
         protected Vector2 hilightLoc;
         protected Point hilightPoint;
+        public Point HiLightPoint
+        {
+            get { return hilightPoint; }
+        }
 
         //NPC character
         SpriteAnimation npc;
 
-        //player character
-        MobileSprite vladMobile;
+        //player actor;
+        protected MobileSprite vladMobile;
+        //manual movement by Keys
+        public Vector2 MoveVector { get; set; }
+        public string Animation { get; set; }
+
+        //for movement via A* and Mouse
         Point vladMobileMapPoint;
         Queue<float> lastframesangles = new Queue<float>();
+        public Queue<float> LastFrameAngles
+        {
+            get { return lastframesangles; }
+            set { lastframesangles = value; }
+        }
+        //A* PathFinding variables
+        List<PathNode> foundPath = new List<PathNode>();
+        public List<PathNode> SearchPath
+        {
+            get { return foundPath; }
+            set { foundPath = value; }
+        }
+        //Debugging
+        public Queue<Point> MapPoints = new Queue<Point>();
+
+
 
         //Information for debugging
-        public string InformationalTxt {get;set;}
+        public string InformationalTxt { get; set; }
 
-        //A* PathFinding variables
-        Point startMapPoint;
-        Point endMapPoint;
-        List<PathNode> foundPath = new List<PathNode>();
         #endregion
 
 
         public override void Initialize(Game game)
         {
-            //Initialize InputHandler
-            gameInput = new GameInput();
 
             //TODO: deprecate : intialize old keyboard and mouse state
             oldState = Keyboard.GetState();
@@ -85,6 +113,9 @@ namespace BasicTile
             //debugging and others
             InformationalTxt = "";
             EnableDebugging = false;
+
+            MapPoints.Enqueue(Point.Zero);
+            MapPoints.Enqueue(Point.Zero);
         }
 
         public override void LoadContent(ContentManager Content, GraphicsDeviceManager graphics)
@@ -106,7 +137,7 @@ namespace BasicTile
             myMap.MaxTileVerticalIndex = 16;
 
             //initialize camera
-            camera = new Camera(
+            _camera = new Camera(
                 graphics.GraphicsDevice.Viewport, 
                 new Vector2(baseOffsetX, baseOffsetY), 
                 new Rectangle(0,0,(myMap.MapWidth - 2) * Tile.TileStepX, (myMap.MapHeight - 2) * Tile.TileStepY),
@@ -138,7 +169,7 @@ namespace BasicTile
             vladMobile.Sprite.DrawOffset = new Vector2(-24, -38);
             vladMobile.Sprite.CurrentAnimation = "IdleEast";
             vladMobile.Sprite.AutoRotate = false;
-            vladMobile.Position = camera.ScreenToWorld(myMap.MapCellToScreen(camera,new Vector2(1,9)));
+            vladMobile.Position = _camera.ScreenToWorld(myMap.MapCellToScreen(_camera,new Vector2(1,9)));
             vladMobile.Target = vladMobile.Position;
             vladMobile.Speed = 2f;
             vladMobile.IsPathing = true;
@@ -155,22 +186,39 @@ namespace BasicTile
             npc.DrawOffset = new Vector2(-32, -32);
             npc.CurrentAnimation = "Idle1";
             npc.IsAnimating = true;
+
+            //Initialize InputHandler
+            gameInput = new GameInput();
+            gameInput._buttonE_PR = new StateChangeToCommand<GameMapEditor>(this);
+            gameInput._buttonQ_PR = new StateChangeToCommand<GameMenu>(this);
+            gameInput._buttonEnd_PR = new MarkWorldPointCommand(gameInput);
+            gameInput._buttonHome_PR = new MarkWorldPointCommand(gameInput);
+            gameInput._buttonD_PR = new CalculateDistanceDebuggerCommand(this);
+
+            gameInput._buttonNum1_P = new MoveActorCommand(this.vladMobile, new Vector2(-2, 1), "WalkSouthWest");
+            gameInput._buttonNum2_P = new MoveActorCommand(this.vladMobile, new Vector2(0, 1), "WalkSouth");
+            gameInput._buttonNum3_P = new MoveActorCommand(this.vladMobile, new Vector2(2, 1), "WalkSouthEast");
+            gameInput._buttonNum4_P = new MoveActorCommand(this.vladMobile, new Vector2(-2, 0), "WalkWest");
+            gameInput._buttonNum6_P = new MoveActorCommand(this.vladMobile, new Vector2(2, 0), "WalkEast");
+            gameInput._buttonNum7_P = new MoveActorCommand(this.vladMobile, new Vector2(-2, -1), "WalkNorthWest");
+            gameInput._buttonNum8_P = new MoveActorCommand(this.vladMobile, new Vector2(0, -1), "WalkNorth");
+            gameInput._buttonNum9_P = new MoveActorCommand(this.vladMobile, new Vector2(2, -1), "WalkNorthEast");
+
+            gameInput._mouseLeft_PR = new MoveActorToPositionCommand(this.vladMobile);
+
         }
 
         public override void Update(GameTime gameTime, Context context)
         {
-            // TODO: Add your update logic here
-            ks = Keyboard.GetState();
-            ms = Mouse.GetState();
+            base.Update(gameTime, context);
 
             #region GENERAL INPUT HANDLING
-            //TODO: migrate input code to here
             Queue<Command> cmds = gameInput.HandleInput();
             foreach (Command cmd in cmds)
             {
                 if (cmd != null)
                 {
-                    cmd.Execute(camera);
+                    cmd.Execute(_camera);
                     cmd.Execute(this);
                     cmd.Execute(context);
                 }
@@ -178,229 +226,37 @@ namespace BasicTile
 
             #endregion
 
-            #region SCROLLING
+            #region UPDATES
             //scroll if player is active and moves out of screen
             UpdateMapScrollPlayerView();
             //scroll according to mouse position
             MapMouseScroll();
-            #endregion
-
-            #region MOVE PLAYER BY MOUSE OR BY KEY
-
-            UpdatePlayerByKey(gameTime);
-            UpdatePlayerByMouse(gameTime);
-
-            #endregion
-
-            #region UPDATE CHARACTER POSITIONS
-
-            //update the map cell where player is
-            vladMobileMapPoint = myMap.WorldToMapCell(new Point((int)vladMobile.Position.X, (int)vladMobile.Position.Y));
-
-            npc.Update(gameTime);
-
-            #endregion
-
-            #region UPDATE MOUSE HILIGHT LOCATION
+            //update all actors
+            UpdateActors(gameTime);
+            //update hilight location
             UpdateHilight();
-            #endregion
-
-            #region UPDATE THE FIRST SQUARE LOCATION
             //Camera is intiially at 0,0 and camera can move around
             //we need to enables pan to the location of the map where the camera points
             //firstX and firstY are map square coordinates of the game map that camera points at
             UpdateCameraFirstSquare();
-            #endregion
-
-            #region OTHER FUNCTIONS KEY TOGGLING
-            //TODO: Experimental: calculate distance and pathfinding
-            //get destination point
-            if (ks.IsKeyUp(Keys.End) && oldState.IsKeyDown(Keys.End))
-                endMapPoint = hilightPoint;
-            //get start point
-            if(ks.IsKeyUp(Keys.Home) && oldState.IsKeyDown(Keys.Home))
-                startMapPoint = hilightPoint;
-            //calculate distance, path
-            if(ks.IsKeyUp(Keys.D) && oldState.IsKeyDown(Keys.D))
-            {
-                GameMessageBox message = context.getFactory().GameMessageBox(
-                    string.Format("({0},{1}) -> ({2},{3}) Distance={4}", 
-                    startMapPoint.X,
-                    startMapPoint.Y,
-                    endMapPoint.X,
-                    endMapPoint.Y,
-                    TileMap.L0TileDistance(startMapPoint, endMapPoint)
-                    ), "Debug");
-                this.Push(message);
-            }
-
-            if (ks.IsKeyUp(Keys.P) && oldState.IsKeyDown(Keys.P))
-            {
-                PathFinder p = new PathFinder(myMap);
-
-                if (p.Search(startMapPoint.X, startMapPoint.Y, endMapPoint.X, endMapPoint.Y, myMap))
-                    foundPath = p.PathResult();
-            }
-
-            //Sub-Process Stack Operations
-            if (this.IsEmptySubProcessStack())
-            {
-                //Show MessageBox 1
-                if (ks.IsKeyDown(Keys.S))
-                {
-                    GameMessageBox message = context.getFactory().GameMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はBを押してください。", "メッセージ");
-                    this.Push(message);
-                }
-
-                //Show 2 MessageBoxes
-                if (ks.IsKeyDown(Keys.A))
-                {
-                    GameMessageBox message2 = context.getFactory().GameMessageBox("タイルエンジン著作者：大朏　哲明", "メッセージ", 100, 150);
-                    GameMessageBox message = context.getFactory().GameMessageBox("タイルエンジンへようこそ。このメッセージを消す場合はEnterを押してください。", "メッセージ", 100, 150);
-
-                    this.Push(message2);
-                    this.Push(message);
-                }
-            }
-            #endregion
-
-
-            oldState = ks;
-            oldMouseState = ms;
-
 
             InformationalTxt = "Tile Engine Ver 0.1" +
-                            string.Format("\nMouse Position(W): ({0},{1})", camera.ScreenToWorld(ms.Position).X, camera.ScreenToWorld(ms.Position).Y) +
+                            string.Format("\nMouse Position(W): ({0},{1})", _camera.ScreenToWorld(ms.Position).X, _camera.ScreenToWorld(ms.Position).Y) +
                             string.Format("\nMouse Position(S): ({0},{1})", ms.Position.X, ms.Position.Y) +
                             string.Format("\nMouse Cell Position(Cell): ({0},{1})", hilightPoint.X, hilightPoint.Y) +
-                            string.Format("\nMouse Cell Position(W): ({0})", camera.ScreenToWorld(myMap.MapCellToScreen(camera, new Vector2(hilightPoint.X, hilightPoint.Y)))) +
-                            string.Format("\nCamera Position(W): ({0})", camera.Location) +
-                            string.Format("\nWorld Bounds: ({0},{1})", camera.WorldWidth, camera.WorldHeight) +
+                            string.Format("\nMouse Cell Position(W): ({0})", _camera.ScreenToWorld(myMap.MapCellToScreen(_camera, new Vector2(hilightPoint.X, hilightPoint.Y)))) +
+                            string.Format("\nCamera Position(W): ({0})", _camera.Location) +
+                            string.Format("\nWorld Bounds: ({0},{1})", _camera.WorldWidth, _camera.WorldHeight) +
                             string.Format("\nPlayer Position(W): ({0},{1})", vladMobile.Position.X, vladMobile.Position.Y);
-
-            base.Update(gameTime, context);
-        }
-
-
-        #region UPDATE SUB
-        private void UpdatePlayerByKey(GameTime gameTime)
-        {
-            string animation = "";
-            Vector2 moveDir = Vector2.Zero;
-            if (ks.IsKeyDown(Keys.NumPad7))
-            {
-                moveDir = new Vector2(-2, -1);
-                animation = "WalkNorthWest";
-            }
-
-            if (ks.IsKeyDown(Keys.NumPad8))
-            {
-                moveDir = new Vector2(0, -1);
-                animation = "WalkNorth";
-            }
-
-            if (ks.IsKeyDown(Keys.NumPad9))
-            {
-                moveDir = new Vector2(2, -1);
-                animation = "WalkNorthEast";
-            }
-
-            if (ks.IsKeyDown(Keys.NumPad4))
-            {
-                moveDir = new Vector2(-2, 0);
-                animation = "WalkWest";
-            }
-
-            if (ks.IsKeyDown(Keys.NumPad6))
-            {
-                moveDir = new Vector2(2, 0);
-                animation = "WalkEast";
-            }
-
-            if (ks.IsKeyDown(Keys.NumPad1))
-            {
-                moveDir = new Vector2(-2, 1);
-                animation = "WalkSouthWest";
-            }
-
-            if (ks.IsKeyDown(Keys.NumPad2))
-            {
-                moveDir = new Vector2(0, 1);
-                animation = "WalkSouth";
-            }
-
-            if (ks.IsKeyDown(Keys.NumPad3))
-            {
-                moveDir = new Vector2(2, 1);
-                animation = "WalkSouthEast";
-            }
-
-            //check walkability
-            if (myMap.GetCellAtWorldPoint(vladMobile.Position + moveDir).Walkable == false)
-                moveDir = Vector2.Zero;
-            
-
-            //prevent movement into positions which have abrupt changes in height
-            if (Math.Abs(myMap.GetOverallHeight(vladMobile.Position) - myMap.GetOverallHeight(vladMobile.Position + moveDir)) > 10)
-                moveDir = Vector2.Zero;
-            
-            //direct sprite control : to not interfere with mobile sprite updates in the same loop (active -> mobile sprite is animating)
-            if (!vladMobile.IsActive)
-            {
-                if (moveDir.Length() != 0)
-                {
-                    vladMobile.Sprite.MoveBy((int)moveDir.X, (int)moveDir.Y);
-                    if (vladMobile.Sprite.CurrentAnimation != animation)
-                        vladMobile.Sprite.CurrentAnimation = animation;
-                }
-                else
-                {
-                    vladMobile.Sprite.CurrentAnimation = "Idle" + vladMobile.Sprite.CurrentAnimation.Substring(4);
-                }
-
-                vladMobile.Sprite.Update(gameTime);
-            }
+            #endregion
 
         }
-        protected void UpdatePlayerByMouse(GameTime gameTime)
+
+        #region UPDATE SUB ROUTINES
+
+        protected void UpdateActors(GameTime gameTime)
         {
-            if (oldMouseState.LeftButton == ButtonState.Pressed &&
-                ms.LeftButton == ButtonState.Released)
-            {
-                //activate mobile sprite
-                vladMobile.IsActive = true;
-
-                vladMobile.Target = vladMobile.Position;
-
-                //obtain start and end coordinates
-                Point start = myMap.WorldToMapCell(vladMobile.Position);
-                Point end = myMap.WorldToMapCell(camera.ScreenToWorld(new Vector2(ms.X, ms.Y)));
-
-                Debug.WriteLine(string.Format("s:({0},{1})", start.X, start.Y));
-                Debug.WriteLine(string.Format("e:({0},{1})", end.X, end.Y));
-
-                //clear current existing path (if navigating in progress)
-                vladMobile.ClearPathNodes();
-
-                //set up new path finder
-                PathFinder p = new PathFinder(myMap);
-
-                if (p.Search(start.X, start.Y, end.X, end.Y, myMap))
-                {
-                    foundPath = p.PathResult();
-
-                    foreach (PathNode n in foundPath)
-                    {
-                        Vector2 nodevec = camera.ScreenToWorld(myMap.MapCellToScreen(camera,n.X, n.Y));
-
-                        Debug.WriteLine(string.Format("({0},{1})", nodevec.X, nodevec.Y));
-                        //TODO: A probable issue with mapcell -> screen coordinates 
-                        vladMobile.AddPathNode(nodevec);
-                    }
-                    vladMobile.DeactivateAfterPathing = true;
-                }
-            }
-
+           
             if (vladMobile.IsActive)
             {
 
@@ -483,34 +339,59 @@ namespace BasicTile
 
                 vladMobile.Update(gameTime);
             }
+            //case for direct sprite control : to not interfere with mobile sprite updates in the same loop (active -> mobile sprite is animating)
+            else
+            {
+                if (MoveVector.Length() != 0)
+                {
+                    vladMobile.Sprite.MoveBy((int)MoveVector.X, (int)MoveVector.Y);
+                    if (vladMobile.Sprite.CurrentAnimation != Animation)
+                        vladMobile.Sprite.CurrentAnimation = Animation;
+                }
+                else
+                {
+                    vladMobile.Sprite.CurrentAnimation = "Idle" + vladMobile.Sprite.CurrentAnimation.Substring(4);
+                }
+
+                vladMobile.Sprite.Update(gameTime);
+
+                //reset move vector since we don't want this actor to move forever
+                MoveVector = Vector2.Zero;
+            }
+
+            //update the map cell where player is
+            vladMobileMapPoint = myMap.WorldToMapCell(new Point((int)vladMobile.Position.X, (int)vladMobile.Position.Y));
+
+            //update NPC
+            npc.Update(gameTime);
         }
         protected void UpdateCameraFirstSquare()
         {
-            firstSquare = myMap.GetCameraFirstSquare(camera);
+            firstSquare = myMap.GetCameraFirstSquare(_camera);
         }
         protected void UpdateHilight()
         {
-            hilightLoc = camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
+            hilightLoc = _camera.ScreenToWorld(new Vector2(gameInput.MousePosition.X, gameInput.MousePosition.Y));
             //get map cell coordinates of mouse point in Update
             hilightPoint = myMap.WorldToMapCell(new Point((int)hilightLoc.X, (int)hilightLoc.Y));
         }
         protected void UpdateMapScrollPlayerView()
         {
-            Vector2 testPos = camera.WorldToScreen(vladMobile.Position);
+            Vector2 testPos = _camera.WorldToScreen(vladMobile.Position);
             //only moves the camera when player is active
             if (vladMobile.IsActive)
             {
                 if (testPos.X < 100)
-                    camera.Move(new Vector2(testPos.X - 100, 0));
+                    _camera.Move(new Vector2(testPos.X - 100, 0));
 
-                if (testPos.X > (camera.ViewWidth - 100))
-                    camera.Move(new Vector2(testPos.X - (camera.ViewWidth - 100), 0));
+                if (testPos.X > (_camera.ViewWidth - 100))
+                    _camera.Move(new Vector2(testPos.X - (_camera.ViewWidth - 100), 0));
 
                 if (testPos.Y < 100)
-                    camera.Move(new Vector2(0, testPos.Y - 100));
+                    _camera.Move(new Vector2(0, testPos.Y - 100));
 
-                if (testPos.Y > (camera.ViewHeight - 100))
-                    camera.Move(new Vector2(0, testPos.Y - (camera.ViewHeight - 100)));
+                if (testPos.Y > (_camera.ViewHeight - 100))
+                    _camera.Move(new Vector2(0, testPos.Y - (_camera.ViewHeight - 100)));
             }
         }
         protected void MapMouseScroll()
@@ -523,21 +404,21 @@ namespace BasicTile
             if (testPosMouse.X < Margin)
                 moveVec = new Vector2(testPosMouse.X - Margin, 0);
 
-            if (testPosMouse.X > (camera.ViewWidth - Margin))
-                moveVec = new Vector2(testPosMouse.X - camera.ViewWidth + Margin, 0);
+            if (testPosMouse.X > (_camera.ViewWidth - Margin))
+                moveVec = new Vector2(testPosMouse.X - _camera.ViewWidth + Margin, 0);
 
             if (testPosMouse.Y < Margin)
                 moveVec = new Vector2(0, testPosMouse.Y - Margin);
 
-            if (testPosMouse.Y > (camera.ViewHeight - Margin))
-                moveVec = new Vector2(0, testPosMouse.Y - camera.ViewHeight + Margin);
+            if (testPosMouse.Y > (_camera.ViewHeight - Margin))
+                moveVec = new Vector2(0, testPosMouse.Y - _camera.ViewHeight + Margin);
 
             moveVec.Y = MathHelper.Clamp(moveVec.Y, -5, 5);
             moveVec.X = MathHelper.Clamp(moveVec.X, -10, 10);
 
             moveVec *= Multiplier;
 
-            camera.Move(moveVec);
+            _camera.Move(moveVec);
         }
         #endregion
 
@@ -561,7 +442,7 @@ namespace BasicTile
                 null,
                 null,
                 null,
-                camera.GetTransformation());
+                _camera.GetTransformation());
 
             #region DRAW TILES
             //zig-zag rendering approach
@@ -588,8 +469,8 @@ namespace BasicTile
                         continue;
 
                     //Clipping: if mapx hits view port size, don't render tiles
-                    Vector2 renderpoint = camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY));
-                    if( renderpoint.X >= camera.ViewWidth || renderpoint.Y >= camera.ViewHeight) 
+                    Vector2 renderpoint = _camera.WorldToScreen(new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY));
+                    if( renderpoint.X >= _camera.ViewWidth || renderpoint.Y >= _camera.ViewHeight) 
                         continue;
 
                     #region DRAW BASE TILES
@@ -705,7 +586,7 @@ namespace BasicTile
                         //draw L0 distance from Source cell
                         spriteBatch.DrawString(
                             pericles6,
-                            TileMap.L0TileDistance(startMapPoint, new Point(mapx, mapy)).ToString(),
+                            TileMap.L0TileDistance(MapPoints.ElementAt(0), new Point(mapx, mapy)).ToString(),
                             new Vector2(
                                 mapx * Tile.TileStepX + rowOffset + 24,
                                 mapy * Tile.TileStepY + 32),
@@ -751,7 +632,7 @@ namespace BasicTile
             spriteBatch.DrawString(
                             pericles6,
                             InformationalTxt,
-                            camera.ScreenToWorld(new Vector2(10,560)),
+                            _camera.ScreenToWorld(new Vector2(10,560)),
                             Color.White,
                             0f,
                             Vector2.Zero,

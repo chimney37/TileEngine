@@ -11,14 +11,32 @@ namespace BasicTile
 {
     public class GameMapEditor: GameCore
     {
+        GameInput mapEditorInput;
+
         int id;
 
         int TypeIdx = 0;
+        public int TileTypeIndex
+        {
+            get { return TypeIdx; }
+            set { TypeIdx = value; }
+        }
         TileType tileType;
+        public TileType CurrentTileType
+        {
+            get { return tileType; }
+            set { tileType = value; }
+        }
 
         Texture2D blankTexture;
 
         bool ShowPreview = true;
+        public bool ShowPreviewMode
+        {
+            get { return ShowPreview; }
+            set { ShowPreview = value; }
+        }
+
         bool ShowTileMap = false;
         float currentTime = 0f;
         float maxTime = 10f;
@@ -27,7 +45,14 @@ namespace BasicTile
         int TileMapSY = 200;
         float TileMapScale = 0.5f;
 
-        bool IsConfigLoaded = false;
+        public bool IsConfigLoaded { get; set; }
+
+        public override void Initialize(Game game)
+        {
+            base.Initialize(game);
+
+            IsConfigLoaded = false;
+        }
 
         public override void LoadContent(Microsoft.Xna.Framework.Content.ContentManager Content, GraphicsDeviceManager graphics)
         {
@@ -40,52 +65,61 @@ namespace BasicTile
                 color[i] = Color.White;
 
             blankTexture.SetData(color);
+
+
+            //rebind input
+            mapEditorInput = new GameInput();
+            mapEditorInput._buttonE_PR = new StateChangeToCommand<GameCore>(this);
+            mapEditorInput._buttonR_PR = new LoadConfigFileCommand();
+            mapEditorInput._buttonA_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Left);
+            mapEditorInput._buttonD_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Right);
+            mapEditorInput._buttonW_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Up);
+            mapEditorInput._buttonS_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Down);
+            mapEditorInput._buttonQ_PR = new IncrementTileTypeIndexCmd();
+            mapEditorInput._mouseLeft_P_NoLShf = new AddTileToMapCmd();
+            mapEditorInput._mouseLeft_P_LShf = new MoveActorToPositionCommand(this.vladMobile);
+            mapEditorInput._buttonLeftShift_P = new SetPreviewCursor(false);
+            mapEditorInput._mouseRight_PR = new RemoveTileMapCmd();
         }
 
-        public override void Update(Microsoft.Xna.Framework.GameTime gameTime, Context context)
+        public override void Update(GameTime gameTime, Context context)
         {
+            this.GameTime = gameTime;
+            this.ShowPreviewMode = true;
+
+            Queue<Command> cmds = this.mapEditorInput.HandleInput();
+            foreach (Command cmd in cmds)
+            {
+                if (cmd != null)
+                {
+                    cmd.Execute(_camera);
+                    cmd.Execute(this);
+                    cmd.Execute(context);
+                }
+            }
+
             if (!IsConfigLoaded)
             {
                 myMap.RegisterConfigurationFile();
                 IsConfigLoaded = true;
             }
 
-            ks = Keyboard.GetState();
-            ms = Mouse.GetState();
+            UpdateMiniTileMap(gameTime);
 
-            if (ks.IsKeyUp(Keys.E) && oldState.IsKeyDown(Keys.E))
-            {
-                IsConfigLoaded = false;
-                context.changeState(typeof(GameCore));
-            }
+            base.UpdateActors(gameTime);
+            base.gameInput.HandleInput();
+            base.UpdateCameraFirstSquare();
+            base.UpdateHilight();
+            base.MapMouseScroll();
 
-            if (ks.IsKeyUp(Keys.V) && oldState.IsKeyDown(Keys.V))
-            {
-                this.Remove(this.id);
-                GameText gametxt = context.getFactory().GameText("Tile Map Editor Ver 0.01", 400, 400);
-                this.Add(gametxt, gametxt.ID);
-                id = gametxt.ID;
-                Console.WriteLine(string.Format("Process queued: ID={0}", gametxt.ID));
-            }
+            //string text = base.InformationalTxt;
+            base.InformationalTxt = string.Format("Tile Map Editor Ver 0.01\nTile Type: ({0}), Index={1}, ObjectName={2}", tileType.ToString(), myMap.TileIndex, myMap.GetTileMapLogicalObjName(myMap.TileIndex));
 
-            #region UPDATE TILE INDEX
-            myMap.OldTileIdx = myMap.TileIndex;
+            //base.Update(gameTime, context);
+        }
 
-            if (ks.IsKeyUp(Keys.A) && oldState.IsKeyDown(Keys.A))
-                myMap.GetLeftTileIndex();
-
-            if (ks.IsKeyUp(Keys.W) && oldState.IsKeyDown(Keys.W))
-                myMap.GetUpTileIndex();
-
-            if (ks.IsKeyUp(Keys.S) && oldState.IsKeyDown(Keys.S))
-                myMap.GetDownTileIndex();
-
-            if (ks.IsKeyUp(Keys.D) && oldState.IsKeyDown(Keys.D))
-                myMap.GetRightTileIndex();
-
-            if(ks.IsKeyUp(Keys.Q) && oldState.IsKeyDown(Keys.Q))
-                tileType = (TileType)(++TypeIdx % Enum.GetNames(typeof(TileType)).Length);
-            
+        private void UpdateMiniTileMap(GameTime gameTime)
+        {
             //fix tile type if required given the index
             TileType t = myMap.GetGameTileInfoList(myMap.TileIndex).ElementAt(0).TileType;
             if (t == TileType.Multi)
@@ -107,80 +141,6 @@ namespace BasicTile
                 ShowTileMap = false;
                 currentTime = 0f;
             }
-
-            #endregion
-
-            #region TILES ADDITION AND REMOVAL OPERATIONS WITH MOUSE CLICKS
-            if (ks.IsKeyUp(Keys.LeftShift) && 
-                oldMouseState.LeftButton == ButtonState.Pressed &&
-                ms.LeftButton == ButtonState.Released)
-            {
-                switch (tileType)
-                {
-                    case TileType.Base:
-                        myMap.AddBaseTile(this.hilightPoint.X, this.hilightPoint.Y, myMap.TileIndex);
-                        break;
-                    case TileType.Height:
-                        myMap.AddHeightTile(this.hilightPoint.X, this.hilightPoint.Y, myMap.TileIndex);
-                        break;
-                    case TileType.Topper:
-                        myMap.AddTopperTile(this.hilightPoint.X, this.hilightPoint.Y, myMap.TileIndex);
-                        break;
-                    case TileType.Multi:
-                        myMap.AddMultiTile(this.hilightPoint.X, this.hilightPoint.Y, myMap.TileIndex);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            if (ks.IsKeyUp(Keys.LeftShift) && 
-                oldMouseState.RightButton == ButtonState.Pressed &&
-                ms.RightButton == ButtonState.Released)
-            {
-                switch (tileType)
-                {
-                    case TileType.Base:
-                        myMap.RemoveBaseTile(this.hilightPoint.X, this.hilightPoint.Y);
-                        break;
-                    case TileType.Height:
-                        myMap.RemoveHeightTile(this.hilightPoint.X, this.hilightPoint.Y);
-                        break;
-                    case TileType.Topper:
-                        myMap.RemoveTopperTile(this.hilightPoint.X, this.hilightPoint.Y);
-                        break;
-                    case TileType.Multi:
-                        myMap.RemoveMultiTile(this.hilightPoint.X, this.hilightPoint.Y);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            #endregion
-
-            if (ks.IsKeyDown(Keys.LeftShift))
-            {
-                ShowPreview = false;
-                base.UpdatePlayerByMouse(gameTime);
-            }
-
-            if (ks.IsKeyUp(Keys.LeftShift))
-                ShowPreview = true;
-
-
-
-
-            base.UpdateCameraFirstSquare();
-            base.UpdateHilight();
-            base.MapMouseScroll();
-
-            oldState = ks;
-            oldMouseState = ms;
-
-            //string text = base.InformationalTxt;
-            base.InformationalTxt = string.Format("\nTile Type: ({0}), Index={1}, ObjectName={2}", tileType.ToString(), myMap.TileIndex, myMap.GetTileMapLogicalObjName(myMap.TileIndex));
-
-            //base.Update(gameTime, context);
         }
 
         public override void Render(Microsoft.Xna.Framework.GameTime gameTime, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch, Context context)
@@ -196,7 +156,7 @@ namespace BasicTile
                 null,
                 null,
                 null,
-                this.camera.GetTransformation());
+                this._camera.GetTransformation());
 
             #region DRAW TILE PART (FROM MOUSE)
 
@@ -229,7 +189,7 @@ namespace BasicTile
             {
                 spriteBatch.Draw(
                     Tile.TileSetTexture,
-                        camera.ScreenToWorld(new Vector2(
+                        _camera.ScreenToWorld(new Vector2(
                             TileMapSX,
                             TileMapSY)),
                     Tile.GetSourceTileSet(),
@@ -244,7 +204,7 @@ namespace BasicTile
                 {
                     spriteBatch.Draw(
                         blankTexture,
-                            camera.ScreenToWorld(new Vector2(
+                            _camera.ScreenToWorld(new Vector2(
                                 TileMapSX + Tile.TileWidth * (id % myMap.MaxTileHorizontalIndex) * TileMapScale,
                                 TileMapSY + Tile.TileHeight * (id / myMap.MaxTileHorizontalIndex) * TileMapScale)),
                         new Rectangle(0, 0, blankTexture.Width, blankTexture.Height),

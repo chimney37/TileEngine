@@ -34,6 +34,8 @@ namespace BasicTile
             //assign message box command to a specific key
             MessageBoxCommand messageBox = new MessageBoxCommand(this, "About", "これはタイルエンジンのデモです。著作者：大朏哲明", 200, 200);
             gameInput._buttonA_PR = messageBox;
+            gameInput._buttonEnter_PR = new StateChangeToCommand<GameCore>(this);
+            gameInput._buttonE_PR = new StateChangeToCommand<GameMapEditor>(this);
 
             game.IsMouseVisible = true;
         }

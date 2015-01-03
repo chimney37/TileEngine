@@ -26,6 +26,7 @@ namespace BasicTile
     public abstract class GameProcess
     {
         public int ID { get; set; }
+        public GameTime GameTime { get; set; }
 
         public bool IsAlive = true;
         private Stack<GameProcess> ProcessStack = new Stack<GameProcess>();
@@ -58,6 +59,10 @@ namespace BasicTile
         {
             ProcessStack.Pop();
         }
+        public GameProcess Peek()
+        {
+            return this.ProcessStack.Peek();
+        }
         public void Enqueue(GameProcess gameProcess)
         {
             ProcessQueue.Enqueue(gameProcess);
@@ -83,6 +88,8 @@ namespace BasicTile
         public abstract void LoadContent(ContentManager Content, GraphicsDeviceManager graphics);
         public virtual void Update(GameTime gameTime, Context context)
         {
+            this.GameTime = gameTime;
+
             //Sub-Process Stack Operations
             if (!IsEmptySubProcessStack())
             {

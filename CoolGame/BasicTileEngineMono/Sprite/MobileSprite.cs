@@ -18,7 +18,7 @@ namespace BasicTile
     /// References:
     /// http://www.xnaresources.com/default.asp?page=Tutorial:SpriteEngine:4
     /// </summary>
-    class MobileSprite
+    public class MobileSprite
     {
         #region MEMBERS PROPERTIES
         // The SpriteAnimation object that holds the graphical and animation data for this object
