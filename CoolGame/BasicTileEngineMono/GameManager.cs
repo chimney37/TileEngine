@@ -50,29 +50,29 @@ namespace BasicTile
             return ProcessQueue.Count > 0 ? false : true;
         }
 
-        protected void Push(GameProcess gameProcess)
+        public void Push(GameProcess gameProcess)
         {
             ProcessStack.Push(gameProcess);
         }
-        protected void Pop()
+        public void Pop()
         {
             ProcessStack.Pop();
         }
-        protected void Enqueue(GameProcess gameProcess)
+        public void Enqueue(GameProcess gameProcess)
         {
             ProcessQueue.Enqueue(gameProcess);
         }
-        protected void Dequeue(GameProcess gameProcess)
+        public void Dequeue(GameProcess gameProcess)
         {
             if(ProcessQueue.Count() > 0)
                 ProcessQueue.Dequeue();
         }
-        protected void Add(GameProcess gameProcess, int ProcessID)
+        public void Add(GameProcess gameProcess, int ProcessID)
         {
             if (!ProcessDict.ContainsKey(ProcessID))
                 ProcessDict.Add(ProcessID, gameProcess);
         }
-        protected void Remove(int ProcessID)
+        public void Remove(int ProcessID)
         {
             if (ProcessDict.ContainsKey(ProcessID))
                 ProcessDict.Remove(ProcessID);

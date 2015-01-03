@@ -45,7 +45,7 @@ namespace BasicTile
         //debugging tile locations on map
         protected SpriteFont pericles6;
         protected SpriteFont snippets14;
-        bool EnableDebugging = false;
+        public bool EnableDebugging { get; set; }
 
         //highlighting tiles
         Texture2D hilight;
@@ -82,7 +82,9 @@ namespace BasicTile
             //make mouse visible
             game.IsMouseVisible = true;
 
+            //debugging and others
             InformationalTxt = "";
+            EnableDebugging = false;
         }
 
         public override void LoadContent(ContentManager Content, GraphicsDeviceManager graphics)
@@ -168,9 +170,10 @@ namespace BasicTile
             if(cmd != null)
             {
                 cmd.Execute(camera);
+                cmd.Execute(this);
+                cmd.Execute(context);
             }
 
-            //UpdateScreenZoom();
             #endregion
 
             #region SCROLLING
@@ -208,18 +211,6 @@ namespace BasicTile
             #endregion
 
             #region OTHER FUNCTIONS KEY TOGGLING
-            //enable or disable debugging coordinates
-            if (ks.IsKeyUp(Keys.Delete) && oldState.IsKeyDown(Keys.Delete))
-                EnableDebugging = !EnableDebugging;
-
-            //quit core to menu
-            if (ks.IsKeyUp(Keys.Q) && oldState.IsKeyDown(Keys.Q))
-                context.changeState(typeof(GameMenu));
-
-            //map editor mode
-            if (ks.IsKeyUp(Keys.E) && oldState.IsKeyDown(Keys.E))
-                context.changeState(typeof(GameMapEditor));
-
             //TODO: Experimental: calculate distance and pathfinding
             //get destination point
             if (ks.IsKeyUp(Keys.End) && oldState.IsKeyDown(Keys.End))
@@ -290,14 +281,6 @@ namespace BasicTile
 
 
         #region UPDATE SUB
-        public void UpdateScreenZoom()
-        {
-            //TODO: mouse scroll for zooming in and out
-            if (ms.ScrollWheelValue < oldMouseState.ScrollWheelValue)
-                camera.Scale += 0.1f;
-            else if (ms.ScrollWheelValue > oldMouseState.ScrollWheelValue)
-                camera.Scale -= 0.1f;
-        }
         private void UpdatePlayerByKey(GameTime gameTime)
         {
             string animation = "";

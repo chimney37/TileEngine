@@ -15,10 +15,26 @@ namespace BasicTile
 
     public class GameMenu : GameProcess
     {
+        //Input Handler
+        GameInput gameInput;
+
         protected SpriteFont snippets14;
+
+        //Menu Text
+        string VersionText = "Tile Engine Menu System Ver 0.2";
+        string MenuText = "<Enter> Continue to Core Game\n" +
+                            "<E> Map Editor Mode\n" +
+                            "<A> About\n";
+                            
 
         public override void Initialize(Game game)
         {
+            gameInput = new GameInput();
+
+            //assign message box command to a specific key
+            MessageBoxCommand messageBox = new MessageBoxCommand(this, "About", "これはタイルエンジンのデモです。\n著作者：大朏哲明", 200, 200);
+            gameInput._buttonA_PR = messageBox;
+
             game.IsMouseVisible = true;
         }
 
@@ -34,25 +50,12 @@ namespace BasicTile
             {
                 //State Changes and Sub-Processes
                 KeyboardState ks = Keyboard.GetState();
-                if (ks.IsKeyDown(Keys.Enter))
-                    context.changeState(typeof(GameCore));
 
-                if (ks.IsKeyDown(Keys.S))
+                Command cmd = gameInput.HandleInput();
+                if(cmd != null)
                 {
-                    GameMessageBox message = context.getFactory().GameMessageBox("Message Box Example:");
-                    this.Push(message);
-                }
-
-                if (ks.IsKeyDown(Keys.A))
-                {
-                    GameMessageBox message = context.getFactory().GameMessageBox("Message Box Example:");
-                    this.Push(message);
-
-                    GameMessageBox message2 = context.getFactory().GameMessageBox("Message Box Example:");
-                    message2.X = 100;
-                    message2.Y = 150;
-
-                    this.Push(message2);
+                    cmd.Execute(this);
+                    cmd.Execute(context);
                 }
             }
 
@@ -64,8 +67,8 @@ namespace BasicTile
             spriteBatch.Begin();
             spriteBatch.DrawString(
                             snippets14,
-                            "Tile Engine Ver 0.8",
-                            new Vector2(500, 390),
+                            VersionText,
+                            new Vector2(0, 0),
                             Color.White,
                             0f,
                             Vector2.Zero,
@@ -75,8 +78,8 @@ namespace BasicTile
 
             spriteBatch.DrawString(
                             snippets14,
-                            "Press Enter to Continue",
-                            new Vector2(450, 370),
+                            MenuText,
+                            new Vector2(10, 30),
                             Color.White,
                             0f,
                             Vector2.Zero,
