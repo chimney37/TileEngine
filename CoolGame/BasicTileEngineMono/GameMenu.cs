@@ -29,6 +29,7 @@ namespace BasicTile
 
         public override void Initialize(Game game)
         {
+            base.Initialize(game);
             gameInput = new GameInput();
 
             //assign message box command to a specific key

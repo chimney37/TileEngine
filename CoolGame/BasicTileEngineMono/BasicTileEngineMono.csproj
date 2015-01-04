@@ -65,9 +65,10 @@
     <Compile Include="GameMenu.cs" />
     <Compile Include="GameMessageBox.cs" />
     <Compile Include="GameObject.cs" />
+    <Compile Include="GameObserver.cs" />
     <Compile Include="GameProcessFactory.cs" />
     <Compile Include="Game1.cs" />
-    <Compile Include="GameManager.cs" />
+    <Compile Include="AbstractGameProcess.cs" />
     <Compile Include="GameText.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="PathFinder.cs" />

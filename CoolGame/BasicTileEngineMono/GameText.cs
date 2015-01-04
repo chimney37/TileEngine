@@ -25,7 +25,7 @@ namespace BasicTile
 
         public override void Initialize(Game game)
         {
-            game.IsMouseVisible = true;
+            base.Initialize(game);
         }
 
         public override void LoadContent(ContentManager Content, GraphicsDeviceManager graphics)

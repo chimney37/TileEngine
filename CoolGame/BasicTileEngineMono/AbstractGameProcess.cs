@@ -27,6 +27,7 @@ namespace BasicTile
     {
         public int ID { get; set; }
         public GameTime GameTime { get; set; }
+        public Context GameContext { get; set; }
 
         public bool IsAlive = true;
         private Stack<GameProcess> ProcessStack = new Stack<GameProcess>();
@@ -84,10 +85,18 @@ namespace BasicTile
         }
 
 
-        public abstract void Initialize(Game game);
+        public virtual void Initialize(Game game)
+        {
+            //record the Game context
+            this.GameContext = game as Context;
+
+            //make mouse visible
+            game.IsMouseVisible = true;
+        }
         public abstract void LoadContent(ContentManager Content, GraphicsDeviceManager graphics);
         public virtual void Update(GameTime gameTime, Context context)
         {
+            //track the game Time
             this.GameTime = gameTime;
 
             //Sub-Process Stack Operations

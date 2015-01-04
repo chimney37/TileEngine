@@ -102,13 +102,7 @@ namespace BasicTile
 
         public override void Initialize(Game game)
         {
-
-            //TODO: deprecate : intialize old keyboard and mouse state
-            oldState = Keyboard.GetState();
-            oldMouseState = Mouse.GetState();
-
-            //make mouse visible
-            game.IsMouseVisible = true;
+            base.Initialize(game);
 
             //debugging and others
             InformationalTxt = "";
