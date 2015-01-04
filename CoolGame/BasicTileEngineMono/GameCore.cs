@@ -20,6 +20,8 @@ namespace BasicTile
         //Input Handler
         public GameInput gameInput;
 
+        public GameCoreEventSystem gameCoreEventSys;
+        protected Achievements gameAchievements;
 
 
         //Default Tile Map: defines what's in a map
@@ -70,6 +72,10 @@ namespace BasicTile
 
         //player actor;
         protected MobileSprite vladMobile;
+        public MobileSprite PlayerActor
+        {
+            get { return vladMobile; }
+        }
         //manual movement by Keys
         public Vector2 MoveVector { get; set; }
         public string Animation { get; set; }
@@ -110,6 +116,11 @@ namespace BasicTile
 
             MapPoints.Enqueue(Point.Zero);
             MapPoints.Enqueue(Point.Zero);
+
+            gameCoreEventSys = new GameCoreEventSystem();
+            gameAchievements = new Achievements(this);
+
+            gameCoreEventSys.AddObserver(gameAchievements);
         }
 
         public override void LoadContent(ContentManager Content, GraphicsDeviceManager graphics)
@@ -129,6 +140,9 @@ namespace BasicTile
             //Tileset map sizes
             myMap.MaxTileHorizontalIndex = 10;
             myMap.MaxTileVerticalIndex = 16;
+
+            //Load TileMap information
+            myMap.RegisterConfigurationFile();
 
             //initialize camera
             _camera = new Camera(
@@ -207,9 +221,12 @@ namespace BasicTile
             base.Update(gameTime, context);
 
             #region GENERAL INPUT HANDLING
-            Queue<Command> cmds = gameInput.HandleInput();
-            foreach (Command cmd in cmds)
+            gameInput.HandleInput(ref CommandQueue);
+
+            while (CommandQueue.Count() > 0)
             {
+                Command cmd = CommandQueue.Dequeue();
+
                 if (cmd != null)
                 {
                     cmd.Execute(_camera);
@@ -217,14 +234,15 @@ namespace BasicTile
                     cmd.Execute(context);
                 }
             }
-
             #endregion
 
             #region UPDATES
+            this.gameCoreEventSys.UpdateEntity(this);
+
             //scroll if player is active and moves out of screen
             UpdateMapScrollPlayerView();
             //scroll according to mouse position
-            MapMouseScroll();
+            UpdateMapMouseScroll();
             //update all actors
             UpdateActors(gameTime);
             //update hilight location
@@ -388,11 +406,11 @@ namespace BasicTile
                     _camera.Move(new Vector2(0, testPos.Y - (_camera.ViewHeight - 100)));
             }
         }
-        protected void MapMouseScroll()
+        protected void UpdateMapMouseScroll()
         {
             int Multiplier = 1;
             int Margin = 5;
-            Point testPosMouse = ms.Position;
+            Point testPosMouse = gameInput.MousePosition;
             Vector2 moveVec = Vector2.Zero;
 
             if (testPosMouse.X < Margin)

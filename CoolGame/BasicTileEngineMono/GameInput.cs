@@ -260,6 +260,12 @@ namespace BasicTile
             return cmdQueue;
         }
 
+        public void HandleInput(ref Queue<Command> CommandQueue)
+        {
+            foreach (Command c in HandleInput())
+                CommandQueue.Enqueue(c);
+        }
+
         private bool MouseMoved(Point one, Point two)
         {
             if (Math.Abs(one.X - two.X) > 5 || Math.Abs(one.Y - two.Y) > 5)

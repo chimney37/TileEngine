@@ -45,6 +45,9 @@ namespace BasicTile
             endNode.X = EndX;
             endNode.Y = EndY;
 
+            if (!endNode.IsReachable)
+                return false;
+
             while (OpenList.Count() > 0)
             {
                 PathNode currentNode = GetOpenListMinFNode();

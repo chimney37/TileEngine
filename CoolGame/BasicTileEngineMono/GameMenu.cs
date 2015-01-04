@@ -50,9 +50,11 @@ namespace BasicTile
         {
             //Check if anything on the Sub-Process Stack
 
-            Queue<Command> cmds = gameInput.HandleInput();
-            foreach (Command cmd in cmds)
+            gameInput.HandleInput(ref this.CommandQueue);
+            while (CommandQueue.Count() > 0)
             {
+                Command cmd = CommandQueue.Dequeue();
+
                 if (cmd != null)
                 {
                     cmd.Execute(this);

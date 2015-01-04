@@ -87,9 +87,11 @@ namespace BasicTile
             this.GameTime = gameTime;
             this.ShowPreviewMode = true;
 
-            Queue<Command> cmds = this.mapEditorInput.HandleInput();
-            foreach (Command cmd in cmds)
+            this.mapEditorInput.HandleInput(ref CommandQueue);
+            while (CommandQueue.Count() > 0)
             {
+                Command cmd = CommandQueue.Dequeue();
+
                 if (cmd != null)
                 {
                     cmd.Execute(_camera);
@@ -110,7 +112,7 @@ namespace BasicTile
             base.gameInput.HandleInput();
             base.UpdateCameraFirstSquare();
             base.UpdateHilight();
-            base.MapMouseScroll();
+            base.UpdateMapMouseScroll();
 
             //string text = base.InformationalTxt;
             base.InformationalTxt = string.Format("Tile Map Editor Ver 0.01\nTile Type: ({0}), Index={1}, ObjectName={2}", tileType.ToString(), myMap.TileIndex, myMap.GetTileMapLogicalObjName(myMap.TileIndex));
@@ -126,6 +128,7 @@ namespace BasicTile
                 tileType = t;
 
             //Show Tile Map for 1 seconds
+            //
             if (myMap.OldTileIdx != myMap.TileIndex)
             {
                 ShowTileMap = true;

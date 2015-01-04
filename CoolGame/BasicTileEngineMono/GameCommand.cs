@@ -97,6 +97,15 @@ namespace BasicTile
             this.Y = Y;
         }
 
+        public MessageBoxCommand(GameProcess gameProcess, string Title, string Content, Vector2 ScreenPos)
+        {
+            this.gameProcess = gameProcess;
+            this.Title = Title;
+            this.Content = Content;
+            this.X = (int)ScreenPos.X;
+            this.Y = (int)ScreenPos.Y;
+        }
+
         public override void Execute(object obj)
         {
             if(obj is Context)

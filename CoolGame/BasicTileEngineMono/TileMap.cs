@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -338,6 +339,8 @@ namespace BasicTile
                                 data.TileXOffset = int.Parse(frag[1]);
                                 data.TileYOffset = int.Parse(frag[2]);
 
+                                Debug.WriteLine(data.TileID);
+
                                 if (!ObjectDictionary.ContainsKey(data.TileID))
                                     ObjectDictionary.Add(data.TileID, logicalObj);
 
@@ -395,7 +398,8 @@ namespace BasicTile
             if (ObjectDictionary.ContainsKey(id))
             {
                 return (from data in ObjectDictionary[id].GetEnumerable()
-                        select data.TileID).ToList();
+                        select data.TileID
+                        ).ToList();
             }
             else
                 return new List<int>() { id };
@@ -454,6 +458,36 @@ namespace BasicTile
         {
             return Rows[MapCellY].Columns[MapCellX];
         }
+        //get adjacent cells
+        public List<MapCell> GetAdjMapCells(int MapCellX, int MapCellY)
+        {
+            List<MapCell> cells = new List<MapCell>(8);
+            if (MapCellY % 2 == 1)
+            {
+                cells.Add(this.GetMapCell(MapCellX, MapCellY - 2)); //N
+                cells.Add(this.GetMapCell(MapCellX + 1, MapCellY - 1)); //NE
+                cells.Add(this.GetMapCell(MapCellX + 1, MapCellY)); //E
+                cells.Add(this.GetMapCell(MapCellX + 1, MapCellY + 1)); //SE
+                cells.Add(this.GetMapCell(MapCellX, MapCellY + 2)); //S
+                cells.Add(this.GetMapCell(MapCellX, MapCellY + 1)); //SW
+                cells.Add(this.GetMapCell(MapCellX - 1, MapCellY)); //W
+                cells.Add(this.GetMapCell(MapCellX, MapCellY - 1)); //NW
+            }
+            //even row apply even offset
+            else
+            {
+                cells.Add(this.GetMapCell(MapCellX, MapCellY - 2)); //N
+                cells.Add(this.GetMapCell(MapCellX, MapCellY - 1)); //NE
+                cells.Add(this.GetMapCell(MapCellX + 1, MapCellY)); //E
+                cells.Add(this.GetMapCell(MapCellX, MapCellY + 1)); //SE
+                cells.Add(this.GetMapCell(MapCellX, MapCellY + 2)); //S
+                cells.Add(this.GetMapCell(MapCellX - 1, MapCellY + 1)); //SW
+                cells.Add(this.GetMapCell(MapCellX - 1, MapCellY)); //W
+                cells.Add(this.GetMapCell(MapCellX - 1, MapCellY - 1)); //NW
+            }
+            return cells;
+        }
+
         //gets from MapCell To Screen (Center of rombus)
         public Vector2 MapCellToScreen(Camera camera, int MapCellX, int MapCellY)
         {

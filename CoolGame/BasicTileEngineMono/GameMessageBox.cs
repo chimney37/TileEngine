@@ -71,9 +71,11 @@ namespace BasicTile
 
         public override void Update(GameTime gameTime, Context context)
         {
-            Queue<Command> cmds = gameInput.HandleInput();
-            foreach (Command cmd in cmds)
+            gameInput.HandleInput(ref CommandQueue);
+            while (CommandQueue.Count() > 0)
             {
+                Command cmd = CommandQueue.Dequeue();
+
                 if (cmd != null)
                 {
                     cmd.Execute(this);

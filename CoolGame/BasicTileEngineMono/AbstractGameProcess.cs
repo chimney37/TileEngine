@@ -30,6 +30,10 @@ namespace BasicTile
         public Context GameContext { get; set; }
 
         public bool IsAlive = true;
+        //Event Queue for Commands
+        public Queue<Command> CommandQueue = new Queue<Command>();
+
+        //Stack, Queued and Dictionary game Processes
         private Stack<GameProcess> ProcessStack = new Stack<GameProcess>();
         private Queue<GameProcess> ProcessQueue = new Queue<GameProcess>();
         private Dictionary<int, GameProcess> ProcessDict = new Dictionary<int, GameProcess>();
