@@ -124,9 +124,15 @@ namespace BasicTile
         {
             //fix tile type if required given the index
             TileType t = myMap.GetGameTileInfoList(myMap.TileIndex).ElementAt(0).TileType;
-            if (t == TileType.Multi)
-                tileType = t;
 
+            switch (t)
+            {
+                case TileType.Multi:
+                case TileType.Height:
+                case TileType.Topper:
+                    tileType = t;
+                    break;
+            }
             //Show Tile Map for 1 seconds
             //
             if (myMap.OldTileIdx != myMap.TileIndex)
@@ -222,14 +228,6 @@ namespace BasicTile
             #endregion
 
             spriteBatch.End();
-        }
-
-        public enum TileType
-        {
-            Base,
-            Height,
-            Topper,
-            Multi
         }
     }
 }

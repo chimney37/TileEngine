@@ -419,7 +419,7 @@ namespace BasicTile
             {
                 GameMapEditor gME = obj as GameMapEditor;
 
-                gME.CurrentTileType = (GameMapEditor.TileType)(++gME.TileTypeIndex % Enum.GetNames(typeof(GameMapEditor.TileType)).Length);
+                gME.CurrentTileType = (TileType)(++gME.TileTypeIndex % Enum.GetNames(typeof(TileType)).Length);
             }
         }
     }
@@ -433,16 +433,16 @@ namespace BasicTile
 
                 switch (gME.CurrentTileType)
                 {
-                    case GameMapEditor.TileType.Base:
+                    case TileType.Base:
                         gME.GameMap.AddBaseTile(gME.HiLightPoint.X, gME.HiLightPoint.Y, gME.GameMap.TileIndex);
                         break;
-                    case GameMapEditor.TileType.Height:
+                    case TileType.Height:
                         gME.GameMap.AddHeightTile(gME.HiLightPoint.X, gME.HiLightPoint.Y, gME.GameMap.TileIndex);
                         break;
-                    case GameMapEditor.TileType.Topper:
+                    case TileType.Topper:
                         gME.GameMap.AddTopperTile(gME.HiLightPoint.X, gME.HiLightPoint.Y, gME.GameMap.TileIndex);
                         break;
-                    case GameMapEditor.TileType.Multi:
+                    case TileType.Multi:
                         gME.GameMap.AddMultiTile(gME.HiLightPoint.X, gME.HiLightPoint.Y, gME.GameMap.TileIndex);
                         break;
                     default:
@@ -461,16 +461,16 @@ namespace BasicTile
 
                 switch (gME.CurrentTileType)
                 {
-                    case GameMapEditor.TileType.Base:
+                    case TileType.Base:
                         gME.GameMap.RemoveBaseTile(gME.HiLightPoint.X, gME.HiLightPoint.Y);
                         break;
-                    case GameMapEditor.TileType.Height:
+                    case TileType.Height:
                         gME.GameMap.RemoveHeightTile(gME.HiLightPoint.X, gME.HiLightPoint.Y);
                         break;
-                    case GameMapEditor.TileType.Topper:
+                    case TileType.Topper:
                         gME.GameMap.RemoveTopperTile(gME.HiLightPoint.X, gME.HiLightPoint.Y);
                         break;
-                    case GameMapEditor.TileType.Multi:
+                    case TileType.Multi:
                         gME.GameMap.RemoveMultiTile(gME.HiLightPoint.X, gME.HiLightPoint.Y);
                         break;
                     default:

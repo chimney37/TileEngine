@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -313,9 +314,10 @@ namespace BasicTile
             foreach (var section in ini.ReadIni())
             {
                 string sectionname = section.Key;
-                GameMapEditor.TileType tileType = GameMapEditor.TileType.Base;
+                TileType tileType = TileType.Base;
+                ObjTileSizeType objSizeType = ObjTileSizeType.Multi;
 
-                GameLogicalObject logicalObj = new GameLogicalObject() { Name = sectionname };
+                GameLogicalObject logicalObj = new GameLogicalObject() { Name = sectionname, TileSizeType= ObjTileSizeType.Single};
 
                 foreach (var pair in section.Value)
                 {
@@ -323,11 +325,16 @@ namespace BasicTile
                     {
                         //resolve Key : TileType
                         if (pair.Key == "TileType")
-                            tileType = (GameMapEditor.TileType)Enum.Parse(typeof(GameMapEditor.TileType), pair.Value);
+                        {
+                            tileType = (TileType)Enum.Parse(typeof(TileType), pair.Value);
+                            continue;
+                        }
 
-                        //resolve Key : DataIndex
+                        //resolve Key : DataIndex (for Multi-tile size objects)
                         if (pair.Key == "DataIndex")
                         {
+                            logicalObj.TileSizeType = ObjTileSizeType.Multi;
+
                             string[] val = pair.Value.Split('|');
                             foreach (string s in val)
                             {
@@ -339,12 +346,58 @@ namespace BasicTile
                                 data.TileXOffset = int.Parse(frag[1]);
                                 data.TileYOffset = int.Parse(frag[2]);
 
-                                Debug.WriteLine(data.TileID);
+                                Debug.WriteLine(logicalObj.Name);
 
                                 if (!ObjectDictionary.ContainsKey(data.TileID))
                                     ObjectDictionary.Add(data.TileID, logicalObj);
 
                                 logicalObj.Add(data);
+                            }
+                            continue;
+                        }
+
+                        //If add in bulk (for singly sized tiles)
+                        if (pair.Key == "BulkDataIndex")
+                        {
+                            string[] val = pair.Value.Split(',');
+                            foreach(string frag in val)
+                            {
+                                Regex rangeExpression = new Regex("(?<startIdx>[0-9]+):(?<endIdx>[0-9]+)");
+
+                                Match matchRangeExpres = rangeExpression.Match(frag);
+
+                                if (matchRangeExpres.Success)
+                                {
+                                    int startIndex = int.Parse(matchRangeExpres.Groups["startIdx"].Value);
+                                    int endIndex = int.Parse(matchRangeExpres.Groups["endIdx"].Value);
+
+                                    for(int i = startIndex; i <= endIndex; i++)
+                                    {
+                                        logicalObj = (GameLogicalObject)logicalObj.Clone();
+
+                                        logicalObj.Name = sectionname + i.ToString();
+                                        logicalObj.Add(new GameTileInfo() { TileType = tileType, TileID = i });
+
+                                        Debug.WriteLine(logicalObj.Name);
+
+                                        if (!ObjectDictionary.ContainsKey(i))
+                                            ObjectDictionary.Add(i, logicalObj);
+                                    }
+                                }
+                                else
+                                {
+                                    int TileID = int.Parse(frag);
+
+                                    logicalObj = (GameLogicalObject)logicalObj.Clone();
+
+                                    logicalObj.Name = sectionname + frag;
+                                    logicalObj.Add(new GameTileInfo() { TileType = tileType, TileID = TileID });
+
+                                    Debug.WriteLine(logicalObj.Name);
+
+                                    if (!ObjectDictionary.ContainsKey(TileID))
+                                        ObjectDictionary.Add(TileID, logicalObj);
+                                }
                             }
                         }
                     }
@@ -372,20 +425,11 @@ namespace BasicTile
                 {
                     switch(t.TileType)
                     {
-                        case GameMapEditor.TileType.Multi:
+                        case TileType.Multi:
                             Rows[row].Columns[column].AddMultiSizeTile(t.TileID, t.TileXOffset, t.TileYOffset, Rows[row].Columns[column].HeightTiles.Count());
                         break;
                     }
                 }
-            }
-        }
-
-        private void RegisterMultiTileFunction(int row, int column, AddMultiSizeDelegate Adder)
-        {
-            foreach (Tuple<int, int, int, int> t in Rows[row].Columns[column].MultiSizeTiles)
-            {
-                if (!MultiTileAdderDictionary.ContainsKey(t.Item1))
-                    MultiTileAdderDictionary.Add(t.Item1, Adder);
             }
         }
 
@@ -397,9 +441,12 @@ namespace BasicTile
         {
             if (ObjectDictionary.ContainsKey(id))
             {
-                return (from data in ObjectDictionary[id].GetEnumerable()
-                        select data.TileID
+                if (ObjectDictionary[id].TileSizeType == ObjTileSizeType.Multi)
+                    return (from data in ObjectDictionary[id].GetEnumerable()
+                            select data.TileID
                         ).ToList();
+                else
+                    return new List<int>() { id };
             }
             else
                 return new List<int>() { id };
