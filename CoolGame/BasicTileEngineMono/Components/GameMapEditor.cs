@@ -13,8 +13,6 @@ namespace BasicTile
     {
         GameInput mapEditorInput;
 
-        int id;
-
         int TypeIdx = 0;
         public int TileTypeIndex
         {

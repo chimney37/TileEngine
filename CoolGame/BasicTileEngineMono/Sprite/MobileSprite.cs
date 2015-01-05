@@ -89,6 +89,59 @@ namespace BasicTile
             }
         }
 
+        Queue<float> lastframesangles = new Queue<float>();
+
+        public IsometricDirections HeadDirections
+        {
+            get
+            {
+                //calculate angle between vladMobile heading direction and a vector facing N
+                Double vladmobileAngRad = MobileSprite.signedAngle(Delta, new Vector2(0, -1));
+
+                //smoothing function (average over a few frames, so we won't get jaggy animations)
+                if (!Double.IsNaN(vladmobileAngRad))
+                {
+                    if (lastframesangles.Count < 10)
+                        lastframesangles.Enqueue((float)vladmobileAngRad);
+                    else
+                    {
+                        lastframesangles.Dequeue();
+                        lastframesangles.Enqueue((float)vladmobileAngRad);
+                        vladmobileAngRad = lastframesangles.Average();
+                    }
+                }
+
+                if (Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > -Math.PI / 8)
+                    return IsometricDirections.N;
+                
+                //isometric angles is "flatter" than it looks
+                //eaxctly 67.5 deg won't work so make it abit bigger than (3/8) * pi
+                if (-3.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -Math.PI / 8)
+                    return IsometricDirections.NE;
+                
+                //exactly (5/8) * pi won't work so make it a bit smaller
+                if (-4.9 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -3.5 * Math.PI / 8)
+                    return IsometricDirections.E;
+                
+                if (-7.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -4.9 * Math.PI / 8)
+                    return IsometricDirections.SE;
+                
+                if (7 * Math.PI / 8 < vladmobileAngRad || vladmobileAngRad < -7.5 * Math.PI / 8)
+                    return IsometricDirections.S;
+                
+                if (7 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 4.9 * Math.PI / 8)
+                    return IsometricDirections.SW;
+                
+                if (4.9 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 3.5 * Math.PI / 8)
+                    return IsometricDirections.W;
+                
+                if (3.5 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > Math.PI / 8)
+                    return IsometricDirections.NW;
+
+                return IsometricDirections.UNDEFINED;
+            }
+        }
+
         #region BOOLEAN CHECKS
         // Determine the status of the sprite.  An inactive sprite will not be updated but will be drawn.
         bool bActive = true;

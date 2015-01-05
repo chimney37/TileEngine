@@ -80,7 +80,7 @@ namespace BasicTile
                 for (int x = 0; x < MapWidth; x++)
                 {
                     // default tileID = 0 (green grassland) for all places
-                    thisRow.Columns.Add(new MapCell(0));
+                    thisRow.Columns.Add(new MapCell(0) { X = x, Y = y });
                 }
                 Rows.Add(thisRow);
             }
@@ -315,7 +315,6 @@ namespace BasicTile
             {
                 string sectionname = section.Key;
                 TileType tileType = TileType.Base;
-                ObjTileSizeType objSizeType = ObjTileSizeType.Multi;
 
                 GameLogicalObject logicalObj = new GameLogicalObject() { Name = sectionname, TileSizeType= ObjTileSizeType.Single};
 
@@ -533,6 +532,59 @@ namespace BasicTile
                 cells.Add(this.GetMapCell(MapCellX - 1, MapCellY - 1)); //NW
             }
             return cells;
+        }
+
+        public MapCell GetMapCellAtDirection(IsometricDirections dir, int MapCellX, int MapCellY)
+        {
+            if (MapCellY % 2 == 1)
+            {
+                switch(dir)
+                {
+                    case IsometricDirections.N:
+                        return this.GetMapCell(MapCellX, MapCellY - 2); //N
+                    case IsometricDirections.NE:
+                        return this.GetMapCell(MapCellX + 1, MapCellY - 1); //NE
+                    case IsometricDirections.E:
+                        return this.GetMapCell(MapCellX + 1, MapCellY); //E
+                    case IsometricDirections.SE:
+                        return this.GetMapCell(MapCellX + 1, MapCellY + 1); //SE
+                    case IsometricDirections.S:
+                        return this.GetMapCell(MapCellX, MapCellY + 2); //S
+                    case IsometricDirections.SW:
+                        return this.GetMapCell(MapCellX, MapCellY + 1); //SW
+                    case IsometricDirections.W:
+                        return this.GetMapCell(MapCellX - 1, MapCellY); //W
+                    case IsometricDirections.NW:
+                        return this.GetMapCell(MapCellX, MapCellY - 1); //NW
+                    default:
+                        return null;
+                }
+            }
+            //even row apply even offset
+            else
+            {
+                switch (dir)
+                {
+                    case IsometricDirections.N:
+                        return this.GetMapCell(MapCellX, MapCellY - 2); //N
+                    case IsometricDirections.NE:
+                        return this.GetMapCell(MapCellX, MapCellY - 1); //NE
+                    case IsometricDirections.E:
+                        return this.GetMapCell(MapCellX + 1, MapCellY); //E
+                    case IsometricDirections.SE:
+                        return this.GetMapCell(MapCellX, MapCellY + 1); //SE
+                    case IsometricDirections.S:
+                        return this.GetMapCell(MapCellX, MapCellY + 2); //S
+                    case IsometricDirections.SW:
+                        return this.GetMapCell(MapCellX - 1, MapCellY + 1); //SW
+                    case IsometricDirections.W:
+                        return this.GetMapCell(MapCellX - 1, MapCellY); //W
+                    case IsometricDirections.NW:
+                        return this.GetMapCell(MapCellX - 1, MapCellY - 1); //NW
+                    default:
+                        return null;
+                }
+            }
         }
 
         //gets from MapCell To Screen (Center of rombus)
@@ -767,5 +819,18 @@ namespace BasicTile
     public class MapRow
     {
         public List<MapCell> Columns = new List<MapCell>();
+    }
+
+    public enum IsometricDirections
+    {
+        N,
+        NE,
+        E,
+        SE,
+        S,
+        SW,
+        W,
+        NW,
+        UNDEFINED,
     }
 }
