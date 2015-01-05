@@ -45,7 +45,8 @@ namespace BasicTile
             endNode.X = EndX;
             endNode.Y = EndY;
 
-            if (!endNode.IsReachable)
+            //if end node is not walkable(reachable by object), fail search
+            if (!endNode.IsWalkable(null))
                 return false;
 
             while (OpenList.Count() > 0)
