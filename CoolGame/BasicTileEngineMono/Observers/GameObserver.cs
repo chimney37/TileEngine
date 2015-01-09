@@ -55,19 +55,16 @@ namespace BasicTile
             {
                 foreach (int tileID in headingCell.TopperTiles)
                 {
-                    string str = gCore.GameMap.GetTileMapLogicalObjName(tileID);
                     if (gCore.GameMap.GetTileMapLogicalObjName(tileID).Contains("WaterTile"))
                     {
                         this.Notify(gCore.PlayerActor, GameEvent.EVENT_ENTITY_REACHED_WATER);
-                        break;
                     }
-                }
 
-                if (headingCell.HeightTiles.Count() == 0)
-                {
-                    this.Notify(gCore.PlayerActor, GameEvent.EVENT_ENTITY_ON_LAND);
-                    break;
-                }
+                    if (gCore.GameMap.GetTileMapLogicalObjName(tileID).Contains("Slope"))
+                    {
+                        this.Notify(gCore.PlayerActor, GameEvent.EVENT_ENTITY_REACHED_SLOPE);
+                    }
+                }              
             }
 
         }
@@ -76,6 +73,7 @@ namespace BasicTile
     public class Achievements : GameObserver
     {
         bool entityIsAtWater = true;
+        bool entityIsNearSlope = true;
         bool entityIsOnLand = true;
         GameCore gCore;
 
@@ -100,6 +98,20 @@ namespace BasicTile
 
                         gCore.CommandQueue.Enqueue(cmd);
                         entityIsAtWater = false;
+                    }
+                    break;
+                case GameEvent.EVENT_ENTITY_REACHED_SLOPE:
+                    if (Entity is MobileSprite && entityIsNearSlope)
+                    {
+                        MobileSprite actor = Entity as MobileSprite;
+
+                        Vector2 ScreenPos = gCore.GameCamera.WorldToScreen(actor.Position);
+                        ScreenPos.Y += 100;
+
+                        Command cmd = new MessageBoxCommand(gCore, "ゲームイベント：", "傾斜が低い坂は歩けます。", ScreenPos);
+
+                        gCore.CommandQueue.Enqueue(cmd);
+                        entityIsNearSlope = false;
                     }
                     break;
                 case GameEvent.EVENT_ENTITY_ON_LAND:
