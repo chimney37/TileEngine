@@ -253,8 +253,8 @@ namespace BasicTile
             UpdateCameraFirstSquare();
 
             InformationalTxt = "Tile Engine Ver 0.1" +
-                            string.Format("\nMouse Position(W): ({0},{1})", _camera.ScreenToWorld(ms.Position).X, _camera.ScreenToWorld(ms.Position).Y) +
-                            string.Format("\nMouse Position(S): ({0},{1})", ms.Position.X, ms.Position.Y) +
+                            string.Format("\nMouse Position(W): ({0})", _camera.ScreenToWorld(new Vector2(gameInput.MousePosition.X, gameInput.MousePosition.Y))) +
+                            string.Format("\nMouse Position(S): ({0})", gameInput.MousePosition) +
                             string.Format("\nMouse Cell Position(Cell): ({0},{1})", hilightPoint.X, hilightPoint.Y) +
                             string.Format("\nMouse Cell Position(W): ({0})", _camera.ScreenToWorld(myMap.MapCellToScreen(_camera, new Vector2(hilightPoint.X, hilightPoint.Y)))) +
                             string.Format("\nCamera Position(W): ({0})", _camera.Location) +
@@ -271,76 +271,45 @@ namespace BasicTile
            
             if (vladMobile.IsActive)
             {
-
-                //calculate angle between vladMobile heading direction and a vector facing N
-                Double vladmobileAngRad = MobileSprite.signedAngle(vladMobile.Delta, new Vector2(0, -1));
                 string animation = "";
                 string endanimation = "";
+                
+                IsometricDirections dir = vladMobile.HeadDirections;
 
-
-                //smoothing function (average over a few frames, so we won't get jaggy animations)
-                if (!Double.IsNaN(vladmobileAngRad))
+                switch(dir)
                 {
-                    if (lastframesangles.Count < 10)
-                        lastframesangles.Enqueue((float)vladmobileAngRad);
-                    else
-                    {
-                        lastframesangles.Dequeue();
-                        lastframesangles.Enqueue((float)vladmobileAngRad);
-                        vladmobileAngRad = lastframesangles.Average();
-                    }
-                }
-
-                if (Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > -Math.PI / 8)
-                {
-                    animation = "WalkNorth";
+                    case IsometricDirections.N:
+                                            animation = "WalkNorth";
                     endanimation = "IdleNorth";
-                }
-
-                //isometric angles is "flatter" than it looks
-                //eaxctly 67.5 deg won't work so make it abit bigger than (3/8) * pi
-                if (-3.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -Math.PI / 8)
-                {
-                    animation = "WalkNorthEast";
+                        break;
+                    case IsometricDirections.NE:
+                                            animation = "WalkNorthEast";
                     endanimation = "IdleNorthEast";
-                }
-
-                //exactly (5/8) * pi won't work so make it a bit smaller
-                if (-4.9 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -3.5 * Math.PI / 8)
-                {
-                    animation = "WalkEast";
+                        break;
+                    case IsometricDirections.E:
+                                            animation = "WalkEast";
                     endanimation = "IdleEast";
-                }
-
-                if (-7.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -4.9 * Math.PI / 8)
-                {
-                    animation = "WalkSouthEast";
+                        break;
+                    case IsometricDirections.SE:
+                                            animation = "WalkSouthEast";
                     endanimation = "IdleSouthEast";
-                }
-
-                if (7 * Math.PI / 8 < vladmobileAngRad || vladmobileAngRad < -7.5 * Math.PI / 8)
-                {
-                    animation = "WalkSouth";
+                        break;
+                    case IsometricDirections.S:
+                                            animation = "WalkSouth";
                     endanimation = "IdleSouth";
-
-                }
-
-                if (7 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 4.9 * Math.PI / 8)
-                {
-                    animation = "WalkSouthWest";
+                        break;
+                    case IsometricDirections.SW:
+                                            animation = "WalkSouthWest";
                     endanimation = "IdleSouthWest";
-                }
-
-                if (4.9 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 3.5 * Math.PI / 8)
-                {
-                    animation = "WalkWest";
+                        break;
+                    case IsometricDirections.W:
+                                            animation = "WalkWest";
                     endanimation = "IdleWest";
-                }
-
-                if (3.5 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > Math.PI / 8)
-                {
-                    animation = "WalkNorthWest";
+                        break;
+                    case IsometricDirections.NW:
+                                            animation = "WalkNorthWest";
                     endanimation = "IdleNorthWest";
+                        break;
                 }
 
                 if (vladMobile.Sprite.CurrentAnimation != animation)

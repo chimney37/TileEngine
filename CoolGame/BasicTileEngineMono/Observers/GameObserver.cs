@@ -48,25 +48,28 @@ namespace BasicTile
     {
         public void UpdateEntity(GameCore gCore)
         {
-            Point ActorMapPoint = gCore.GameMap.WorldToMapCell(gCore.PlayerActor.Position);
+            Point ActorMapCell = gCore.GameMap.WorldToMapCell(gCore.PlayerActor.Position);
 
-            //Get Player facing location
-            IsometricDirections dir = gCore.PlayerActor.HeadDirections;
 
-            MapCell headingCell = gCore.GameMap.GetMapCellAtDirection(dir, ActorMapPoint.X, ActorMapPoint.Y);
-
-            if (headingCell != null)
+            foreach (MapCell headingCell in gCore.GameMap.GetAdjMapCells(ActorMapCell.X, ActorMapCell.Y))
             {
                 foreach (int tileID in headingCell.TopperTiles)
                 {
                     string str = gCore.GameMap.GetTileMapLogicalObjName(tileID);
                     if (gCore.GameMap.GetTileMapLogicalObjName(tileID).Contains("WaterTile"))
+                    {
                         this.Notify(gCore.PlayerActor, GameEvent.EVENT_ENTITY_REACHED_WATER);
+                        break;
+                    }
                 }
 
                 if (headingCell.HeightTiles.Count() == 0)
+                {
                     this.Notify(gCore.PlayerActor, GameEvent.EVENT_ENTITY_ON_LAND);
+                    break;
+                }
             }
+
         }
     }
 
@@ -91,7 +94,7 @@ namespace BasicTile
                         MobileSprite actor = Entity as MobileSprite;
 
                         Vector2 ScreenPos = gCore.GameCamera.WorldToScreen(actor.Position);
-                        ScreenPos.Y -= 50;
+                        ScreenPos.Y += 100;
 
                         Command cmd = new MessageBoxCommand(gCore, "ゲームイベント：", "水の中は歩けません。", ScreenPos);
 
@@ -105,7 +108,7 @@ namespace BasicTile
                         MobileSprite actor = Entity as MobileSprite;
 
                         Vector2 ScreenPos = gCore.GameCamera.WorldToScreen(actor.Position);
-                        ScreenPos.Y -= 50;
+                        ScreenPos.Y += 100;
 
                         Command cmd = new MessageBoxCommand(gCore, "ゲームイベント：", "ここは歩けます", ScreenPos);
 

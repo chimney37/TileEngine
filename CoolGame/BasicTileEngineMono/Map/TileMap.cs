@@ -452,7 +452,8 @@ namespace BasicTile
         }
         public IEnumerable<GameTileInfo> GetGameTileInfoList(int id)
         {
-            if (ObjectDictionary.ContainsKey(id))
+            if (ObjectDictionary.ContainsKey(id) &&
+                ObjectDictionary[id].TileSizeType == ObjTileSizeType.Multi)
             {
                 return ObjectDictionary[id].GetEnumerable();
             }
@@ -468,8 +469,17 @@ namespace BasicTile
                 return id.ToString();
         }
 
+        public ObjTileSizeType GetLogicalObjTileType(int id)
+        {
+            if (ObjectDictionary.ContainsKey(id))
+                return ObjectDictionary[id].TileSizeType;
+            else
+                return ObjTileSizeType.Single;
+        }
+
         public void GetLeftTileIndex()
         {
+
             string objname = GetTileMapLogicalObjName(TileIndex);
 
             while (GetTileMapLogicalObjName(TileIndex) == objname)
@@ -593,7 +603,7 @@ namespace BasicTile
             Vector2 FirstMapCell = GetCameraFirstSquare(camera);
 
             int rowOffset = (MapCellY % 2 == 1) ? rowOffset = Tile.OddRowXOffset : 0;
-            return new Vector2((MapCellX - FirstMapCell.X) * mouseMap.Width + rowOffset, (MapCellY - FirstMapCell.Y) * mouseMap.Height / 2 - 16);
+            return new Vector2((MapCellX - FirstMapCell.X) * mouseMap.Width + rowOffset, (MapCellY - FirstMapCell.Y) * mouseMap.Height / 2 - 16)*camera.Scale;
         }
         public Vector2 MapCellToScreen(Camera camera, Vector2 mapCellPoint)
         {
