@@ -197,8 +197,9 @@ namespace BasicTile
         {
             base.Update(gameTime, context);
 
-            #region GENERAL INPUT HANDLING
+            #region COMMAND HANDLING
             gameInput.HandleInput(ref CommandQueue);
+
 
             while (CommandQueue.Count() > 0)
             {
@@ -207,16 +208,23 @@ namespace BasicTile
                 if (cmd != null)
                 {
                     cmd.Execute(_camera);
-                    cmd.Execute(this);
-                    cmd.Execute(context);
-                    cmd.Execute(Player);
+
+                    //if something is waiting on the stack, such as a dialog, must process(pop) before the following can execute
+                    if (this.IsEmptySubProcessStack())
+                    {
+                        cmd.Execute(context);
+                        cmd.Execute(this);
+                        cmd.Execute(Player);
+                    }
                 }
             }
+            
             #endregion
 
             #region UPDATES
-            this.gameCoreEventSys.UpdateEntity(this);
 
+            //update subjects that notify observers
+            this.gameCoreEventSys.UpdateEntity(this);
             //scroll if player is active and moves out of screen
             UpdateMapScrollPlayerView();
             //scroll according to mouse position
@@ -246,6 +254,7 @@ namespace BasicTile
 
         protected void UpdateActors(GameTime gameTime)
         {
+            //update main player
             Player.Update(gameTime,myMap);
 
             //update NPC
