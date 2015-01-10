@@ -71,36 +71,11 @@ namespace BasicTile
         SpriteAnimation npc;
 
         //player actor;
-        protected MobileSprite vladMobile;
-        public MobileSprite PlayerActor
-        {
-            get { return vladMobile; }
-        }
-        //manual movement by Keys
-        public Vector2 MoveVector { get; set; }
-        public string Animation { get; set; }
-
-        //for movement via A* and Mouse
-        Point vladMobileMapPoint;
-        Queue<float> lastframesangles = new Queue<float>();
-        public Queue<float> LastFrameAngles
-        {
-            get { return lastframesangles; }
-            set { lastframesangles = value; }
-        }
-        //A* PathFinding variables
-        List<PathNode> foundPath = new List<PathNode>();
-        public List<PathNode> SearchPath
-        {
-            get { return foundPath; }
-            set { foundPath = value; }
-        }
-        //Debugging
-        public Queue<Point> MapPoints = new Queue<Point>();
-
+        public GameActor Player;
 
 
         //Information for debugging
+        public Queue<Point> MapPoints = new Queue<Point>();
         public string InformationalTxt { get; set; }
 
         #endregion
@@ -156,33 +131,35 @@ namespace BasicTile
 
             //create sprite and animations for character
             //add an experimental Mobile sprite character
-            vladMobile = new MobileSprite(Content.Load<Texture2D>(@"Textures\Characters\T_Vlad_Sword_Walking_48x48"));
-            vladMobile.Sprite.AddAnimation("WalkEast", 0, 48 * 0, 48, 48, 8, 0.1f, "IdleEast");
-            vladMobile.Sprite.AddAnimation("WalkNorth", 0, 48 * 1, 48, 48, 8, 0.1f, "IdleNorth");
-            vladMobile.Sprite.AddAnimation("WalkNorthEast", 0, 48 * 2, 48, 48, 8, 0.1f, "IdleNorthEast");
-            vladMobile.Sprite.AddAnimation("WalkNorthWest", 0, 48 * 3, 48, 48, 8, 0.1f, "IdleNorthWest");
-            vladMobile.Sprite.AddAnimation("WalkSouth", 0, 48 * 4, 48, 48, 8, 0.1f, "IdleSouth");
-            vladMobile.Sprite.AddAnimation("WalkSouthEast", 0, 48 * 5, 48, 48, 8, 0.1f, "IdleSouthEast");
-            vladMobile.Sprite.AddAnimation("WalkSouthWest", 0, 48 * 6, 48, 48, 8, 0.1f, "IdleSouthWest");
-            vladMobile.Sprite.AddAnimation("WalkWest", 0, 48 * 7, 48, 48, 8, 0.1f, "IdleWest");
-            vladMobile.Sprite.AddAnimation("IdleEast", 0, 48 * 0, 48, 48, 1, 0.2f);
-            vladMobile.Sprite.AddAnimation("IdleNorth", 0, 48 * 1, 48, 48, 1, 0.2f);
-            vladMobile.Sprite.AddAnimation("IdleNorthEast", 0, 48 * 2, 48, 48, 1, 0.2f);
-            vladMobile.Sprite.AddAnimation("IdleNorthWest", 0, 48 * 3, 48, 48, 1, 0.2f);
-            vladMobile.Sprite.AddAnimation("IdleSouth", 0, 48 * 4, 48, 48, 1, 0.2f);
-            vladMobile.Sprite.AddAnimation("IdleSouthEast", 0, 48 * 5, 48, 48, 1, 0.2f);
-            vladMobile.Sprite.AddAnimation("IdleSouthWest", 0, 48 * 6, 48, 48, 1, 0.2f);
-            vladMobile.Sprite.AddAnimation("IdleWest", 0, 48 * 7, 48, 48, 1, 0.2f);
-            vladMobile.EndPathAnimation = "IdleEast";
-            vladMobile.Sprite.DrawOffset = new Vector2(-24, -38);
-            vladMobile.Sprite.CurrentAnimation = "IdleEast";
-            vladMobile.Sprite.AutoRotate = false;
-            vladMobile.Position = _camera.ScreenToWorld(myMap.MapCellToScreen(_camera,new Vector2(1,9)));
-            vladMobile.Target = vladMobile.Position;
-            vladMobile.Speed = 2f;
-            vladMobile.IsPathing = true;
-            vladMobile.LoopPath = false;
-            vladMobile.IsActive = false;
+            Texture2D playerTexture = Content.Load<Texture2D>(@"Textures\Characters\T_Vlad_Sword_Walking_48x48");
+
+            Player = new GameActor(playerTexture);
+            Player.ActorMobileSprite.Sprite.AddAnimation("WalkEast", 0, 48 * 0, 48, 48, 8, 0.1f, "IdleEast");
+            Player.ActorMobileSprite.Sprite.AddAnimation("WalkNorth", 0, 48 * 1, 48, 48, 8, 0.1f, "IdleNorth");
+            Player.ActorMobileSprite.Sprite.AddAnimation("WalkNorthEast", 0, 48 * 2, 48, 48, 8, 0.1f, "IdleNorthEast");
+            Player.ActorMobileSprite.Sprite.AddAnimation("WalkNorthWest", 0, 48 * 3, 48, 48, 8, 0.1f, "IdleNorthWest");
+            Player.ActorMobileSprite.Sprite.AddAnimation("WalkSouth", 0, 48 * 4, 48, 48, 8, 0.1f, "IdleSouth");
+            Player.ActorMobileSprite.Sprite.AddAnimation("WalkSouthEast", 0, 48 * 5, 48, 48, 8, 0.1f, "IdleSouthEast");
+            Player.ActorMobileSprite.Sprite.AddAnimation("WalkSouthWest", 0, 48 * 6, 48, 48, 8, 0.1f, "IdleSouthWest");
+            Player.ActorMobileSprite.Sprite.AddAnimation("WalkWest", 0, 48 * 7, 48, 48, 8, 0.1f, "IdleWest");
+            Player.ActorMobileSprite.Sprite.AddAnimation("IdleEast", 0, 48 * 0, 48, 48, 1, 0.2f);
+            Player.ActorMobileSprite.Sprite.AddAnimation("IdleNorth", 0, 48 * 1, 48, 48, 1, 0.2f);
+            Player.ActorMobileSprite.Sprite.AddAnimation("IdleNorthEast", 0, 48 * 2, 48, 48, 1, 0.2f);
+            Player.ActorMobileSprite.Sprite.AddAnimation("IdleNorthWest", 0, 48 * 3, 48, 48, 1, 0.2f);
+            Player.ActorMobileSprite.Sprite.AddAnimation("IdleSouth", 0, 48 * 4, 48, 48, 1, 0.2f);
+            Player.ActorMobileSprite.Sprite.AddAnimation("IdleSouthEast", 0, 48 * 5, 48, 48, 1, 0.2f);
+            Player.ActorMobileSprite.Sprite.AddAnimation("IdleSouthWest", 0, 48 * 6, 48, 48, 1, 0.2f);
+            Player.ActorMobileSprite.Sprite.AddAnimation("IdleWest", 0, 48 * 7, 48, 48, 1, 0.2f);
+            Player.ActorMobileSprite.EndPathAnimation = "IdleEast";
+            Player.ActorMobileSprite.Sprite.DrawOffset = new Vector2(-24, -38);
+            Player.ActorMobileSprite.Sprite.CurrentAnimation = "IdleEast";
+            Player.ActorMobileSprite.Sprite.AutoRotate = false;
+            Player.ActorMobileSprite.Position = _camera.ScreenToWorld(myMap.MapCellToScreen(_camera,new Vector2(1,9)));
+            Player.ActorMobileSprite.Target = Player.ActorMobileSprite.Position;
+            Player.ActorMobileSprite.Speed = 2f;
+            Player.ActorMobileSprite.IsPathing = true;
+            Player.ActorMobileSprite.LoopPath = false;
+            Player.ActorMobileSprite.IsActive = false;
 
             //load NPC texture
             npc = new SpriteAnimation(Content.Load<Texture2D>(@"Textures\Characters\SmileyWalk"));
@@ -203,16 +180,16 @@ namespace BasicTile
             gameInput._buttonHome_PR = new MarkWorldPointCommand(gameInput);
             gameInput._buttonD_PR = new CalculateDistanceDebuggerCommand(this);
 
-            gameInput._buttonNum1_P = new MoveActorCommand(this.vladMobile, new Vector2(-2, 1), "WalkSouthWest");
-            gameInput._buttonNum2_P = new MoveActorCommand(this.vladMobile, new Vector2(0, 1), "WalkSouth");
-            gameInput._buttonNum3_P = new MoveActorCommand(this.vladMobile, new Vector2(2, 1), "WalkSouthEast");
-            gameInput._buttonNum4_P = new MoveActorCommand(this.vladMobile, new Vector2(-2, 0), "WalkWest");
-            gameInput._buttonNum6_P = new MoveActorCommand(this.vladMobile, new Vector2(2, 0), "WalkEast");
-            gameInput._buttonNum7_P = new MoveActorCommand(this.vladMobile, new Vector2(-2, -1), "WalkNorthWest");
-            gameInput._buttonNum8_P = new MoveActorCommand(this.vladMobile, new Vector2(0, -1), "WalkNorth");
-            gameInput._buttonNum9_P = new MoveActorCommand(this.vladMobile, new Vector2(2, -1), "WalkNorthEast");
+            gameInput._buttonNum1_P = new MoveGameActorCommand(this, new Vector2(-2, 1), "WalkSouthWest");
+            gameInput._buttonNum2_P = new MoveGameActorCommand(this, new Vector2(0, 1), "WalkSouth");
+            gameInput._buttonNum3_P = new MoveGameActorCommand(this, new Vector2(2, 1), "WalkSouthEast");
+            gameInput._buttonNum4_P = new MoveGameActorCommand(this, new Vector2(-2, 0), "WalkWest");
+            gameInput._buttonNum6_P = new MoveGameActorCommand(this, new Vector2(2, 0), "WalkEast");
+            gameInput._buttonNum7_P = new MoveGameActorCommand(this, new Vector2(-2, -1), "WalkNorthWest");
+            gameInput._buttonNum8_P = new MoveGameActorCommand(this, new Vector2(0, -1), "WalkNorth");
+            gameInput._buttonNum9_P = new MoveGameActorCommand(this, new Vector2(2, -1), "WalkNorthEast");
 
-            gameInput._mouseLeft_PR = new MoveActorToPositionCommand(this.vladMobile);
+            gameInput._mouseLeft_PR = new MoveGameActorToPositionCommand(this.Player);
 
         }
 
@@ -232,6 +209,7 @@ namespace BasicTile
                     cmd.Execute(_camera);
                     cmd.Execute(this);
                     cmd.Execute(context);
+                    cmd.Execute(Player);
                 }
             }
             #endregion
@@ -259,7 +237,7 @@ namespace BasicTile
                             string.Format("\nMouse Cell Position(W): ({0})", _camera.ScreenToWorld(myMap.MapCellToScreen(_camera, new Vector2(hilightPoint.X, hilightPoint.Y)))) +
                             string.Format("\nCamera Position(W): ({0})", _camera.Location) +
                             string.Format("\nWorld Bounds: ({0},{1})", _camera.WorldWidth, _camera.WorldHeight) +
-                            string.Format("\nPlayer Position(W): ({0},{1})", vladMobile.Position.X, vladMobile.Position.Y);
+                            string.Format("\nPlayer Position(W): ({0},{1})", Player.ActorMobileSprite.Position.X, Player.ActorMobileSprite.Position.Y);
             #endregion
 
         }
@@ -268,80 +246,7 @@ namespace BasicTile
 
         protected void UpdateActors(GameTime gameTime)
         {
-           
-            if (vladMobile.IsActive)
-            {
-                string animation = "";
-                string endanimation = "";
-                
-                IsometricDirections dir = vladMobile.HeadDirections;
-
-                switch(dir)
-                {
-                    case IsometricDirections.N:
-                                            animation = "WalkNorth";
-                    endanimation = "IdleNorth";
-                        break;
-                    case IsometricDirections.NE:
-                                            animation = "WalkNorthEast";
-                    endanimation = "IdleNorthEast";
-                        break;
-                    case IsometricDirections.E:
-                                            animation = "WalkEast";
-                    endanimation = "IdleEast";
-                        break;
-                    case IsometricDirections.SE:
-                                            animation = "WalkSouthEast";
-                    endanimation = "IdleSouthEast";
-                        break;
-                    case IsometricDirections.S:
-                                            animation = "WalkSouth";
-                    endanimation = "IdleSouth";
-                        break;
-                    case IsometricDirections.SW:
-                                            animation = "WalkSouthWest";
-                    endanimation = "IdleSouthWest";
-                        break;
-                    case IsometricDirections.W:
-                                            animation = "WalkWest";
-                    endanimation = "IdleWest";
-                        break;
-                    case IsometricDirections.NW:
-                                            animation = "WalkNorthWest";
-                    endanimation = "IdleNorthWest";
-                        break;
-                }
-
-                if (vladMobile.Sprite.CurrentAnimation != animation)
-                {
-                    vladMobile.Sprite.CurrentAnimation = animation;
-                    vladMobile.EndPathAnimation = endanimation;
-                }
-
-                vladMobile.Update(gameTime);
-            }
-            //case for direct sprite control : to not interfere with mobile sprite updates in the same loop (active -> mobile sprite is animating)
-            else
-            {
-                if (MoveVector.Length() != 0)
-                {
-                    vladMobile.Sprite.MoveBy((int)MoveVector.X, (int)MoveVector.Y);
-                    if (vladMobile.Sprite.CurrentAnimation != Animation)
-                        vladMobile.Sprite.CurrentAnimation = Animation;
-                }
-                else
-                {
-                    vladMobile.Sprite.CurrentAnimation = "Idle" + vladMobile.Sprite.CurrentAnimation.Substring(4);
-                }
-
-                vladMobile.Sprite.Update(gameTime);
-
-                //reset move vector since we don't want this actor to move forever
-                MoveVector = Vector2.Zero;
-            }
-
-            //update the map cell where player is
-            vladMobileMapPoint = myMap.WorldToMapCell(new Point((int)vladMobile.Position.X, (int)vladMobile.Position.Y));
+            Player.Update(gameTime,myMap);
 
             //update NPC
             npc.Update(gameTime);
@@ -358,9 +263,9 @@ namespace BasicTile
         }
         protected void UpdateMapScrollPlayerView()
         {
-            Vector2 testPos = _camera.WorldToScreen(vladMobile.Position);
+            Vector2 testPos = _camera.WorldToScreen(Player.ActorMobileSprite.Position);
             //only moves the camera when player is active
-            if (vladMobile.IsActive)
+            if (Player.ActorMobileSprite.IsActive)
             {
                 if (testPos.X < 100)
                     _camera.Move(new Vector2(testPos.X - 100, 0));
@@ -516,8 +421,8 @@ namespace BasicTile
                     #endregion
 
                     #region DETERMINE DRAW DEPTH OF PLAYER
-                    if((mapx == vladMobileMapPoint.X) && (mapy == vladMobileMapPoint.Y))
-                        vladMobile.Sprite.DrawDepth = depthOffset - (float)(heightRow + 2) * heightRowDepthMod;
+                    if ((mapx == Player.ActorMapCellPosition.X) && (mapy == Player.ActorMapCellPosition.Y))
+                        Player.ActorMobileSprite.Sprite.DrawDepth = depthOffset - (float)(heightRow + 2) * heightRowDepthMod;
 
                     #endregion
 
@@ -585,7 +490,7 @@ namespace BasicTile
 
             #region DRAW PLAYER
             //draw player according to where he's standing on
-            vladMobile.Draw(spriteBatch, 0, -myMap.GetOverallHeight(vladMobile.Position));
+            Player.ActorMobileSprite.Draw(spriteBatch, 0, -myMap.GetOverallHeight(Player.ActorMobileSprite.Position));
             #endregion
 
             #region DRAW HILIGHT LOCATION (FROM MOUSE)
@@ -626,15 +531,15 @@ namespace BasicTile
 
             if (EnableDebugging)
             {
-                for (int i = 0; i < foundPath.Count(); i++)
+                for (int i = 0; i < Player.SearchPath.Count(); i++)
                 {
-                    PathNode n = foundPath[i];
+                    PathNode n = Player.SearchPath[i];
 
                     int pathHilightrowOffset = ((n.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
 
                     Color pathBaseColor = Color.Blue;
                     float alpha = 0.5f;
-                    if (i == 0 || i == foundPath.Count() - 1)
+                    if (i == 0 || i == Player.SearchPath.Count() - 1)
                         alpha = 0.8f;
 
                     spriteBatch.Draw(

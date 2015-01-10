@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace BasicTile
 {
@@ -10,6 +11,8 @@ namespace BasicTile
     /// </summary>
     public class MapCell : PathNode
     {
+        public List<GameLogicalObject> gameObjects = new List<GameLogicalObject>();
+
         //list of tile ids can stack any number of tile images on the same space
         public List<int> BaseTiles = new List<int>();
         //support to store tiles that are elevated above the base level
@@ -65,7 +68,7 @@ namespace BasicTile
             SlopeMap = -1;  //no slope data associated by default
         }
 
-        #region METHODS
+        #region TILE METHODS
         public void AddBaseTile(int tileID)
         {
             //TODO: set unwalkable for Tile ID range

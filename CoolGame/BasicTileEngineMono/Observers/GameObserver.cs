@@ -48,7 +48,7 @@ namespace BasicTile
     {
         public void UpdateEntity(GameCore gCore)
         {
-            Point ActorMapCell = gCore.GameMap.WorldToMapCell(gCore.PlayerActor.Position);
+            Point ActorMapCell = gCore.GameMap.WorldToMapCell(gCore.Player.ActorMobileSprite.Position);
 
 
             foreach (MapCell headingCell in gCore.GameMap.GetAdjMapCells(ActorMapCell.X, ActorMapCell.Y))
@@ -57,12 +57,12 @@ namespace BasicTile
                 {
                     if (gCore.GameMap.GetTileMapLogicalObjName(tileID).Contains("WaterTile"))
                     {
-                        this.Notify(gCore.PlayerActor, GameEvent.EVENT_ENTITY_REACHED_WATER);
+                        this.Notify(gCore.Player.ActorMobileSprite, GameEvent.EVENT_ENTITY_REACHED_WATER);
                     }
 
                     if (gCore.GameMap.GetTileMapLogicalObjName(tileID).Contains("Slope"))
                     {
-                        this.Notify(gCore.PlayerActor, GameEvent.EVENT_ENTITY_REACHED_SLOPE);
+                        this.Notify(gCore.Player.ActorMobileSprite, GameEvent.EVENT_ENTITY_REACHED_SLOPE);
                     }
                 }              
             }

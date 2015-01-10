@@ -59,6 +59,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Commands\GameCommand.cs" />
+    <Compile Include="Components\GameActor.cs" />
     <Compile Include="Components\GameCore.cs" />
     <Compile Include="Input\GameInput.cs" />
     <Compile Include="Components\GameMapEditor.cs" />

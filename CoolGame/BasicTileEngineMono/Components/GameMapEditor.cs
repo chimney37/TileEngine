@@ -75,7 +75,7 @@ namespace BasicTile
             mapEditorInput._buttonS_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Down);
             mapEditorInput._buttonQ_PR = new IncrementTileTypeIndexCmd();
             mapEditorInput._mouseLeft_P_NoLShf = new AddTileToMapCmd();
-            mapEditorInput._mouseLeft_P_LShf = new MoveActorToPositionCommand(this.vladMobile);
+            mapEditorInput._mouseLeft_P_LShf = new MoveGameActorToPositionCommand(this.Player);
             mapEditorInput._buttonLeftShift_P = new SetPreviewCursor(false);
             mapEditorInput._mouseRight_PR = new RemoveTileMapCmd();
         }

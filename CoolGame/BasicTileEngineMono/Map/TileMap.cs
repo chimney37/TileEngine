@@ -88,45 +88,46 @@ namespace BasicTile
             //TODO: should create a level editor
             //TODO: should enum tileIDs
             // Create Sample Map Data with other variations of data
-            Rows[0].Columns[3].TileID = 3;
-            Rows[0].Columns[4].TileID = 3;
-            Rows[0].Columns[5].TileID = 1;
-            Rows[0].Columns[6].TileID = 1;
-            Rows[0].Columns[7].TileID = 1;
 
-            Rows[1].Columns[3].TileID = 3;
-            Rows[1].Columns[4].TileID = 1;
-            Rows[1].Columns[5].TileID = 1;
-            Rows[1].Columns[6].TileID = 1;
-            Rows[1].Columns[7].TileID = 1;
+            AddBaseTile(3, 0, 3);
+            AddBaseTile(4, 0, 3);
+            AddBaseTile(5, 0, 1);
+            AddBaseTile(6, 0, 1);
+            AddBaseTile(7, 0, 1);
 
-            Rows[2].Columns[2].TileID = 3;
-            Rows[2].Columns[3].TileID = 1;
-            Rows[2].Columns[4].TileID = 1;
-            Rows[2].Columns[5].TileID = 1;
-            Rows[2].Columns[6].TileID = 1;
-            Rows[2].Columns[7].TileID = 1;
+            AddBaseTile(3, 1, 3);
+            AddBaseTile(4, 1, 1);
+            AddBaseTile(5, 1, 1);
+            AddBaseTile(6, 1, 1);
+            AddBaseTile(7, 1, 1);
 
-            Rows[3].Columns[2].TileID = 3;
-            Rows[3].Columns[3].TileID = 1;
-            Rows[3].Columns[4].TileID = 1;
-            Rows[3].Columns[5].TileID = 2;
-            Rows[3].Columns[6].TileID = 2;
-            Rows[3].Columns[7].TileID = 2;
+            AddBaseTile(2, 2, 3);
+            AddBaseTile(3, 2, 1);
+            AddBaseTile(4, 2, 1);
+            AddBaseTile(5, 2, 1);
+            AddBaseTile(6, 2, 1);
+            AddBaseTile(7, 2, 1);
 
-            Rows[4].Columns[2].TileID = 3;
-            Rows[4].Columns[3].TileID = 1;
-            Rows[4].Columns[4].TileID = 1;
-            Rows[4].Columns[5].TileID = 2;
-            Rows[4].Columns[6].TileID = 2;
-            Rows[4].Columns[7].TileID = 2;
+            AddBaseTile(2, 3, 3);
+            AddBaseTile(3, 3, 1);
+            AddBaseTile(4, 3, 1);
+            AddBaseTile(5, 3, 2);
+            AddBaseTile(6, 3, 2);
+            AddBaseTile(7, 3, 2);
 
-            Rows[5].Columns[2].TileID = 3;
-            Rows[5].Columns[3].TileID = 1;
-            Rows[5].Columns[4].TileID = 1;
-            Rows[5].Columns[5].TileID = 2;
-            Rows[5].Columns[6].TileID = 2;
-            Rows[5].Columns[7].TileID = 2;
+            AddBaseTile(2, 4, 3);
+            AddBaseTile(3, 4, 1);
+            AddBaseTile(4, 4, 1);
+            AddBaseTile(5, 4, 2);
+            AddBaseTile(6, 4, 2);
+            AddBaseTile(7, 4, 2);
+
+            AddBaseTile(2, 5, 3);
+            AddBaseTile(3, 5, 1);
+            AddBaseTile(4, 5, 1);
+            AddBaseTile(5, 5, 2);
+            AddBaseTile(6, 5, 2);
+            AddBaseTile(7, 5, 2);
 
             //add some stacking tiles for isometric height
             Rows[16].Columns[4].AddHeightTile(54);
@@ -246,6 +247,7 @@ namespace BasicTile
         public void AddBaseTile(int mapx, int mapy, int id)
         {
             Rows[mapy].Columns[mapx].TileID = id;
+            Rows[mapy].Columns[mapx].gameObjects.Add(new GameLogicalObject() { Name = GetTileMapLogicalObjName(id), TileSizeType = ObjTileSizeType.Single });
         }
         public void RemoveBaseTile(int mapx, int mapy)
         {
@@ -254,6 +256,7 @@ namespace BasicTile
         public void AddHeightTile(int mapx, int mapy, int id)
         {
             Rows[mapy].Columns[mapx].AddHeightTile(id);
+            Rows[mapy].Columns[mapx].gameObjects.Add(new GameLogicalObject() { Name = GetTileMapLogicalObjName(id), TileSizeType = ObjTileSizeType.Single });
         }
         public void RemoveHeightTile(int mapx, int mapy)
         {
@@ -262,6 +265,7 @@ namespace BasicTile
         public void AddTopperTile(int mapx, int mapy, int id)
         {
             Rows[mapy].Columns[mapx].AddTopperTile(id);
+            Rows[mapy].Columns[mapx].gameObjects.Add(new GameLogicalObject() { Name = GetTileMapLogicalObjName(id), TileSizeType = ObjTileSizeType.Single });
         }
         public void RemoveTopperTile(int mapx, int mapy)
         {
@@ -270,6 +274,7 @@ namespace BasicTile
         public void AddMultiTile(int mapx, int mapy, int id)
         {
             AddFromTileMapConfig(mapy, mapx, id);
+            Rows[mapy].Columns[mapx].gameObjects.Add(new GameLogicalObject() { Name = GetTileMapLogicalObjName(id), TileSizeType = ObjTileSizeType.Multi });
         }
         public void RemoveMultiTile(int mapx, int mapy)
         {

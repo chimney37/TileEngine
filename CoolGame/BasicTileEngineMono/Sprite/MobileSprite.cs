@@ -89,53 +89,55 @@ namespace BasicTile
             }
         }
 
+        //for smoothing out the angles for a given mobile sprite
         Queue<float> lastframesangles = new Queue<float>();
 
+        //getting the directions on an isometric map
         public IsometricDirections HeadDirections
         {
             get
             {
                 //calculate angle between vladMobile heading direction and a vector facing N
-                Double vladmobileAngRad = MobileSprite.signedAngle(Delta, new Vector2(0, -1));
+                Double thisAngRad = MobileSprite.signedAngle(Delta, new Vector2(0, -1));
 
                 //smoothing function (average over a few frames, so we won't get jaggy animations)
-                if (!Double.IsNaN(vladmobileAngRad))
+                if (!Double.IsNaN(thisAngRad))
                 {
                     if (lastframesangles.Count < 10)
-                        lastframesangles.Enqueue((float)vladmobileAngRad);
+                        lastframesangles.Enqueue((float)thisAngRad);
                     else
                     {
                         lastframesangles.Dequeue();
-                        lastframesangles.Enqueue((float)vladmobileAngRad);
-                        vladmobileAngRad = lastframesangles.Average();
+                        lastframesangles.Enqueue((float)thisAngRad);
+                        thisAngRad = lastframesangles.Average();
                     }
                 }
 
-                if (Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > -Math.PI / 8)
+                if (Math.PI / 8 > thisAngRad && thisAngRad > -Math.PI / 8)
                     return IsometricDirections.N;
                 
                 //isometric angles is "flatter" than it looks
                 //eaxctly 67.5 deg won't work so make it abit bigger than (3/8) * pi
-                if (-3.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -Math.PI / 8)
+                if (-3.5 * Math.PI / 8 < thisAngRad && thisAngRad < -Math.PI / 8)
                     return IsometricDirections.NE;
                 
                 //exactly (5/8) * pi won't work so make it a bit smaller
-                if (-4.9 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -3.5 * Math.PI / 8)
+                if (-4.9 * Math.PI / 8 < thisAngRad && thisAngRad < -3.5 * Math.PI / 8)
                     return IsometricDirections.E;
                 
-                if (-7.5 * Math.PI / 8 < vladmobileAngRad && vladmobileAngRad < -4.9 * Math.PI / 8)
+                if (-7.5 * Math.PI / 8 < thisAngRad && thisAngRad < -4.9 * Math.PI / 8)
                     return IsometricDirections.SE;
                 
-                if (7 * Math.PI / 8 < vladmobileAngRad || vladmobileAngRad < -7.5 * Math.PI / 8)
+                if (7 * Math.PI / 8 < thisAngRad || thisAngRad < -7.5 * Math.PI / 8)
                     return IsometricDirections.S;
                 
-                if (7 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 4.9 * Math.PI / 8)
+                if (7 * Math.PI / 8 > thisAngRad && thisAngRad > 4.9 * Math.PI / 8)
                     return IsometricDirections.SW;
                 
-                if (4.9 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > 3.5 * Math.PI / 8)
+                if (4.9 * Math.PI / 8 > thisAngRad && thisAngRad > 3.5 * Math.PI / 8)
                     return IsometricDirections.W;
                 
-                if (3.5 * Math.PI / 8 > vladmobileAngRad && vladmobileAngRad > Math.PI / 8)
+                if (3.5 * Math.PI / 8 > thisAngRad && thisAngRad > Math.PI / 8)
                     return IsometricDirections.NW;
 
                 return IsometricDirections.UNDEFINED;

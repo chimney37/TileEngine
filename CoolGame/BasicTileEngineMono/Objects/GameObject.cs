@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace BasicTile
 {
-    public abstract class GameObject
+    public abstract class GameObject: ICloneable
     {
-        
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 
-    public class GameTileInfo : GameObject
+    public class GameTileInfo
     {
         public TileType TileType { get; set; }
         public int TileID { get; set; }
@@ -22,7 +26,7 @@ namespace BasicTile
     /// <summary>
     /// A Logical Game Object (e.g. Tree1, Rock1, etc)
     /// </summary>
-    public class GameLogicalObject : GameObject, ICloneable
+    public class GameLogicalObject : GameObject
     {
         protected List<GameTileInfo> GameTileInfoList = new List<GameTileInfo>();
 
@@ -37,11 +41,6 @@ namespace BasicTile
         public IEnumerable<GameTileInfo> GetEnumerable()
         {
             return GameTileInfoList.AsEnumerable();
-        }
-
-        public object Clone()
-        {
-            return this.MemberwiseClone();
         }
     }
 

@@ -249,52 +249,48 @@ namespace BasicTile
         }
     }
 
-    //Actor Control Command
-    public class MoveActorCommand : Command
+    public class MoveGameActorCommand : Command
     {
-        MobileSprite mobileSprite;
-        Vector2 moveDir;
+        Vector2 moveVector;
         string animation;
+        GameCore gCore;
 
-        public MoveActorCommand(MobileSprite mobileSprite, Vector2 moveDir, string animation)
+        public MoveGameActorCommand(GameCore gCore,Vector2 moveDir, string animation)
         {
-            Debug.Assert(mobileSprite != null);
-
-            this.mobileSprite = mobileSprite;
-            this.moveDir = moveDir;
+            this.gCore = gCore;
+            this.moveVector = moveDir;
             this.animation = animation;
         }
 
         public override void Execute(object obj)
         {
-            if (obj is GameCore)
+            if (obj is GameActor)
             {
-                GameCore gCore = obj as GameCore;
+                GameActor actor = obj as GameActor;
 
-                //set animation
-                gCore.Animation = this.animation;
-                gCore.MoveVector = this.moveDir;
+                actor.MoveVector = this.moveVector;
+                actor.Animation = this.animation;
 
                 //check walkability
-                if (gCore.GameMap.GetCellAtWorldPoint(mobileSprite.Position + moveDir).Walkable == false)
-                    gCore.MoveVector = Vector2.Zero;
+                if (gCore.GameMap.GetCellAtWorldPoint(actor.ActorMobileSprite.Position + moveVector).Walkable == false)
+                    actor.MoveVector = Vector2.Zero;
 
                 //prevent movement into positions which have abrupt changes in height
-                if (Math.Abs(gCore.GameMap.GetOverallHeight(mobileSprite.Position) - gCore.GameMap.GetOverallHeight(mobileSprite.Position + moveDir)) > 10)
-                    gCore.MoveVector = Vector2.Zero;
+                if (Math.Abs(gCore.GameMap.GetOverallHeight(actor.ActorMobileSprite.Position) - gCore.GameMap.GetOverallHeight(actor.ActorMobileSprite.Position + moveVector)) > 10)
+                    actor.MoveVector = Vector2.Zero;
             }
         }
     }
 
-    public class MoveActorToPositionCommand : Command
+    public class MoveGameActorToPositionCommand : Command
     {
-        MobileSprite mobileSprite;
- 
-        public MoveActorToPositionCommand(MobileSprite mobileSprite)
-        {
-            Debug.Assert(mobileSprite != null);
+        GameActor actor;
 
-            this.mobileSprite = mobileSprite;
+        public MoveGameActorToPositionCommand(GameActor actor)
+        {
+            Debug.Assert(actor != null);
+
+            this.actor = actor;
         }
 
         public override void Execute(object obj)
@@ -304,36 +300,36 @@ namespace BasicTile
                 GameCore gCore = obj as GameCore;
 
                 //activate mobile sprite
-                mobileSprite.IsActive = true;
+                actor.ActorMobileSprite.IsActive = true;
 
-                mobileSprite.Target = mobileSprite.Position;
+                actor.ActorMobileSprite.Target = actor.ActorMobileSprite.Position;
 
                 //obtain start and end coordinates
-                Point start = gCore.GameMap.WorldToMapCell(mobileSprite.Position);
+                Point start = gCore.GameMap.WorldToMapCell(actor.ActorMobileSprite.Position);
                 Point end = gCore.GameMap.WorldToMapCell(gCore.GameCamera.ScreenToWorld(gCore.gameInput.MousePosition));
 
                 Debug.WriteLine(string.Format("s:({0},{1})", start.X, start.Y));
                 Debug.WriteLine(string.Format("e:({0},{1})", end.X, end.Y));
 
                 //clear current existing path (if navigating in progress)
-                mobileSprite.ClearPathNodes();
+                actor.ActorMobileSprite.ClearPathNodes();
 
                 //set up new path finder
                 PathFinder p = new PathFinder(gCore.GameMap);
 
                 if (p.Search(start.X, start.Y, end.X, end.Y, gCore.GameMap))
                 {
-                    gCore.SearchPath = p.PathResult();
+                    actor.SearchPath = p.PathResult();
 
-                    foreach (PathNode n in gCore.SearchPath)
+                    foreach (PathNode n in actor.SearchPath)
                     {
                         Vector2 nodevec = gCore.GameCamera.ScreenToWorld(gCore.GameMap.MapCellToScreen(gCore.GameCamera, n.X, n.Y));
 
                         Debug.WriteLine(string.Format("({0},{1})", nodevec.X, nodevec.Y));
                         //TODO: A probable issue with mapcell -> screen coordinates 
-                        mobileSprite.AddPathNode(nodevec);
+                        actor.ActorMobileSprite.AddPathNode(nodevec);
                     }
-                    mobileSprite.DeactivateAfterPathing = true;
+                    actor.ActorMobileSprite.DeactivateAfterPathing = true;
                 }
             }
         }
@@ -444,6 +440,7 @@ namespace BasicTile
                         break;
                     case TileType.Multi:
                         gME.GameMap.AddMultiTile(gME.HiLightPoint.X, gME.HiLightPoint.Y, gME.GameMap.TileIndex);
+                        //gME.GameMap.
                         break;
                     default:
                         break;
