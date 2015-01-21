@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 using System.Diagnostics;
 
-namespace BasicTile
+namespace BasicTileEngineMono
 {
 
     public class GameMessageBox : GameProcess, ICloneable

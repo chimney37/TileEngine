@@ -1,37 +1,33 @@
-﻿#region Using Statements
-using System;
-using System.Collections.Generic;
+﻿using System;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Storage;
-using Microsoft.Xna.Framework.GamerServices;
-#endregion
 
-namespace BasicTile
+namespace BasicTileEngineMono
 {
     /// <summary>
     /// This is the main type for your game
     /// </summary>
     public class Game1 : Game, Context
     {
-        public GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        public GraphicsDeviceManager Graphics;
+        SpriteBatch _spriteBatch;
 
-        AbstractMonoGameProcessFactory gameFactory;
-        GameProcess currentState;
+        readonly AbstractMonoGameProcessFactory _gameFactory;
+        GameProcess _currentState;
 
         public Game1()
             : base()
         {
-            graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferHeight = 800;
-            graphics.PreferredBackBufferWidth = 1000;
+            Graphics = new GraphicsDeviceManager(this)
+            {
+                PreferredBackBufferHeight = 800,
+                PreferredBackBufferWidth = 1000
+            };
 
             Content.RootDirectory = "Content";
 
-            gameFactory = GameProcessFactory.getFactory("BasicTile.GameProcessFactory");
+            _gameFactory = AbstractMonoGameProcessFactory.getFactory("BasicTileEngineMono.GameProcessFactory");
         }
 
         /// <summary>
@@ -44,10 +40,10 @@ namespace BasicTile
         {
             // TODO: Add your initialization logic here
 
-            gameFactory.Create();
-            gameFactory.Initialize(this);
+            _gameFactory.Create();
+            _gameFactory.Initialize(this);
 
-            currentState = gameFactory.GetGameProcess(typeof(GameMenu));
+            _currentState = _gameFactory.GetGameProcess(typeof(GameMenu));
            
             base.Initialize();
         }
@@ -59,10 +55,10 @@ namespace BasicTile
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            gameFactory.LoadContent(this.Content, this.graphics);
+            _gameFactory.LoadContent(Content, Graphics);
         }
 
         /// <summary>
@@ -85,7 +81,7 @@ namespace BasicTile
                 Exit();
 
             // TODO: Add your update logic here
-            currentState.Update(gameTime, this);
+            _currentState.Update(gameTime, this);
 
 
             base.Update(gameTime);
@@ -101,32 +97,28 @@ namespace BasicTile
             // TODO: Add your drawing code here
 
 
-            currentState.Render(gameTime, spriteBatch,this);
+            _currentState.Render(gameTime, _spriteBatch,this);
 
             base.Draw(gameTime);
         }
 
 
-
-        #region CONTEXT OPERATIONS
         public void changeState(Type gameProcess)
         {
-            this.currentState = gameFactory.GetGameProcess(gameProcess);
+            _currentState = _gameFactory.GetGameProcess(gameProcess);
         }
         public GameProcess getCurrentState()
         {
-            return this.currentState;
+            return _currentState;
         }
         public AbstractMonoGameProcessFactory getFactory()
         {
-            return this.gameFactory;
+            return _gameFactory;
         }
 
-        public GameMessageBox getMessageBox(string Content,string Title="Message:",int X=100, int Y=100 )
+        public GameMessageBox getMessageBox(string content,string title="Message:",int x=100, int y=100 )
         {
-            return gameFactory.GameMessageBox(Content, Title, X, Y);
+            return _gameFactory.GameMessageBox(content, title, x, y);
         }
-
-        #endregion
     }
 }

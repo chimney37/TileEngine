@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
-namespace BasicTile
+namespace BasicTileEngineMono
 {
     /// <summary>
     /// High Level Sprite Animation class. Delegates lower level manipulations using the FrameAnimation class

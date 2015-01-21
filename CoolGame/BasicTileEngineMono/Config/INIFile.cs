@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 
 
-namespace BasicTile
+namespace BasicTileEngineMono
 {
     public class IniFile
     {

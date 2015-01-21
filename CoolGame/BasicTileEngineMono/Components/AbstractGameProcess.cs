@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 using System.Diagnostics;
 
-namespace BasicTile
+namespace BasicTileEngineMono
 {
     //To access game controller : changing states, getting game functionality etc.
     public interface Context

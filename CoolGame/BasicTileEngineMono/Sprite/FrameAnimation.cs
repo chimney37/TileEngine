@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace BasicTile
+namespace BasicTileEngineMono
 {
     /// <summary>
     /// Controls framed animation at a low level

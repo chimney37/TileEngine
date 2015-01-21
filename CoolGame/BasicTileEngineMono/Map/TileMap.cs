@@ -7,7 +7,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace BasicTile
+namespace BasicTileEngineMono
 {
     /// <summary>
     /// A Map made of tiles is created and managed

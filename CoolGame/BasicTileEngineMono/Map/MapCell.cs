@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace BasicTile
+namespace BasicTileEngineMono
 {
     /// <summary>
     /// MapCell (itself managing an area of the map that represents a tile area, but not necessary a single tile)
