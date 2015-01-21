@@ -1,29 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace BasicTileEngineMono
+namespace BasicTileEngineMono.Components
 {
     public class GameActor : GameObject
     {
         #region PROPERTIES
-        MobileSprite actor;
+        readonly MobileSprite _actor;
         public MobileSprite ActorMobileSprite
         {
-            get { return actor; }
+            get { return _actor; }
         }
         public Vector2 MoveVector { get; set; }
         public string Animation { get; set; }
         //for movement via A* 
         public Point ActorMapCellPosition { get; set; }
-        List<PathNode> pathNodes = new List<PathNode>();
+        List<PathNode> _pathNodes = new List<PathNode>();
         public List<PathNode> SearchPath
         {
-            get { return pathNodes; }
-            set { pathNodes = value; }
+            get { return _pathNodes; }
+            set { _pathNodes = value; }
         }
         #endregion
 
@@ -31,7 +29,7 @@ namespace BasicTileEngineMono
 
         public GameActor(Texture2D texture)
         {
-            actor = new MobileSprite(texture);
+            _actor = new MobileSprite(texture);
         }
 
         public void Update(GameTime gameTime, TileMap tileMap)
@@ -39,12 +37,12 @@ namespace BasicTileEngineMono
 
             if (ActorMobileSprite.IsActive)
             {
-                string animation = "";
-                string endanimation = "";
+                var animation = "";
+                var endanimation = "";
 
-                IsometricDirections dir = ActorMobileSprite.HeadDirections;
+                var directn = ActorMobileSprite.HeadDirections;
 
-                switch (dir)
+                switch (directn)
                 {
                     case IsometricDirections.N:
                         animation = "WalkNorth";
@@ -91,7 +89,7 @@ namespace BasicTileEngineMono
             //case for direct sprite control : to not interfere with mobile sprite updates in the same loop (active -> mobile sprite is animating)
             else
             {
-                if (MoveVector.Length() != 0)
+                if (Math.Abs(MoveVector.Length()) > 0.0f)
                 {
                     ActorMobileSprite.Sprite.MoveBy((int)MoveVector.X, (int)MoveVector.Y);
                     if (ActorMobileSprite.Sprite.CurrentAnimation != Animation)

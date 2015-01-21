@@ -1,27 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace BasicTileEngineMono
+namespace BasicTileEngineMono.Components
 {
     /// <summary>
     /// Camera is the view of the user application. This can pan
     /// </summary>
     public class Camera
     {
-        Vector2 location;
+        Vector2 _location;
         public Vector2 Location
         {
             get
             {
-                return location;
+                return _location;
             }
             set
             {
-                location = new Vector2(
+                _location = new Vector2(
                     MathHelper.Clamp(value.X, 0f, WorldWidth - ViewWidth),
                     MathHelper.Clamp(value.Y, 0f, WorldHeight - ViewHeight));
             }
@@ -34,16 +30,16 @@ namespace BasicTileEngineMono
         private Rectangle Bounds { get; set; }
 
 
-        float _Scale;
+        float _scale;
         public float Scale 
         { 
             get
             {
-                return _Scale;
+                return _scale;
             }
             set
             {
-                _Scale = MathHelper.Clamp(value, 1.0f, 2.0f);
+                _scale = MathHelper.Clamp(value, 1.0f, 2.0f);
             } 
         }
 
