@@ -93,7 +93,7 @@ namespace BasicTileEngineMono
 
                 if (cmd != null)
                 {
-                    cmd.Execute(_camera);
+                    cmd.Execute(Camera);
                     cmd.Execute(this);
                     cmd.Execute(context);
                 }
@@ -101,20 +101,20 @@ namespace BasicTileEngineMono
 
             if (!IsConfigLoaded)
             {
-                myMap.RegisterConfigurationFile();
+                MyMap.RegisterConfigurationFile();
                 IsConfigLoaded = true;
             }
 
             UpdateMiniTileMap(gameTime);
 
             base.UpdateActors(gameTime);
-            base.gameInput.HandleInput();
+            base.GameInput.HandleInput();
             base.UpdateCameraFirstSquare();
             base.UpdateHilight();
             base.UpdateMapMouseScroll();
 
             //string text = base.InformationalTxt;
-            base.InformationalTxt = string.Format("Tile Map Editor Ver 0.01\nTile Type: ({0}), Index={1}, ObjectName={2}", tileType.ToString(), myMap.TileIndex, myMap.GetTileMapLogicalObjName(myMap.TileIndex));
+            base.InformationalTxt = string.Format("Tile Map Editor Ver 0.01\nTile Type: ({0}), Index={1}, ObjectName={2}", tileType.ToString(), MyMap.TileIndex, MyMap.GetTileMapLogicalObjName(MyMap.TileIndex));
 
             //base.Update(gameTime, context);
         }
@@ -122,7 +122,7 @@ namespace BasicTileEngineMono
         private void UpdateMiniTileMap(GameTime gameTime)
         {
             //fix tile type if required given the index
-            TileType t = myMap.GetGameTileInfoList(myMap.TileIndex).ElementAt(0).TileType;
+            TileType t = MyMap.GetGameTileInfoList(MyMap.TileIndex).ElementAt(0).TileType;
 
             switch (t)
             {
@@ -134,7 +134,7 @@ namespace BasicTileEngineMono
             }
             //Show Tile Map for 1 seconds
             //
-            if (myMap.OldTileIdx != myMap.TileIndex)
+            if (MyMap.OldTileIdx != MyMap.TileIndex)
             {
                 ShowTileMap = true;
                 currentTime = 0;
@@ -164,7 +164,7 @@ namespace BasicTileEngineMono
                 null,
                 null,
                 null,
-                this._camera.GetTransformation());
+                this.Camera.GetTransformation());
 
             #region DRAW TILE PART (FROM MOUSE)
 
@@ -172,15 +172,15 @@ namespace BasicTileEngineMono
 
             if (ShowPreview)
             {
-                int hilightrowOffset = ((this.hilightPoint.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
+                int hilightrowOffset = ((this.HilightPoint.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
 
-                foreach (GameTileInfo t in myMap.GetGameTileInfoList(myMap.TileIndex))
+                foreach (GameTileInfo t in MyMap.GetGameTileInfoList(MyMap.TileIndex))
                 {
                     spriteBatch.Draw(
                         Tile.TileSetTexture,
                             new Vector2(
-                                hilightPoint.X * Tile.TileStepX + hilightrowOffset - t.TileXOffset*Tile.MultiSizeTileOffset,
-                                hilightPoint.Y * Tile.TileStepY - t.TileYOffset * Tile.MultiSizeTileOffset - myMap.GetOverallCenterHeight(hilightPoint.Y, hilightPoint.X) ),
+                                HilightPoint.X * Tile.TileStepX + hilightrowOffset - t.TileXOffset*Tile.MultiSizeTileOffset,
+                                HilightPoint.Y * Tile.TileStepY - t.TileYOffset * Tile.MultiSizeTileOffset - MyMap.GetOverallCenterHeight(HilightPoint.Y, HilightPoint.X) ),
                         Tile.GetSourceRectangle(t.TileID),
                         Color.Aquamarine * 0.8f,
                         0.0f,
@@ -197,7 +197,7 @@ namespace BasicTileEngineMono
             {
                 spriteBatch.Draw(
                     Tile.TileSetTexture,
-                        _camera.ScreenToWorld(new Vector2(
+                        Camera.ScreenToWorld(new Vector2(
                             TileMapSX,
                             TileMapSY)),
                     Tile.GetSourceTileSet(),
@@ -208,13 +208,13 @@ namespace BasicTileEngineMono
                     SpriteEffects.None,
                     0.1f);
 
-                foreach (int id in myMap.GetTileMapHilightIndexes(myMap.TileIndex))
+                foreach (int id in MyMap.GetTileMapHilightIndexes(MyMap.TileIndex))
                 {
                     spriteBatch.Draw(
                         blankTexture,
-                            _camera.ScreenToWorld(new Vector2(
-                                TileMapSX + Tile.TileWidth * (id % myMap.MaxTileHorizontalIndex) * TileMapScale,
-                                TileMapSY + Tile.TileHeight * (id / myMap.MaxTileHorizontalIndex) * TileMapScale)),
+                            Camera.ScreenToWorld(new Vector2(
+                                TileMapSX + Tile.TileWidth * (id % MyMap.MaxTileHorizontalIndex) * TileMapScale,
+                                TileMapSY + Tile.TileHeight * (id / MyMap.MaxTileHorizontalIndex) * TileMapScale)),
                         new Rectangle(0, 0, blankTexture.Width, blankTexture.Height),
                         Color.White * Alpha * 0.2f,
                         0.0f,

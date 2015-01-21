@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using BasicTileEngineMono.Components;
 
 namespace BasicTileEngineMono
 {

@@ -307,7 +307,7 @@ namespace BasicTileEngineMono
 
                 //obtain start and end coordinates
                 Point start = gCore.GameMap.WorldToMapCell(actor.ActorMobileSprite.Position);
-                Point end = gCore.GameMap.WorldToMapCell(gCore.GameCamera.ScreenToWorld(gCore.gameInput.MousePosition));
+                Point end = gCore.GameMap.WorldToMapCell(gCore.GameCamera.ScreenToWorld(gCore.GameInput.MousePosition));
 
                 Debug.WriteLine(string.Format("s:({0},{1})", start.X, start.Y));
                 Debug.WriteLine(string.Format("e:({0},{1})", end.X, end.Y));
