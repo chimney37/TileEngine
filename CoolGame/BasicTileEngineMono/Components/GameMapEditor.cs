@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
+using BasicTileEngineMono.Components;
 
 namespace BasicTileEngineMono
 {
@@ -80,7 +81,7 @@ namespace BasicTileEngineMono
             mapEditorInput._mouseRight_PR = new RemoveTileMapCmd();
         }
 
-        public override void Update(GameTime gameTime, Context context)
+        public override void Update(GameTime gameTime, IContext context)
         {
             this.GameTime = gameTime;
             this.ShowPreviewMode = true;
@@ -150,7 +151,7 @@ namespace BasicTileEngineMono
             }
         }
 
-        public override void Render(Microsoft.Xna.Framework.GameTime gameTime, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch, Context context)
+        public override void Render(Microsoft.Xna.Framework.GameTime gameTime, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch, IContext context)
         {
             base.Render(gameTime, spriteBatch, context);
 

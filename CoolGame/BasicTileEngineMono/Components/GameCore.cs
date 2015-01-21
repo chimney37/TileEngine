@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 using System.Diagnostics;
+using BasicTileEngineMono.Components;
 
 namespace BasicTileEngineMono
 {
@@ -193,7 +194,7 @@ namespace BasicTileEngineMono
 
         }
 
-        public override void Update(GameTime gameTime, Context context)
+        public override void Update(GameTime gameTime, IContext context)
         {
             base.Update(gameTime, context);
 
@@ -317,7 +318,7 @@ namespace BasicTileEngineMono
         }
         #endregion
 
-        public override void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context)
+        public override void Render(GameTime gameTime, SpriteBatch spriteBatch, IContext context)
         {
             #region PREPARATION
             //get the first rendering square map cell coordinates

@@ -11,94 +11,94 @@ using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 using System.Diagnostics;
 
-namespace BasicTileEngineMono
+namespace BasicTileEngineMono.Components
 {
     //To access game controller : changing states, getting game functionality etc.
-    public interface Context
+    public interface IContext
     {
-        GameProcess getCurrentState();
-        void changeState(Type gameProcess);
-        AbstractMonoGameProcessFactory getFactory();
-        GameMessageBox getMessageBox(string Content,string Title = "Message:", int X = 100, int Y = 100);
+        GameProcess GetCurrentState();
+        void ChangeState(Type gameProcess);
+        AbstractMonoGameProcessFactory GetFactory();
+        GameMessageBox GetMessageBox(string content,string title = "Message:", int x = 100, int y = 100);
     }
 
 
     public abstract class GameProcess
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
         public GameTime GameTime { get; set; }
-        public Context GameContext { get; set; }
+        public IContext GameContext { get; set; }
 
         public bool IsAlive = true;
         //Event Queue for Commands
         public Queue<Command> CommandQueue = new Queue<Command>();
 
         //Stack, Queued and Dictionary game Processes
-        private Stack<GameProcess> ProcessStack = new Stack<GameProcess>();
-        private Queue<GameProcess> ProcessQueue = new Queue<GameProcess>();
-        private Dictionary<int, GameProcess> ProcessDict = new Dictionary<int, GameProcess>();
+        private readonly Stack<GameProcess> _processStack = new Stack<GameProcess>();
+        private readonly Queue<GameProcess> _processQueue = new Queue<GameProcess>();
+        private readonly Dictionary<int, GameProcess> _processDict = new Dictionary<int, GameProcess>();
 
-        protected KeyboardState ks = Keyboard.GetState();
-        protected MouseState ms = Mouse.GetState();
-        protected KeyboardState oldState;
-        protected MouseState oldMouseState;
+        protected KeyboardState Ks = Keyboard.GetState();
+        protected MouseState Ms = Mouse.GetState();
+        protected KeyboardState OldKs;
+        protected MouseState OldMs;
         //protected int prevMouseScrollValue;
 
-        public GameProcess()
+        protected GameProcess()
         {
         }
         public bool IsEmptySubProcessStack()
         {
-            return ProcessStack.Count > 0 ? false : true;
+            return _processStack.Count <= 0;
         }
         public bool IsEmptySubProcessQueue()
         {
-            return ProcessQueue.Count > 0 ? false : true;
+            return _processQueue.Count <= 0;
         }
 
         public void Push(GameProcess gameProcess)
         {
-            ProcessStack.Push(gameProcess);
+            _processStack.Push(gameProcess);
         }
         public void Pop()
         {
-            ProcessStack.Pop();
+            _processStack.Pop();
         }
         public GameProcess Peek()
         {
-            return this.ProcessStack.Peek();
+            return this._processStack.Peek();
         }
         public void Enqueue(GameProcess gameProcess)
         {
-            ProcessQueue.Enqueue(gameProcess);
+            _processQueue.Enqueue(gameProcess);
         }
         public void Dequeue(GameProcess gameProcess)
         {
-            if(ProcessQueue.Count() > 0)
-                ProcessQueue.Dequeue();
+            if(_processQueue.Any())
+                _processQueue.Dequeue();
         }
-        public void Add(GameProcess gameProcess, int ProcessID)
+        public void Add(GameProcess gameProcess, int processId)
         {
-            if (!ProcessDict.ContainsKey(ProcessID))
-                ProcessDict.Add(ProcessID, gameProcess);
+            if (!_processDict.ContainsKey(processId))
+                _processDict.Add(processId, gameProcess);
         }
-        public void Remove(int ProcessID)
+        public void Remove(int processId)
         {
-            if (ProcessDict.ContainsKey(ProcessID))
-                ProcessDict.Remove(ProcessID);
+            if (_processDict.ContainsKey(processId))
+                _processDict.Remove(processId);
         }
 
 
         public virtual void Initialize(Game game)
         {
             //record the Game context
-            this.GameContext = game as Context;
+            this.GameContext = game as IContext;
 
             //make mouse visible
             game.IsMouseVisible = true;
         }
-        public abstract void LoadContent(ContentManager Content, GraphicsDeviceManager graphics);
-        public virtual void Update(GameTime gameTime, Context context)
+        public abstract void LoadContent(ContentManager content, GraphicsDeviceManager graphics);
+        public virtual void Update(GameTime gameTime, IContext context)
         {
             //track the game Time
             this.GameTime = gameTime;
@@ -106,28 +106,28 @@ namespace BasicTileEngineMono
             //Sub-Process Stack Operations
             if (!IsEmptySubProcessStack())
             {
-                ProcessStack.Peek().Update(gameTime, context);
+                _processStack.Peek().Update(gameTime, context);
 
-                if (!ProcessStack.Peek().IsAlive)
+                if (!_processStack.Peek().IsAlive)
                     Pop();
             }
 
-            foreach (GameProcess g in ProcessQueue)
+            foreach (var g in _processQueue)
                 g.Update(gameTime, context);
 
-            foreach (KeyValuePair<int, GameProcess> kvp in ProcessDict)
+            foreach (var kvp in _processDict)
                 kvp.Value.Update(gameTime, context);
         }
-        public virtual void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context)
+        public virtual void Render(GameTime gameTime, SpriteBatch spriteBatch, IContext context)
         {
             //Sub-Process Stack Render Ops
             if (!IsEmptySubProcessStack())
-                ProcessStack.Peek().Render(gameTime, spriteBatch, context);
+                _processStack.Peek().Render(gameTime, spriteBatch, context);
 
-            foreach (GameProcess g in ProcessQueue)
+            foreach (var g in _processQueue)
                 g.Render(gameTime, spriteBatch,context);
 
-            foreach (KeyValuePair<int, GameProcess> kvp in ProcessDict)
+            foreach (var kvp in _processDict)
                 kvp.Value.Render(gameTime, spriteBatch, context);
         }
     }

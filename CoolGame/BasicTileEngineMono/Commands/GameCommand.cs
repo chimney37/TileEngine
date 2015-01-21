@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using BasicTileEngineMono.Components;
 
 namespace BasicTileEngineMono
 {
@@ -67,13 +68,13 @@ namespace BasicTileEngineMono
         public override void Execute(object obj)
         {
             //http://stackoverflow.com/questions/4963160/how-to-determine-if-a-type-implements-an-interface-with-c-sharp-reflection
-            if(obj is Context)
+            if(obj is IContext)
             {
                 //only if blocking stack is empty
                 if (this.gameProcess.IsEmptySubProcessStack())
                 {
-                    Context context = (Context)obj;
-                    context.changeState(typeof(T));
+                    IContext context = (IContext)obj;
+                    context.ChangeState(typeof(T));
                 }
             }
         }
@@ -108,9 +109,9 @@ namespace BasicTileEngineMono
 
         public override void Execute(object obj)
         {
-            if(obj is Context)
+            if(obj is IContext)
             {
-                GameMessageBox message = (obj as Context).getFactory().GameMessageBox(Content, Title, X, Y);
+                GameMessageBox message = (obj as IContext).GetFactory().GameMessageBox(Content, Title, X, Y);
                 gameProcess.Push(message);
             }
         }
@@ -229,7 +230,7 @@ namespace BasicTileEngineMono
 
         public override void Execute(object obj)
         {
-            if(obj is Context)
+            if(obj is IContext)
             {
                 MessageBoxCommand cmd = new MessageBoxCommand(
                     gCore,

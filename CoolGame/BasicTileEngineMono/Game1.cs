@@ -2,13 +2,14 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using BasicTileEngineMono.Components;
 
 namespace BasicTileEngineMono
 {
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public class Game1 : Game, Context
+    public class Game1 : Game, IContext
     {
         public GraphicsDeviceManager Graphics;
         SpriteBatch _spriteBatch;
@@ -103,20 +104,20 @@ namespace BasicTileEngineMono
         }
 
 
-        public void changeState(Type gameProcess)
+        public void ChangeState(Type gameProcess)
         {
             _currentState = _gameFactory.GetGameProcess(gameProcess);
         }
-        public GameProcess getCurrentState()
+        public GameProcess GetCurrentState()
         {
             return _currentState;
         }
-        public AbstractMonoGameProcessFactory getFactory()
+        public AbstractMonoGameProcessFactory GetFactory()
         {
             return _gameFactory;
         }
 
-        public GameMessageBox getMessageBox(string content,string title="Message:",int x=100, int y=100 )
+        public GameMessageBox GetMessageBox(string content,string title="Message:",int x=100, int y=100 )
         {
             return _gameFactory.GameMessageBox(content, title, x, y);
         }

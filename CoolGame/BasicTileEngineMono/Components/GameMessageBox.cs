@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 using System.Diagnostics;
+using BasicTileEngineMono.Components;
 
 namespace BasicTileEngineMono
 {
@@ -69,7 +70,7 @@ namespace BasicTileEngineMono
             this.maxLineWidth = this.Width * 0.9f;
         }
 
-        public override void Update(GameTime gameTime, Context context)
+        public override void Update(GameTime gameTime, IContext context)
         {
             gameInput.HandleInput(ref CommandQueue);
             while (CommandQueue.Count() > 0)
@@ -83,7 +84,7 @@ namespace BasicTileEngineMono
             }
         }
 
-        public override void Render(GameTime gameTime, SpriteBatch spriteBatch, Context context)
+        public override void Render(GameTime gameTime, SpriteBatch spriteBatch, IContext context)
         {
             this.DestinationRectangle = new Rectangle(X, Y, Width, Height);
 
@@ -100,7 +101,7 @@ namespace BasicTileEngineMono
             spriteBatch.Begin();
             spriteBatch.DrawString(
                             Messagerical,
-                            "ID: " + ID + ":" + this.Title,
+                            "ID: " + Id + ":" + this.Title,
                             new Vector2(X + 10, Y + 19),
                             FontColor,
                             0f,
@@ -161,7 +162,7 @@ namespace BasicTileEngineMono
 
         public object Clone()
         {
-            this.ID++;
+            this.Id++;
             return this.MemberwiseClone();
         }
     }
