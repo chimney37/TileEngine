@@ -338,7 +338,7 @@ namespace BasicTileEngineMono.Components
             for (int y = 0; y < SquaresDown; y++)
             {
                 //for supporting hexagonal and isometric maps, odd row must be offset
-                int rowOffset = ((firstY + y) % 2 == 1) ? rowOffset = Tile.OddRowXOffset : 0;
+                int rowOffset = ((firstY + y) % 2 == 1) ? Tile.OddRowXOffset : 0;
 
                 for (int x = 0; x < SquaresAcross; x++)
                 {
@@ -361,12 +361,12 @@ namespace BasicTileEngineMono.Components
                     #region DRAW BASE TILES
                     
                     //draw base tiles
-                    foreach (int tileID in MyMap.Rows[mapy].Columns[mapx].BaseTiles)
+                    foreach (int tileId in MyMap.Rows[mapy].Columns[mapx].BaseTiles)
                     {
                         spriteBatch.Draw(
                             Tile.TileSetTexture,
                             new Vector2(mapx * Tile.TileStepX + rowOffset, mapy * Tile.TileStepY),
-                            Tile.GetSourceRectangle(tileID),
+                            Tile.GetSourceRectangle(tileId),
                             Color.White,
                             0.0f,
                             Vector2.Zero,
