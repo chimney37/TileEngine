@@ -1,48 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
+﻿using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
-using BasicTileEngineMono.Components;
 
-namespace BasicTileEngineMono
+namespace BasicTileEngineMono.Components
 {
     public class GameMapEditor: GameCore
     {
-        GameInput mapEditorInput;
+        GameInput _mapEditorInput;
 
-        int TypeIdx = 0;
-        public int TileTypeIndex
-        {
-            get { return TypeIdx; }
-            set { TypeIdx = value; }
-        }
-        TileType tileType;
-        public TileType CurrentTileType
-        {
-            get { return tileType; }
-            set { tileType = value; }
-        }
+        public int TileTypeIndex { get; set; }
 
-        Texture2D blankTexture;
+        public TileType CurrentTileType { get; set; }
 
-        bool ShowPreview = true;
+        Texture2D _blankTexture;
+
+        bool _showPreview = true;
         public bool ShowPreviewMode
         {
-            get { return ShowPreview; }
-            set { ShowPreview = value; }
+            get { return _showPreview; }
+            set { _showPreview = value; }
         }
 
-        bool ShowTileMap = false;
-        float currentTime = 0f;
-        float maxTime = 10f;
-        float Alpha = 1.0f;
-        int TileMapSX = 666;
-        int TileMapSY = 200;
-        float TileMapScale = 0.5f;
+        bool _showTileMap = false;
+        float _currentTime = 0f;
+        private const float MaxTime = 10f;
+        float _alpha = 1.0f;
+        private const int TileMapSx = 666;
+        private const int TileMapSy = 200;
+        private const float TileMapScale = 0.5f;
+
+        public GameMapEditor()
+        {
+            TileTypeIndex = 0;
+        }
 
         public bool IsConfigLoaded { get; set; }
 
@@ -57,28 +47,28 @@ namespace BasicTileEngineMono
         {
             base.LoadContent(Content, graphics);
 
-            blankTexture = new Texture2D(graphics.GraphicsDevice, Tile.TileWidth, Tile.TileHeight, false, SurfaceFormat.Color);
+            _blankTexture = new Texture2D(graphics.GraphicsDevice, Tile.TileWidth, Tile.TileHeight, false, SurfaceFormat.Color);
 
             Color[] color = new Color[Tile.TileWidth * Tile.TileHeight];
             for (int i = 0; i < color.Length; i++)
                 color[i] = Color.White;
 
-            blankTexture.SetData(color);
+            _blankTexture.SetData(color);
 
 
             //rebind input
-            mapEditorInput = new GameInput();
-            mapEditorInput._buttonE_PR = new StateChangeToCommand<GameCore>(this);
-            mapEditorInput._buttonR_PR = new LoadConfigFileCommand();
-            mapEditorInput._buttonA_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Left);
-            mapEditorInput._buttonD_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Right);
-            mapEditorInput._buttonW_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Up);
-            mapEditorInput._buttonS_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Down);
-            mapEditorInput._buttonQ_PR = new IncrementTileTypeIndexCmd();
-            mapEditorInput._mouseLeft_P_NoLShf = new AddTileToMapCmd();
-            mapEditorInput._mouseLeft_P_LShf = new MoveGameActorToPositionCommand(this.Player);
-            mapEditorInput._buttonLeftShift_P = new SetPreviewCursor(false);
-            mapEditorInput._mouseRight_PR = new RemoveTileMapCmd();
+            _mapEditorInput = new GameInput();
+            _mapEditorInput._buttonE_PR = new StateChangeToCommand<GameCore>(this);
+            _mapEditorInput._buttonR_PR = new LoadConfigFileCommand();
+            _mapEditorInput._buttonA_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Left);
+            _mapEditorInput._buttonD_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Right);
+            _mapEditorInput._buttonW_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Up);
+            _mapEditorInput._buttonS_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Down);
+            _mapEditorInput._buttonQ_PR = new IncrementTileTypeIndexCmd();
+            _mapEditorInput._mouseLeft_P_NoLShf = new AddTileToMapCmd();
+            _mapEditorInput._mouseLeft_P_LShf = new MoveGameActorToPositionCommand(this.Player);
+            _mapEditorInput._buttonLeftShift_P = new SetPreviewCursor(false);
+            _mapEditorInput._mouseRight_PR = new RemoveTileMapCmd();
         }
 
         public override void Update(GameTime gameTime, IContext context)
@@ -86,17 +76,15 @@ namespace BasicTileEngineMono
             this.GameTime = gameTime;
             this.ShowPreviewMode = true;
 
-            this.mapEditorInput.HandleInput(ref CommandQueue);
-            while (CommandQueue.Count() > 0)
+            this._mapEditorInput.HandleInput(ref CommandQueue);
+            while (CommandQueue.Any())
             {
-                Command cmd = CommandQueue.Dequeue();
+                var cmd = CommandQueue.Dequeue();
 
-                if (cmd != null)
-                {
-                    cmd.Execute(Camera);
-                    cmd.Execute(this);
-                    cmd.Execute(context);
-                }
+                if (cmd == null) continue;
+                cmd.Execute(Camera);
+                cmd.Execute(this);
+                cmd.Execute(context);
             }
 
             if (!IsConfigLoaded)
@@ -114,9 +102,7 @@ namespace BasicTileEngineMono
             base.UpdateMapMouseScroll();
 
             //string text = base.InformationalTxt;
-            base.InformationalTxt = string.Format("Tile Map Editor Ver 0.01\nTile Type: ({0}), Index={1}, ObjectName={2}", tileType.ToString(), MyMap.TileIndex, MyMap.GetTileMapLogicalObjName(MyMap.TileIndex));
-
-            //base.Update(gameTime, context);
+            base.InformationalTxt = string.Format("Tile Map Editor Ver 0.01\nTile Type: ({0}), Index={1}, ObjectName={2}", CurrentTileType.ToString(), MyMap.TileIndex, MyMap.GetTileMapLogicalObjName(MyMap.TileIndex));
         }
 
         private void UpdateMiniTileMap(GameTime gameTime)
@@ -129,25 +115,25 @@ namespace BasicTileEngineMono
                 case TileType.Multi:
                 case TileType.Height:
                 case TileType.Topper:
-                    tileType = t;
+                    CurrentTileType = t;
                     break;
             }
             //Show Tile Map for 1 seconds
             //
             if (MyMap.OldTileIdx != MyMap.TileIndex)
             {
-                ShowTileMap = true;
-                currentTime = 0;
+                _showTileMap = true;
+                _currentTime = 0;
             }
 
-            currentTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _currentTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            Alpha = ((currentTime <= maxTime - 1f) ? 1.0f : -currentTime + maxTime);
+            _alpha = ((_currentTime <= MaxTime - 1f) ? 1.0f : -_currentTime + MaxTime);
 
-            if (currentTime >= maxTime)
+            if (_currentTime >= MaxTime)
             {
-                ShowTileMap = false;
-                currentTime = 0f;
+                _showTileMap = false;
+                _currentTime = 0f;
             }
         }
 
@@ -170,7 +156,7 @@ namespace BasicTileEngineMono
 
             //get hilight row offset
 
-            if (ShowPreview)
+            if (_showPreview)
             {
                 int hilightrowOffset = ((this.HilightPoint.Y) % 2 == 1) ? Tile.OddRowXOffset : 0;
 
@@ -193,15 +179,15 @@ namespace BasicTileEngineMono
             #endregion
 
             #region DRAW TILE SET MAP
-            if (ShowTileMap)
+            if (_showTileMap)
             {
                 spriteBatch.Draw(
                     Tile.TileSetTexture,
                         Camera.ScreenToWorld(new Vector2(
-                            TileMapSX,
-                            TileMapSY)),
+                            TileMapSx,
+                            TileMapSy)),
                     Tile.GetSourceTileSet(),
-                    Color.Aquamarine * Alpha ,
+                    Color.Aquamarine * _alpha ,
                     0.0f,
                     Vector2.Zero,
                     TileMapScale,
@@ -211,12 +197,12 @@ namespace BasicTileEngineMono
                 foreach (int id in MyMap.GetTileMapHilightIndexes(MyMap.TileIndex))
                 {
                     spriteBatch.Draw(
-                        blankTexture,
+                        _blankTexture,
                             Camera.ScreenToWorld(new Vector2(
-                                TileMapSX + Tile.TileWidth * (id % MyMap.MaxTileHorizontalIndex) * TileMapScale,
-                                TileMapSY + Tile.TileHeight * (id / MyMap.MaxTileHorizontalIndex) * TileMapScale)),
-                        new Rectangle(0, 0, blankTexture.Width, blankTexture.Height),
-                        Color.White * Alpha * 0.2f,
+                                TileMapSx + Tile.TileWidth * (id % MyMap.MaxTileHorizontalIndex) * TileMapScale,
+                                TileMapSy + Tile.TileHeight * (id / MyMap.MaxTileHorizontalIndex) * TileMapScale)),
+                        new Rectangle(0, 0, _blankTexture.Width, _blankTexture.Height),
+                        Color.White * _alpha * 0.2f,
                         0.0f,
                         Vector2.Zero,
                         TileMapScale,

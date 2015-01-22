@@ -1,66 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Storage;
-using Microsoft.Xna.Framework.GamerServices;
-using System.Diagnostics;
-using BasicTileEngineMono.Components;
+using Microsoft.Xna.Framework.Graphics;
 
-namespace BasicTileEngineMono
+namespace BasicTileEngineMono.Components
 {
 
     public class GameMenu : GameProcess
     {
         //Input Handler
-        GameInput gameInput;
+        GameInput _gameInput;
 
-        protected SpriteFont snippets14;
+        protected SpriteFont Snippets14;
 
         //Menu Text
-        string VersionText = "Tile Engine Menu System Ver 0.2";
-        string MenuText = "<Enter> Continue to Core Game\n" +
-                            "<E> Map Editor Mode\n" +
-                            "<A> About\n";
-                            
+        private const string VersionText = "Tile Engine Menu System Ver 0.2";
+        private const string MenuText = "<Enter> Continue to Core Game\n" + "<E> Map Editor Mode\n" + "<A> About\n";
+
 
         public override void Initialize(Game game)
         {
             base.Initialize(game);
-            gameInput = new GameInput();
+            _gameInput = new GameInput();
 
             //assign message box command to a specific key
             MessageBoxCommand messageBox = new MessageBoxCommand(this, "About", "これはタイルエンジンのデモです。著作者：大朏哲明", 200, 200);
-            gameInput._buttonA_PR = messageBox;
-            gameInput._buttonEnter_PR = new StateChangeToCommand<GameCore>(this);
-            gameInput._buttonE_PR = new StateChangeToCommand<GameMapEditor>(this);
+            _gameInput._buttonA_PR = messageBox;
+            _gameInput._buttonEnter_PR = new StateChangeToCommand<GameCore>(this);
+            _gameInput._buttonE_PR = new StateChangeToCommand<GameMapEditor>(this);
 
             game.IsMouseVisible = true;
         }
 
-        public override void LoadContent(ContentManager Content, GraphicsDeviceManager graphics)
+        public override void LoadContent(ContentManager content, GraphicsDeviceManager graphics)
         {
-            snippets14 = Content.Load<SpriteFont>(@"Fonts\Snippets14");
+            Snippets14 = content.Load<SpriteFont>(@"Fonts\Snippets14");
         }
 
         public override void Update(GameTime gameTime, IContext context)
         {
             //Check if anything on the Sub-Process Stack
 
-            gameInput.HandleInput(ref this.CommandQueue);
-            while (CommandQueue.Count() > 0)
+            _gameInput.HandleInput(ref this.CommandQueue);
+            while (CommandQueue.Any())
             {
                 Command cmd = CommandQueue.Dequeue();
 
-                if (cmd != null)
-                {
-                    cmd.Execute(this);
-                    cmd.Execute(context);
-                }
+                if (cmd == null) continue;
+
+                cmd.Execute(this);
+                cmd.Execute(context);
             }
 
             base.Update(gameTime, context);
@@ -70,7 +59,7 @@ namespace BasicTileEngineMono
         {
             spriteBatch.Begin();
             spriteBatch.DrawString(
-                            snippets14,
+                            Snippets14,
                             VersionText,
                             new Vector2(0, 0),
                             Color.White,
@@ -81,7 +70,7 @@ namespace BasicTileEngineMono
                             0.0f);
 
             spriteBatch.DrawString(
-                            snippets14,
+                            Snippets14,
                             MenuText,
                             new Vector2(10, 30),
                             Color.White,

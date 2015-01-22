@@ -1,51 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Storage;
-using Microsoft.Xna.Framework.GamerServices;
-using System.Diagnostics;
-using BasicTileEngineMono.Components;
+using Microsoft.Xna.Framework.Graphics;
 
-namespace BasicTileEngineMono
+namespace BasicTileEngineMono.Components
 {
     public class GameText : GameProcess, ICloneable
     {
-        protected SpriteFont snippets14;
+        protected SpriteFont Snippets14;
         //Screen Coordinates
-        Point Position;
+        Point _position;
 
         protected float TransparencyFactor { get; set; }
-        protected float maxLineWidth { get; set; }
+        protected float MaxLineWidth { get; set; }
 
         public string TextContent { get; set; }
 
-        public override void Initialize(Game game)
+        public override void LoadContent(ContentManager content, GraphicsDeviceManager graphics)
         {
-            base.Initialize(game);
-        }
-
-        public override void LoadContent(ContentManager Content, GraphicsDeviceManager graphics)
-        {
-            snippets14 = Content.Load<SpriteFont>(@"Fonts\Snippets14");
-        }
-
-        public override void Update(GameTime gameTime, IContext context)
-        {
-            base.Update(gameTime, context);
+            Snippets14 = content.Load<SpriteFont>(@"Fonts\Snippets14");
         }
 
         public override void Render(GameTime gameTime, SpriteBatch spriteBatch, IContext context)
         {
             spriteBatch.Begin();
             spriteBatch.DrawString(
-                            snippets14,
+                            Snippets14,
                             this.TextContent,
-                            new Vector2(Position.X, Position.Y),
+                            new Vector2(_position.X, _position.Y),
                             Color.White,
                             0f,
                             Vector2.Zero,
@@ -57,11 +39,11 @@ namespace BasicTileEngineMono
             base.Render(gameTime, spriteBatch, context);
         }
 
-        public void Set(string TextContent, int X, int Y)
+        public void Set(string textContent, int X, int Y)
         {
-            this.TextContent = TextContent;
-            this.Position.X = X;
-            this.Position.Y = Y;
+            this.TextContent = textContent;
+            this._position.X = X;
+            this._position.Y = Y;
         }
         public object Clone()
         {

@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using BasicTileEngineMono.Components;
 
-namespace BasicTileEngineMono
+namespace BasicTileEngineMono.Components
 {
     /// <summary>
     /// Factory Design Pattern
     /// </summary>
     public abstract class AbstractMonoGameProcessFactory
     {
-        public static AbstractMonoGameProcessFactory getFactory(string classname)
+        public static AbstractMonoGameProcessFactory GetFactory(string classname)
         {
             AbstractMonoGameProcessFactory factory = null;
             try
@@ -35,51 +32,51 @@ namespace BasicTileEngineMono
         public abstract void Initialize(Game game);
         public abstract void LoadContent(ContentManager content, GraphicsDeviceManager graphics);
         public abstract GameProcess GetGameProcess(Type typeOfGameProcess);
-        public abstract GameMessageBox GameMessageBox(string Content, string Title = "Message:", int X = 100, int Y = 100);
-        public abstract GameText GameText(string Text, int X, int Y);
+        public abstract GameMessageBox GameMessageBox(string content, string title = "Message:", int x = 100, int y = 100);
+        public abstract GameText GameText(string text, int x, int y);
     }
 
     public class GameProcessFactory : AbstractMonoGameProcessFactory
     {
-        private List<GameProcess> ProcessList = new List<GameProcess>();
+        private readonly List<GameProcess> _processList = new List<GameProcess>();
 
         #region FACTORY METHODS
         public override void Create()
         {
-            ProcessList.Add(new GameCore());
-            ProcessList.Add(new GameMapEditor());
-            ProcessList.Add(new GameMenu());
-            ProcessList.Add(new GameMessageBox());
-            ProcessList.Add(new GameText());
+            _processList.Add(new GameCore());
+            _processList.Add(new GameMapEditor());
+            _processList.Add(new GameMenu());
+            _processList.Add(new GameMessageBox());
+            _processList.Add(new GameText());
         }
 
         public override void Initialize(Game game)
         {
-            foreach (GameProcess g in ProcessList)
+            foreach (var g in _processList)
                 g.Initialize(game);
         }
 
         public override void LoadContent(ContentManager content, GraphicsDeviceManager graphics)
         {
-            foreach (GameProcess g in ProcessList)
+            foreach (var g in _processList)
                 g.LoadContent(content, graphics);   
         }
 
         public override GameProcess GetGameProcess(Type typeOfGameProcess)
         {
-            return ProcessList.Find(x => x.GetType() == typeOfGameProcess);
+            return _processList.Find(x => x.GetType() == typeOfGameProcess);
         }
 
-        public override GameMessageBox GameMessageBox(string Content, string Title = "Message:", int X = 100, int Y = 100)
+        public override GameMessageBox GameMessageBox(string content, string title = "Message:", int x = 100, int y = 100)
         {
             GameMessageBox messageBox = (GameMessageBox)((GameMessageBox)GetGameProcess(typeof(GameMessageBox))).Clone();
-            messageBox.Set(Content, Title, X, Y);
+            messageBox.Set(content, title, x, y);
             return messageBox;
         }
-        public override GameText GameText(string Text, int X, int Y)
+        public override GameText GameText(string text, int x, int y)
         {
             GameText gameText = (GameText)((GameText)GetGameProcess(typeof(GameText))).Clone();
-            gameText.Set(Text, X, Y);
+            gameText.Set(text, x, y);
             return gameText;
         }
         #endregion
