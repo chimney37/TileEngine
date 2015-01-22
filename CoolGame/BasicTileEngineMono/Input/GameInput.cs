@@ -1,44 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
-namespace BasicTileEngineMono
+namespace BasicTileEngineMono.Input
 {
     public class GameInput
     {
-        KeyboardState KBState;
-        KeyboardState KBStateP;
-        MouseState MState;
-        MouseState MStateP;
+        KeyboardState _kbState;
+        KeyboardState _kbStateP;
+        MouseState _mState;
+        MouseState _mStateP;
 
         //..P = Pressed
         //..PR = PressedAndReleased
-        public Command _buttonA_PR { get; set; }
-        public Command _buttonD_PR { get; set; }
-        public Command _buttonE_PR { get; set; }
-        public Command _buttonM_PR { get; set; }
-        public Command _buttonQ_PR { get; set; }
-        public Command _buttonR_PR { get; set; }
-        public Command _buttonS_PR {get;set;}
-        public Command _buttonW_PR { get; set; }
-        public Command _buttonLeftShift_P { get; set; }
+        public Command ButtonAPr { get; set; }
+        public Command ButtonDPr { get; set; }
+        public Command ButtonEPr { get; set; }
+        public Command ButtonMPr { get; set; }
+        public Command ButtonQPr { get; set; }
+        public Command ButtonRPr { get; set; }
+        public Command ButtonSPr {get;set;}
+        public Command ButtonWPr { get; set; }
+        public Command ButtonLeftShiftP { get; set; }
 
-        public Command _buttonEnter_PR { get; set; }
-        public Command _buttonDelete_PR { get; set; }
-        public Command _buttonEnd_PR { get; set; }
-        public Command _buttonHome_PR { get; set; }
-        public Command _buttonNum1_P { get; set; }
-        public Command _buttonNum2_P { get; set; }
-        public Command _buttonNum3_P { get; set; }
-        public Command _buttonNum4_P { get; set; }
-        public Command _buttonNum5_P { get; set; }
-        public Command _buttonNum6_P { get; set; }
-        public Command _buttonNum7_P { get; set; }
-        public Command _buttonNum8_P { get; set; }
-        public Command _buttonNum9_P { get; set; }
+        public Command ButtonEnterPr { get; set; }
+        public Command ButtonDeletePr { get; set; }
+        public Command ButtonEndPr { get; set; }
+        public Command ButtonHomePr { get; set; }
+        public Command ButtonNum1P { get; set; }
+        public Command ButtonNum2P { get; set; }
+        public Command ButtonNum3P { get; set; }
+        public Command ButtonNum4P { get; set; }
+        public Command ButtonNum5P { get; set; }
+        public Command ButtonNum6P { get; set; }
+        public Command ButtonNum7P { get; set; }
+        public Command ButtonNum8P { get; set; }
+        public Command ButtonNum9P { get; set; }
 
         //Mouse commands
         //..U: Up
@@ -47,18 +45,18 @@ namespace BasicTileEngineMono
         //..Dr: Dragged Point
         //..Hld: Held
         //..LShf: Left Shift Pressed
-        public Command _mouseScroll_D { get; set; }
-        public Command _mouseScroll_U { get; set; } 
-        public Command _mouseLeft_P { get; set; }
-        public Command _mouseLeft_R { get; set; }
-        public Command _mouseLeft_PR { get; set; }
-        public Command _mouseLeft_PR_S { get; set; }
-        public Command _mouseLeft_PR_Dr { get; set; }
-        public Command _mouseLeft_P_Hld { get; set; }
-        public Command _mouseLeft_P_LShf { get; set; }
-        public Command _mouseLeft_P_NoLShf { get; set; }
+        public Command MouseScrollD { get; set; }
+        public Command MouseScrollU { get; set; } 
+        public Command MouseLeftP { get; set; }
+        public Command MouseLeftR { get; set; }
+        public Command MouseLeftPr { get; set; }
+        public Command MouseLeftPrS { get; set; }
+        public Command MouseLeftPrDr { get; set; }
+        public Command MouseLeftPHld { get; set; }
+        public Command MouseLeftPlShf { get; set; }
+        public Command MouseLeftPnoLShf { get; set; }
 
-        public Command _mouseRight_PR { get; set; }
+        public Command MouseRightPr { get; set; }
 
         //check whether mouse is dragging
         public bool IsDragging { get; set; }
@@ -68,17 +66,17 @@ namespace BasicTileEngineMono
         {
             get
             {
-                return MState.Position;
+                return _mState.Position;
             }
         }
 
         public GameInput()
         {
-            KBState = Keyboard.GetState();
-            MState = Mouse.GetState();
+            _kbState = Keyboard.GetState();
+            _mState = Mouse.GetState();
 
-            KBStateP = KBState;
-            MStateP = MState;
+            _kbStateP = _kbState;
+            _mStateP = _mState;
 
             IsDragging = false;
             IsFirstTimePressMouseLeft = true;
@@ -90,18 +88,18 @@ namespace BasicTileEngineMono
             //http://stackoverflow.com/questions/9712932/2d-xna-game-mouse-clicking
 
             //mouse bind
-            _mouseScroll_D = new ZoomInCommand();
-            _mouseScroll_U = new ZoomOutCommand();
+            MouseScrollD = new ZoomInCommand();
+            MouseScrollU = new ZoomOutCommand();
 
             //_mouseLeft_P
 
             //keyboard bind
-            _buttonDelete_PR = new DebuggingToggleCommand();
-            _buttonA_PR = null;
-            _buttonQ_PR = null;
-            _buttonE_PR = null;
-            _buttonM_PR = null;
-            _buttonEnter_PR = null;
+            ButtonDeletePr = new DebuggingToggleCommand();
+            ButtonAPr = null;
+            ButtonQPr = null;
+            ButtonEPr = null;
+            ButtonMPr = null;
+            ButtonEnterPr = null;
 
         }
 
@@ -109,174 +107,171 @@ namespace BasicTileEngineMono
         {
             Queue<Command> cmdQueue = new Queue<Command>();
 
-            KBStateP = KBState;
-            MStateP = MState;
+            _kbStateP = _kbState;
+            _mStateP = _mState;
 
-            KBState = Keyboard.GetState();
-            MState = Mouse.GetState();
+            _kbState = Keyboard.GetState();
+            _mState = Mouse.GetState();
 
             //Mouse input
-            if (MState.ScrollWheelValue < MStateP.ScrollWheelValue)
-                cmdQueue.Enqueue(_mouseScroll_D);
+            if (_mState.ScrollWheelValue < _mStateP.ScrollWheelValue)
+                cmdQueue.Enqueue(MouseScrollD);
 
-            if (MState.ScrollWheelValue > MStateP.ScrollWheelValue)
-                cmdQueue.Enqueue(_mouseScroll_U);
+            if (_mState.ScrollWheelValue > _mStateP.ScrollWheelValue)
+                cmdQueue.Enqueue(MouseScrollU);
 
             //when this is the first time left pressed, until it has been released
-            if (MState.LeftButton == ButtonState.Pressed && 
+            if (_mState.LeftButton == ButtonState.Pressed && 
                 IsFirstTimePressMouseLeft)
             {
-                FirstMouseClickPosition = MState.Position;
+                FirstMouseClickPosition = _mState.Position;
                 IsFirstTimePressMouseLeft = false;
 
-                cmdQueue.Enqueue(_mouseLeft_P);
+                cmdQueue.Enqueue(MouseLeftP);
             }
 
             //when mouse has been pressed and released
-            if (MState.LeftButton == ButtonState.Released &&
-                MStateP.LeftButton == ButtonState.Pressed)
+            if (_mState.LeftButton == ButtonState.Released &&
+                _mStateP.LeftButton == ButtonState.Pressed)
             {
                 //reset first time switch
                 IsFirstTimePressMouseLeft = true;
 
-                cmdQueue.Enqueue(_mouseLeft_PR);
+                cmdQueue.Enqueue(MouseLeftPr);
             }
 
-            if (MState.RightButton == ButtonState.Released &&
-                MStateP.RightButton == ButtonState.Pressed)
+            if (_mState.RightButton == ButtonState.Released &&
+                _mStateP.RightButton == ButtonState.Pressed)
             {
-                cmdQueue.Enqueue(_mouseRight_PR);
+                cmdQueue.Enqueue(MouseRightPr);
             }
 
             //when mouse has been pressed and released at the point of click
-            if (MState.LeftButton == ButtonState.Released &&
-                MStateP.LeftButton == ButtonState.Pressed &&
-                !MouseMoved(FirstMouseClickPosition, MState.Position) )
+            if (_mState.LeftButton == ButtonState.Released &&
+                _mStateP.LeftButton == ButtonState.Pressed &&
+                !MouseMoved(FirstMouseClickPosition, _mState.Position) )
             {
                 //reset first time switch
                 IsFirstTimePressMouseLeft = true;
-                cmdQueue.Enqueue(_mouseLeft_PR_S);
+                cmdQueue.Enqueue(MouseLeftPrS);
             }
 
             //when mouse has been pressed and released but not at the point of click
-            if (MState.LeftButton == ButtonState.Released && 
-                MStateP.LeftButton == ButtonState.Pressed &&
-                MouseMoved(FirstMouseClickPosition, MState.Position))
+            if (_mState.LeftButton == ButtonState.Released && 
+                _mStateP.LeftButton == ButtonState.Pressed &&
+                MouseMoved(FirstMouseClickPosition, _mState.Position))
             {
                 //reset first time switch
                 IsFirstTimePressMouseLeft = true;
-                cmdQueue.Enqueue(_mouseLeft_PR_Dr);
+                cmdQueue.Enqueue(MouseLeftPrDr);
             }
 
             //when mouse is being held
-            if (MState.LeftButton == ButtonState.Pressed &&
-                MStateP.LeftButton == ButtonState.Pressed)
+            if (_mState.LeftButton == ButtonState.Pressed &&
+                _mStateP.LeftButton == ButtonState.Pressed)
             {
-                cmdQueue.Enqueue(_mouseLeft_P_Hld);
+                cmdQueue.Enqueue(MouseLeftPHld);
             }
 
 
             //Keyboard input (pressed and released)
             if (IsPressedAndReleased(Keys.A))
-                cmdQueue.Enqueue(_buttonA_PR);
+                cmdQueue.Enqueue(ButtonAPr);
 
             if (IsPressedAndReleased(Keys.D))
-                cmdQueue.Enqueue(_buttonD_PR);
+                cmdQueue.Enqueue(ButtonDPr);
 
             if (IsPressedAndReleased(Keys.E))
-                cmdQueue.Enqueue( _buttonE_PR);
+                cmdQueue.Enqueue( ButtonEPr);
 
             if (IsPressedAndReleased(Keys.M))
-                cmdQueue.Enqueue( _buttonM_PR);
+                cmdQueue.Enqueue( ButtonMPr);
 
             if (IsPressedAndReleased(Keys.Q))
-                cmdQueue.Enqueue( _buttonQ_PR);
+                cmdQueue.Enqueue( ButtonQPr);
 
             if (IsPressedAndReleased(Keys.R))
-                cmdQueue.Enqueue(_buttonR_PR);
+                cmdQueue.Enqueue(ButtonRPr);
 
             if (IsPressedAndReleased(Keys.S))
-                cmdQueue.Enqueue(_buttonS_PR);
+                cmdQueue.Enqueue(ButtonSPr);
 
             if (IsPressedAndReleased(Keys.W))
-                cmdQueue.Enqueue(_buttonW_PR);
+                cmdQueue.Enqueue(ButtonWPr);
 
             if (IsPressedAndReleased(Keys.Enter) )
-                cmdQueue.Enqueue( _buttonEnter_PR);
+                cmdQueue.Enqueue( ButtonEnterPr);
 
             if (IsPressedAndReleased(Keys.Delete))
-                cmdQueue.Enqueue( _buttonDelete_PR);
+                cmdQueue.Enqueue( ButtonDeletePr);
 
             if (IsPressedAndReleased(Keys.Home))
-                cmdQueue.Enqueue(_buttonHome_PR);
+                cmdQueue.Enqueue(ButtonHomePr);
 
             if (IsPressedAndReleased(Keys.End))
-                cmdQueue.Enqueue(_buttonEnd_PR);
+                cmdQueue.Enqueue(ButtonEndPr);
 
             //pressed
-            if (KBState.IsKeyDown(Keys.LeftShift))
-                cmdQueue.Enqueue(_buttonLeftShift_P);
+            if (_kbState.IsKeyDown(Keys.LeftShift))
+                cmdQueue.Enqueue(ButtonLeftShiftP);
 
             //Handle num keys
-            if (KBState.IsKeyDown(Keys.NumPad1))
-                cmdQueue.Enqueue(_buttonNum1_P);
+            if (_kbState.IsKeyDown(Keys.NumPad1))
+                cmdQueue.Enqueue(ButtonNum1P);
 
-            if (KBState.IsKeyDown(Keys.NumPad2))
-                cmdQueue.Enqueue(_buttonNum2_P);
+            if (_kbState.IsKeyDown(Keys.NumPad2))
+                cmdQueue.Enqueue(ButtonNum2P);
 
-            if (KBState.IsKeyDown(Keys.NumPad3))
-                cmdQueue.Enqueue(_buttonNum3_P);
+            if (_kbState.IsKeyDown(Keys.NumPad3))
+                cmdQueue.Enqueue(ButtonNum3P);
 
-            if (KBState.IsKeyDown(Keys.NumPad4))
-                cmdQueue.Enqueue(_buttonNum4_P);
+            if (_kbState.IsKeyDown(Keys.NumPad4))
+                cmdQueue.Enqueue(ButtonNum4P);
 
-            if (KBState.IsKeyDown(Keys.NumPad6))
-                cmdQueue.Enqueue(_buttonNum6_P);
+            if (_kbState.IsKeyDown(Keys.NumPad6))
+                cmdQueue.Enqueue(ButtonNum6P);
 
-            if (KBState.IsKeyDown(Keys.NumPad7))
-                cmdQueue.Enqueue(_buttonNum7_P);
+            if (_kbState.IsKeyDown(Keys.NumPad7))
+                cmdQueue.Enqueue(ButtonNum7P);
 
-            if (KBState.IsKeyDown(Keys.NumPad8))
-                cmdQueue.Enqueue(_buttonNum8_P);
+            if (_kbState.IsKeyDown(Keys.NumPad8))
+                cmdQueue.Enqueue(ButtonNum8P);
 
-            if (KBState.IsKeyDown(Keys.NumPad9))
-                cmdQueue.Enqueue(_buttonNum9_P);
+            if (_kbState.IsKeyDown(Keys.NumPad9))
+                cmdQueue.Enqueue(ButtonNum9P);
 
             //Hybrid states
-            if (KBState.IsKeyUp(Keys.LeftShift) && 
-                MStateP.LeftButton == ButtonState.Pressed &&
-                MState.LeftButton == ButtonState.Released)
+            if (_kbState.IsKeyUp(Keys.LeftShift) && 
+                _mStateP.LeftButton == ButtonState.Pressed &&
+                _mState.LeftButton == ButtonState.Released)
             {
-                cmdQueue.Enqueue(_mouseLeft_P_NoLShf);
+                cmdQueue.Enqueue(MouseLeftPnoLShf);
             }
 
-            if (KBState.IsKeyDown(Keys.LeftShift) &&
-                MStateP.LeftButton == ButtonState.Pressed &&
-                MState.LeftButton == ButtonState.Released)
+            if (_kbState.IsKeyDown(Keys.LeftShift) &&
+                _mStateP.LeftButton == ButtonState.Pressed &&
+                _mState.LeftButton == ButtonState.Released)
             {
-                cmdQueue.Enqueue(_mouseLeft_P_LShf);
+                cmdQueue.Enqueue(MouseLeftPlShf);
             }
 
             return cmdQueue;
         }
 
-        public void HandleInput(ref Queue<Command> CommandQueue)
+        public void HandleInput(ref Queue<Command> commandQueue)
         {
             foreach (Command c in HandleInput())
-                CommandQueue.Enqueue(c);
+                commandQueue.Enqueue(c);
         }
 
-        private bool MouseMoved(Point one, Point two)
+        private static bool MouseMoved(Point one, Point two)
         {
-            if (Math.Abs(one.X - two.X) > 5 || Math.Abs(one.Y - two.Y) > 5)
-                return true;
-            else
-                return false;
+            return Math.Abs(one.X - two.X) > 5 || Math.Abs(one.Y - two.Y) > 5;
         }
 
         private bool IsPressedAndReleased(Keys key)
         {
-            return KBState.IsKeyUp(key) && KBStateP.IsKeyDown(key);
+            return _kbState.IsKeyUp(key) && _kbStateP.IsKeyDown(key);
         }
     }
 }

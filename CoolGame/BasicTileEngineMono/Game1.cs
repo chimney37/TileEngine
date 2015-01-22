@@ -28,7 +28,7 @@ namespace BasicTileEngineMono
 
             Content.RootDirectory = "Content";
 
-            _gameFactory = AbstractMonoGameProcessFactory.GetFactory("BasicTileEngineMono.GameProcessFactory");
+            _gameFactory = AbstractMonoGameProcessFactory.GetFactory("BasicTileEngineMono.Components.GameProcessFactory");
         }
 
         /// <summary>

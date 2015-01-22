@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using BasicTileEngineMono.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -45,10 +46,10 @@ namespace BasicTileEngineMono.Components
 
             //initialize input handler
             _gameInput = new GameInput();
-            _gameInput._buttonEnter_PR = new MessageBoxCloseCommand();
-            _gameInput._mouseLeft_PR_S = new MessageBoxCloseOnClickCommand(_gameInput);
-            _gameInput._mouseLeft_P = new MessageBoxGetClickOffsetCommand(_gameInput);
-            _gameInput._mouseLeft_P_Hld = new MessageBoxMoveCommand(_gameInput);
+            _gameInput.ButtonEnterPr = new MessageBoxCloseCommand();
+            _gameInput.MouseLeftPrS = new MessageBoxCloseOnClickCommand(_gameInput);
+            _gameInput.MouseLeftP = new MessageBoxGetClickOffsetCommand(_gameInput);
+            _gameInput.MouseLeftPHld = new MessageBoxMoveCommand(_gameInput);
         }
 
         public override void LoadContent(ContentManager content, GraphicsDeviceManager graphics)

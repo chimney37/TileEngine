@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BasicTileEngineMono.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
@@ -172,20 +173,20 @@ namespace BasicTileEngineMono.Components
             //Initialize InputHandler
             // ReSharper disable once UseObjectOrCollectionInitializer
             GameInput = new GameInput();
-            GameInput._buttonE_PR = new StateChangeToCommand<GameMapEditor>(this);
-            GameInput._buttonQ_PR = new StateChangeToCommand<GameMenu>(this);
-            GameInput._buttonEnd_PR = new MarkWorldPointCommand(GameInput);
-            GameInput._buttonHome_PR = new MarkWorldPointCommand(GameInput);
-            GameInput._buttonD_PR = new CalculateDistanceDebuggerCommand(this);
-            GameInput._buttonNum1_P = new MoveGameActorCommand(this, new Vector2(-2, 1), "WalkSouthWest");
-            GameInput._buttonNum2_P = new MoveGameActorCommand(this, new Vector2(0, 1), "WalkSouth");
-            GameInput._buttonNum3_P = new MoveGameActorCommand(this, new Vector2(2, 1), "WalkSouthEast");
-            GameInput._buttonNum4_P = new MoveGameActorCommand(this, new Vector2(-2, 0), "WalkWest");
-            GameInput._buttonNum6_P = new MoveGameActorCommand(this, new Vector2(2, 0), "WalkEast");
-            GameInput._buttonNum7_P = new MoveGameActorCommand(this, new Vector2(-2, -1), "WalkNorthWest");
-            GameInput._buttonNum8_P = new MoveGameActorCommand(this, new Vector2(0, -1), "WalkNorth");
-            GameInput._buttonNum9_P = new MoveGameActorCommand(this, new Vector2(2, -1), "WalkNorthEast");
-            GameInput._mouseLeft_PR = new MoveGameActorToPositionCommand(this.Player);
+            GameInput.ButtonEPr = new StateChangeToCommand<GameMapEditor>(this);
+            GameInput.ButtonQPr = new StateChangeToCommand<GameMenu>(this);
+            GameInput.ButtonEndPr = new MarkWorldPointCommand(GameInput);
+            GameInput.ButtonHomePr = new MarkWorldPointCommand(GameInput);
+            GameInput.ButtonDPr = new CalculateDistanceDebuggerCommand(this);
+            GameInput.ButtonNum1P = new MoveGameActorCommand(this, new Vector2(-2, 1), "WalkSouthWest");
+            GameInput.ButtonNum2P = new MoveGameActorCommand(this, new Vector2(0, 1), "WalkSouth");
+            GameInput.ButtonNum3P = new MoveGameActorCommand(this, new Vector2(2, 1), "WalkSouthEast");
+            GameInput.ButtonNum4P = new MoveGameActorCommand(this, new Vector2(-2, 0), "WalkWest");
+            GameInput.ButtonNum6P = new MoveGameActorCommand(this, new Vector2(2, 0), "WalkEast");
+            GameInput.ButtonNum7P = new MoveGameActorCommand(this, new Vector2(-2, -1), "WalkNorthWest");
+            GameInput.ButtonNum8P = new MoveGameActorCommand(this, new Vector2(0, -1), "WalkNorth");
+            GameInput.ButtonNum9P = new MoveGameActorCommand(this, new Vector2(2, -1), "WalkNorthEast");
+            GameInput.MouseLeftPr = new MoveGameActorToPositionCommand(this.Player);
         }
 
         public override void Update(GameTime gameTime, IContext context)

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using BasicTileEngineMono.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -25,9 +26,9 @@ namespace BasicTileEngineMono.Components
 
             //assign message box command to a specific key
             MessageBoxCommand messageBox = new MessageBoxCommand(this, "About", "これはタイルエンジンのデモです。著作者：大朏哲明", 200, 200);
-            _gameInput._buttonA_PR = messageBox;
-            _gameInput._buttonEnter_PR = new StateChangeToCommand<GameCore>(this);
-            _gameInput._buttonE_PR = new StateChangeToCommand<GameMapEditor>(this);
+            _gameInput.ButtonAPr = messageBox;
+            _gameInput.ButtonEnterPr = new StateChangeToCommand<GameCore>(this);
+            _gameInput.ButtonEPr = new StateChangeToCommand<GameMapEditor>(this);
 
             game.IsMouseVisible = true;
         }

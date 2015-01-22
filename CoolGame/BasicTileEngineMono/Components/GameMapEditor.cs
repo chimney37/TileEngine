@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using BasicTileEngineMono.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -58,17 +59,17 @@ namespace BasicTileEngineMono.Components
 
             //rebind input
             _mapEditorInput = new GameInput();
-            _mapEditorInput._buttonE_PR = new StateChangeToCommand<GameCore>(this);
-            _mapEditorInput._buttonR_PR = new LoadConfigFileCommand();
-            _mapEditorInput._buttonA_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Left);
-            _mapEditorInput._buttonD_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Right);
-            _mapEditorInput._buttonW_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Up);
-            _mapEditorInput._buttonS_PR = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Down);
-            _mapEditorInput._buttonQ_PR = new IncrementTileTypeIndexCmd();
-            _mapEditorInput._mouseLeft_P_NoLShf = new AddTileToMapCmd();
-            _mapEditorInput._mouseLeft_P_LShf = new MoveGameActorToPositionCommand(this.Player);
-            _mapEditorInput._buttonLeftShift_P = new SetPreviewCursor(false);
-            _mapEditorInput._mouseRight_PR = new RemoveTileMapCmd();
+            _mapEditorInput.ButtonEPr = new StateChangeToCommand<GameCore>(this);
+            _mapEditorInput.ButtonRPr = new LoadConfigFileCommand();
+            _mapEditorInput.ButtonAPr = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Left);
+            _mapEditorInput.ButtonDPr = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Right);
+            _mapEditorInput.ButtonWPr = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Up);
+            _mapEditorInput.ButtonSPr = new MoveTileIndexCmd(MoveTileIndexCmd.TileIndexDir.Down);
+            _mapEditorInput.ButtonQPr = new IncrementTileTypeIndexCmd();
+            _mapEditorInput.MouseLeftPnoLShf = new AddTileToMapCmd();
+            _mapEditorInput.MouseLeftPlShf = new MoveGameActorToPositionCommand(this.Player);
+            _mapEditorInput.ButtonLeftShiftP = new SetPreviewCursor(false);
+            _mapEditorInput.MouseRightPr = new RemoveTileMapCmd();
         }
 
         public override void Update(GameTime gameTime, IContext context)
