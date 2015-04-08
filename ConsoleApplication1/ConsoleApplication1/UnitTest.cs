@@ -16,5 +16,16 @@ namespace ConsoleApplication1
         {
             return Solution.solution(X, Y, D);
         }
+
+        [TestCase(5, new[] { 3, 4, 4, 6, 4, 4, 4 }, Result = new[] { 2, 2, 2, 5, 2 })]
+        [TestCase(5, new[] { 1, 1, 1, 6, 1 }, Result = new[] { 4,3,3,3,3})]
+        [TestCase(5, new[] { 5 }, Result = new[] { 0,0,0,0,1 })]
+        [TestCase(5, new[] { 3, 4, 4, 6, 1, 4, 6 }, Result = new[] { 3, 3, 3, 3, 3 })]
+        [TestCase(5, new[] { 3, 4, 4, 6, 1, 4, 4 }, Result = new[] { 3, 2, 2, 4, 2 })]
+        public int[] Test2(int N, int[] A)
+        {
+            return Solution.solution6(N, A);
+        }
+
     }
 }
