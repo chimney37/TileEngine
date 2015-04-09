@@ -27,5 +27,35 @@ namespace ConsoleApplication1
             return Solution.solution6(N, A);
         }
 
+        [TestCase(new[] { 8, 6, 5, 3, 2, 4, 7 }, new[] { 1, 1, 1, 1, 1, 0, 0 },1, Result = 1)]
+        [TestCase(new[] { 4, 3, 2, 1, 5 }, new[] { 0, 1, 0, 0, 0 }, 2, Result = 2)]
+        [TestCase(new[] { 4, 3, 2, 1, 5 }, new[] { 0, 1, 0, 1, 0 }, 3, Result = 2)]
+        [TestCase(new[] { 4, 3, 2, 1, 5 }, new[] { 0, 0, 0, 0, 0 }, 4, Result = 5)]
+        [TestCase(new[] { 4, 3, 2, 1, 5 }, new[] { 1, 1, 1, 1, 1 }, 5, Result = 5)]
+        [TestCase(new[] { 4, 3, 2, 1, 5 }, new[] { 0, 0, 0, 1, 1 }, 6, Result = 5)]
+        [TestCase(new[] { 4, 3, 2, 1, 5 }, new[] { 0, 0, 0, 1, 1 }, 7, Result = 5)]
+        [TestCase(new[] { 5, 3, 2, 1, 4 }, new[] { 1, 0, 0, 0, 0 }, 8, Result = 1)]
+        [TestCase(new[] { 1, 2, 3, 4, 5 }, new[] { 1, 1, 1, 1, 0 }, 9, Result = 1)]
+        public int TestFishAlive(int[] A, int[] B, int testnum)
+        {
+            return FishAlive.solution_FishAlive2(A, B);
+        }
+
+        [TestCase(new[] { 8 }, 1, Result = 1)]
+        [TestCase(new[] { 8, 1, 1, 8 }, 2, Result = 3)]
+        [TestCase(new[] { 8, 8, 8,8 }, 3, Result = 1)]
+        [TestCase(new[] { 5, 7, 9, 8, 7, 4}, 4, Result = 5)]
+        [TestCase(new[] { 5, 7, 9, 8, 7, 4, 5 }, 5, Result = 6)]
+        [TestCase(new[] { 1000000000,999999999 }, 6, Result = 2)]
+        [TestCase(new[] { 4, 7,9,7,4 }, 7, Result = 3)]
+        [TestCase(new[] { 8, 8, 5, 7, 9, 8, 7, 4, 8 },8, Result = 7)]
+        [TestCase(new[] { 8, 1, 8 }, 9, Result = 3)]
+        [TestCase(new[] { 8, 1, 8, 2 }, 10, Result = 4)]
+        [TestCase(new[] { 1, 4, 3, 4, 1, 4, 3, 4, 1 }, 11, Result = 7)]
+        public int TestStoneWall(int[] H,int testnum)
+        {
+            return ConsoleApplication1.Solution.solution_Stonewall(H);
+        }
+
     }
 }

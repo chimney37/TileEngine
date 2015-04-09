@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Linq.Expressions;
 
 namespace ConsoleApplication1
 {
@@ -63,8 +64,39 @@ namespace ConsoleApplication1
 
             */
 
-            int[] array12 = {-3, 1, 2, -2, 5, 6};
-            Debug.WriteLine(Solution.solution9(array12));
+            //int[] array12 = {-3, 1, 2, -2, 5, 6};
+            //Debug.WriteLine(Solution.solution9(array12));
+
+            //int[] array13 = {2, 1, 1, 2, 3, 1};
+            //Debug.WriteLine(Solution.solution_DisctinctVals(array13));
+
+            /*
+            int[] array14 = {10, 2, 5, 1, 8, 20}; //exists triplet
+            int[] array15 = { 10, 50, 5, 1 }; //doesn't exist
+            int[] array16 = { 2147483647, 1147483648, 1000000000 }; //doesn't exist
+            Debug.WriteLine(Solution.solution_ExistsTriangularTriplet(array14));
+            Debug.WriteLine(Solution.solution_ExistsTriangularTriplet(array15));
+            Debug.WriteLine(Solution.solution_ExistsTriangularTriplet(array16));*/
+
+            /*
+            string S1 = ")))(((";
+            string S2 = ")))";
+            Debug.WriteLine(Solution.solution_ProperlyNested(S1));
+            Debug.WriteLine(Solution.solution_ProperlyNested(S2));*/
+
+            /*
+            int[] arrayA = { 8, 6, 5, 3, 2, 4, 7 };
+            int[] arrayB = { 1, 1, 1, 1, 1, 0, 0 };
+            int[] arrayA2 = {4, 3, 2, 1, 5};
+            int[] arrayB2 = { 0, 1, 0, 1, 0 };
+            //Debug.WriteLine(Solution.solution_FishAlive(arrayA, arrayB));
+            Debug.WriteLine(Solution.solution_FishAlive2(arrayA2, arrayB2));
+             * */
+
+            int[] arrayH = { 1, 4, 3, 4, 1, 4, 3, 4, 1 };
+            Debug.WriteLine(Solution.solution_Stonewall(arrayH));
+
+
         }
     }
 
@@ -535,6 +567,398 @@ namespace ConsoleApplication1
 
             return (candidate1 > candidate2) ? candidate1 : candidate2;
         }
+
+        /// <summary>
+        /// given a zero-indexed array A consisting of N integers, returns the number of distinct values in array A.
+        /// 
+        /// •N is an integer within the range [0..100,000];
+        /// •each element of array A is an integer within the range [−1,000,000..1,000,000].
+        /// 
+        /// A[0] = 2    A[1] = 1    A[2] = 1
+        ///A[3] = 2    A[4] = 3    A[5] = 1
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static int solution_DisctinctVals(int[] A)
+        {
+            //The trick of this question is that null array values are possible
+            if (A.Length == 0)
+                return 0;
+
+            //sort the array first
+            Array.Sort(A, (x, y) => x.CompareTo(y));
+
+            int distinctcnt = 1;
+            int currentval = A[0];
+            //iterate through counting distinct elements
+            for (int i = 0; i < A.Length; i++)
+            {
+                if (currentval != A[i])
+                {
+                    distinctcnt++;
+                    currentval = A[i];
+                }
+            }
+            return distinctcnt;
+        }
+
+        /// <summary>
+        /// A zero-indexed array A consisting of N integers is given. A triplet (P, Q, R) is triangular if 0 ≤ P < Q < R < N and:
+        /// 
+        /// •A[P] + A[Q] > A[R],
+        /// •A[Q] + A[R] > A[P],
+        /// •A[R] + A[P] > A[Q].
+        /// 
+        /// For example, consider array A such that:
+        ///A[0] = 10    A[1] = 2    A[2] = 5
+        ///A[3] = 1     A[4] = 8    A[5] = 20
+        /// Triplet (0, 2, 4) is triangular.
+        /// 
+        /// that, given a zero-indexed array A consisting of N integers, returns 1 if there exists a triangular triplet for this array and returns 0 otherwise.
+        /// 
+        /// •N is an integer within the range [0..100,000];
+        ///•each element of array A is an integer within the range [−2,147,483,648..2,147,483,647].
+        /// 
+        /// •expected worst-case time complexity is O(N*log(N));
+        /// •expected worst-case space complexity is O(N), beyond input storage (not counting the storage required for input arguments).
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static int solution_ExistsTriangularTriplet(int[] A)
+        {
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+            //basically observe that if the sum of 2 edges is bigger than the remaining edge, it is triangular
+            //the other observation: we don't need to calculdate the number of triangular triplets. If we find one , we can stop searching
+            //Key edge case: N can be 0 => empty array is possible
+
+
+            if (A.Length == 0)
+                return 0;
+
+            //Do a sort first so we can index adjacent elements easily
+            Array.Sort(A, (x,y) => x.CompareTo(y));
+
+            //iterate through array to find a case of triangularity
+            for (int i = 0; i < A.Length - 2; i++)
+            {
+                //check triangular property
+                if ((long)A[i] + A[i + 1] > A[i + 2] &&
+                    (long)A[i + 1] + A[i + 2] > A[i] &&
+                    (long)A[i + 2] + A[i] > A[i + 1])
+                    return 1;
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// A string S consisting of N characters is considered to be properly nested if any of the following conditions is true:
+        /// 
+        /// •S is empty;
+        /// •S has the form "(U)" or "[U]" or "{U}" where U is a properly nested string;
+        /// •S has the form "VW" where V and W are properly nested strings.
+        /// 
+        /// For example, the string "{[()()]}" is properly nested but "([)()]" is not.
+        /// 
+        /// that, given a string S consisting of N characters, returns 1 if S is properly nested and 0 otherwise.
+        /// 
+        /// For example, given S = "{[()()]}", the function should return 1 and given S = "([)()]", the function should return 0, as explained above.
+        /// 
+        /// •N is an integer within the range [0..200,000];
+        /// •string S consists only of the following characters: "(", "{", "[", "]", "}" and/or ")".
+        /// 
+        /// •expected worst-case time complexity is O(N);
+        /// •expected worst-case space complexity is O(N) (not counting the storage required for input arguments).
+        /// 
+        /// </summary>
+        /// <param name="S"></param>
+        /// <returns></returns>
+        public static int solution_ProperlyNested(string S)
+        {
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+            // an Empty string is a special case
+            // sounds like a stack problem, since if I encounter an opening bra, I should encounter a paired closing cket at the same level
+
+            Stack<char> charStack = new Stack<char>(S.Length/2);
+            int invalidKetsCnt = 0;
+
+            foreach (char c in S)
+            {
+                switch (c)
+                {
+                    case '(':
+                    case '{':
+                    case '[':
+                        charStack.Push(c);
+                        break;
+                    case ')':
+                    case '}':
+                    case ']':
+                        //Check stack size first as a peek causes exception on an empty stack
+                        if (charStack.Any())
+                        {
+                            char k = charStack.Peek();
+                            if (k == '(' && c == ')' ||
+                                k == '[' && c == ']' ||
+                                k == '{' && c == '}')
+                            {
+                                charStack.Pop();
+                            }
+                        }
+                        //edge case. A ket can happen without any bras. in this case this is an invalid nest
+                        else
+                        {
+                            invalidKetsCnt++;
+                        }
+                        break;
+                }
+            }
+
+            if (!charStack.Any() && invalidKetsCnt == 0)
+                return 1;
+
+            return 0;
+        }
+
+        /// <summary>
+        /// You are given two non-empty zero-indexed arrays A and B consisting of N integers. Arrays A and B represent N voracious fish in a river, ordered downstream along the flow of the river.
+        /// The fish are numbered from 0 to N − 1. If P and Q are two fish and P < Q, then fish P is initially upstream of fish Q. Initially, each fish has a unique position.
+        /// 
+        /// Fish number P is represented by A[P] and B[P]. Array A contains the sizes of the fish. All its elements are unique. Array B contains the directions of the fish. It contains only 0s and/or 1s, where:
+        /// 
+        /// •0 represents a fish flowing upstream,
+        /// •1 represents a fish flowing downstream.
+        /// 
+        /// If two fish move in opposite directions and there are no other (living) fish between them, they will eventually meet each other. Then only one fish can stay alive − the larger fish eats the smaller one. More precisely, we say that two fish P and Q meet each other when P < Q, B[P] = 1 and B[Q] = 0, and there are no living fish between them. After they meet:
+        /// 
+        /// •If A[P] > A[Q] then P eats Q, and P will still be flowing downstream,
+        /// •If A[Q] > A[P] then Q eats P, and Q will still be flowing upstream.
+        /// We assume that all the fish are flowing at the same speed. That is, fish moving in the same direction never meet. The goal is to calculate the number of fish that will stay alive.
+        /// 
+        /// For example, consider arrays A and B such that:
+        /// A[0] = 4    B[0] = 0
+        ///A[1] = 3    B[1] = 1
+        ///A[2] = 2    B[2] = 0
+        ///A[3] = 1    B[3] = 0
+        ///A[4] = 5    B[4] = 0
+        /// 
+        /// Initially all the fish are alive and all except fish number 1 are moving upstream. Fish number 1 meets fish number 2 and eats it, then it meets fish number 3 and eats it too. Finally, it meets fish number 4 and is eaten by it. The remaining two fish, number 0 and 4, never meet and therefore stay alive.
+        /// 
+        /// that, given two non-empty zero-indexed arrays A and B consisting of N integers, returns the number of fish that will stay alive.
+        /// 
+        /// •N is an integer within the range [1..100,000];
+        /// •each element of array A is an integer within the range [0..1,000,000,000];
+        /// •each element of array B is an integer that can have one of the following values: 0, 1;
+        /// •the elements of A are all distinct.
+        /// 
+        /// •expected worst-case time complexity is O(N);
+        /// •expected worst-case space complexity is O(N), beyond input storage (not counting the storage required for input arguments).
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
+        public static int solution_FishAlive(int[] A, int[] B)
+        {
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+            //// sounds like we need a loop or several O(N) loops
+            // we can use an additional data strcuture to store values of A or B
+            // sounds like a stack problem (0 is met by 1 and either one eaten)
+            // we can push when encountering a 0 and pop when 0 is eaten by 1, or not
+            // naively, every 1 feels like it should be looped inner, but cannot simply do an inner loop when multiple 1 exists, since we need O(N)
+
+            Stack<int> fishstack = new Stack<int>();
+
+            for (int i = 0; i < A.Length; i++)
+            {
+                int cursize = A[i];
+                int curdir = B[i];
+
+                if (!fishstack.Any())
+                    fishstack.Push(i);
+                else
+                {
+                    //condition 1: if there's any fish on the stack
+                    //condition 2 : if there is a fish going downstream on the stack and meets the current one that goes upstream
+                    //condition 3 : if the downstream fish is smaller than the current fish going upstream
+                    while (fishstack.Any() &&
+                           curdir - B[fishstack.Peek()] == -1 &&
+                           A[fishstack.Peek()] < cursize)
+                    {
+                        //kill the downstream fish
+                        fishstack.Pop();
+                    }
+
+                    //if not empty
+                    if (fishstack.Any())
+                    {
+                        //if the fish on the stack is going upstream but is already pass the position of the current fish going downstream
+                        //then, keep the fish as being alive by pushing it on stack
+                        if (curdir - B[fishstack.Peek()] != -1)
+                            fishstack.Push(i);
+                    }
+                    //else if fishstack is empty, push
+                    else
+                    {
+                        fishstack.Push(i);
+                    }
+                }
+            }
+            return fishstack.Count();
+         
+        }
+
+        /// <summary>
+        /// My solution to the fish problem, but more intuitive compared to some other solutions
+        /// unfortunately, it fails for 50% of the cases.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
+        public static int solution_FishAlive2(int[] A, int[] B)
+        {
+            Stack<int> stack = new Stack<int>();
+
+            //populate the stack
+            for (int i = 0; i < A.Length; i++)
+            {
+                int curdir = B[i];
+                int cursize = A[i];
+
+                if (!stack.Any())
+                    stack.Push(i);
+                else
+                {
+                    //condition 1: if there's any fish on the stack
+                    //condition 2 : if there is a fish going downstream on the stack and meets the current one that goes upstream
+                    //condition 3 : if the downstream fish is smaller than the current fish going upstream
+                    while (stack.Any() &&
+                           curdir - B[stack.Peek()] == -1 &&
+                           A[stack.Peek()] < cursize)
+                    {
+                        //kill the downstream fish
+                        stack.Pop();
+                    }
+
+                    //if not empty
+                    if (stack.Any())
+                    {
+                        //if the fish on the stack is going upstream but is already pass the position of the current fish going downstream
+                        //then, keep the fish as being alive by pushing it on stack
+                        if (curdir - B[stack.Peek()] != -1)
+                            stack.Push(i);
+                    }
+                    //else if fishstack is empty, push
+                    else
+                    {
+                        stack.Push(i);
+                    }
+
+                }
+            }
+
+
+            return stack.Count;
+        }
+
+        /// <summary>
+        /// Solution to this task can be found at our blog.
+        /// http://blog.codility.com/2012/06/sigma-2012-codility-programming.html
+        /// 
+        /// You are going to build a stone wall. 
+        /// The wall should be straight and N meters long, and its thickness should be constant; 
+        /// however, it should have different heights in different places. 
+        /// The height of the wall is specified by a zero-indexed array H of N positive integers. 
+        /// H[I] is the height of the wall from I to I+1 meters to the right of its left end. 
+        /// In particular, H[0] is the height of the wall's left end and H[N−1] is the height of the wall's right end.
+        /// 
+        /// The wall should be built of cuboid stone blocks (that is, all sides of such blocks are rectangular). 
+        /// Your task is to compute the minimum number of blocks needed to build the wall.
+        /// 
+        /// that, given a zero-indexed array H of N positive integers specifying the height of the wall, 
+        /// returns the minimum number of blocks needed to build it.
+        /// 
+        /// For example, given array H containing N = 9 integers:
+        /// 
+        /// H[0] = 8    H[1] = 8    H[2] = 5
+        /// H[3] = 7    H[4] = 9    H[5] = 8
+        /// H[6] = 7    H[7] = 4    H[8] = 8
+        /// 
+        /// •N is an integer within the range [1..100,000];
+        /// •each element of array H is an integer within the range [1..1,000,000,000].
+        /// 
+        /// •expected worst-case time complexity is O(N);
+        /// •expected worst-case space complexity is O(N), beyond input storage (not counting the storage required for input arguments).
+        /// 
+        /// </summary>
+        /// <param name="H"></param>
+        /// <returns></returns>
+        public static int solution_Stonewall(int[] H)
+        {
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+            // observations: 
+            // if a same height wall is adjacent, a single block can be used
+            // if the height of the wall is unique, a single block must be used to represent that unique height
+            // looks like a stack should be used to store the height of each block, then trying to build on it
+            // when the stack cannot be used to construct the next wall, should be discarded
+
+            Stack<long> stack = new Stack<long>();
+            int blocks = 1;
+            stack.Push(H[0]);
+
+            //scan from left to right
+            for (int i = 1; i < H.Length; i++)
+            {
+                long stackheight = stack.Sum();
+
+                if (H[i] < stackheight)
+                {
+                    if (stack.Count == 1)
+                    {
+                        blocks++;
+                        stack.Pop();
+                        stack.Push(H[i]);
+                        continue;
+                    }
+
+                    bool blockheightexists = false;
+                    int sum = 0;
+                    foreach (int block in stack.Reverse())
+                    {
+                        sum += block;
+                        
+                        //height already exist
+                        if (sum == H[i])
+                        {
+                            blockheightexists = true;
+                            while (H[i] < stack.Sum())
+                                stack.Pop();
+
+                            break;
+                        }
+                    }
+
+                    if (!blockheightexists)
+                    {
+                        blocks++;
+
+                        while(H[i] < stack.Sum())
+                            stack.Pop();
+
+                        stack.Push(H[i] - stack.Sum());
+                    }
+
+                }
+                else if (H[i] > stackheight)
+                {
+                    blocks++;
+                    stack.Push(H[i] - stack.Sum());
+                }
+            }
+            return blocks;
+        }
+
 
         public static int Partition(int[] numbers, int left, int right)
         {
