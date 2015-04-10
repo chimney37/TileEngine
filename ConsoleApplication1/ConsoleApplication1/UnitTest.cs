@@ -114,5 +114,17 @@ namespace ConsoleApplication1
         {
             return Solution.solution_SemiPrime(N, P, Q);
         }
+
+        [TestCase(1, 1, 1, Result = 1)]
+        [TestCase(1000000000, 2, 2, Result = 500000000)]
+        [TestCase(1000000000, 3, 3, Result = 1000000000)]
+        [TestCase(1000000000, 6, 4, Result = 500000000)]
+        [TestCase(20000000, 5, 5, Result = 4000000)]
+        [TestCase(10, 3, 6, Result = 10)]
+        [TestCase(20, 3, 7, Result = 20)]
+        public int TestChocolateCnt(int N, int M, int testnum)
+        {
+            return Solution.solution_ChocolatesCount(N, M);
+        }
     }
 }

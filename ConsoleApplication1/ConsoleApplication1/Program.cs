@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Xml.Schema;
 
@@ -110,14 +111,110 @@ namespace ConsoleApplication1
 
             //Debug.WriteLine(Solution.solution_CountFactors(2147483647));
 
-            int[] P = {1,4,16};
-            int[] Q = {26,10,20};
-            Debug.WriteLine(Solution.solution_SemiPrime(26, P, Q));
+            //int[] P = {1,4,16};
+            //int[] Q = {26,10,20};
+            //Debug.WriteLine(Solution.solution_SemiPrime(26, P, Q));
+
+            Debug.WriteLine(Solution.solution_ChocolatesCount(10,4));
+
         }
     }
 
     internal class Solution
     {
+        /// <summary>
+        /// Two positive integers N and M are given. 
+        /// Integer N represents the number of chocolates arranged in a circle, numbered from 0 to N − 1.
+        /// 
+        /// You start to eat the chocolates. After eating a chocolate you leave only a wrapper.
+        /// You begin with eating chocolate number 0. 
+        /// Then you omit the next M − 1 chocolates or wrappers on the circle, and eat the following one.
+        /// 
+        /// More precisely, if you ate chocolate number X, 
+        /// then you will next eat the chocolate with number (X + M) modulo N (remainder of division).
+        /// 
+        /// You stop eating when you encounter an empty wrapper.
+        /// For example, given integers N = 10 and M = 4. 
+        /// You will eat the following chocolates: 0, 4, 8, 2, 6.
+        /// 
+        /// The goal is to count the number of chocolates that you will eat, following the above rules.
+        /// 
+        /// that, given two positive integers N and M, returns the number of chocolates that you will eat.
+        /// 
+        /// For example, given integers N = 10 and M = 4. the function should return 5, as explained above.
+        /// •N and M are integers within the range [1..1,000,000,000].
+        /// 
+        /// •expected worst-case time complexity is O(log(N+M));
+        /// •expected worst-case space complexity is O(log(N+M)).
+        /// 
+        /// </summary>
+        /// <param name="N"></param>
+        /// <param name="M"></param>
+        /// <returns></returns>
+        public static int solution_ChocolatesCount(int N, int M)
+        {
+            //in principle, we must look for a position that is of an empty wrapper, for the calculations to end.
+            //below commented out shows the naive approach.
+            //by property of modulo, there is exist a value k such that i * M + k *N = j*M.
+            //we can prove that smallest i must be zero. for all i !=0, (i -i)*M + k*N = (j - i)* M.
+            //first eaten position would e first position we meet again.
+            // j is the number of chocolates we eat.
+            // the idea is to then determine j.
+            // j = LCM(N,M)/M. 
+            // LCM(N,M) = N*M/GCD(N,M)
+            //get the LCM Divided by M, so that we don't have to make the extra divisions
+            int lcmDividedByM = N/GCD(N, M);
+
+            return lcmDividedByM;
+
+            #region SUBOPTIMAL and NAIVE
+
+            /*
+            if (M == 1)
+                return N;
+
+            if (N % M == 0)
+                return N / M;
+
+            if (N % M == 1)
+                return N;
+
+            int cnt = 0;
+            Dictionary<int,bool> marker = new Dictionary<int, bool>();
+
+            int i = 0;
+            while (!marker.ContainsKey(i))
+            {
+                marker.Add(i,true);
+                i = (i + M) % N;
+                cnt++;
+            }
+            return cnt;
+            */
+
+            #endregion
+
+
+
+        }
+
+        //Euclidean algorithm : Greatest Common Denominator
+        private static int GCD(int a, int b)
+        {
+            while (a != 0 && b != 0)
+            {
+                if (a > b)
+                    a %= b;
+                else
+                    b %= a;
+            }
+
+            if (a == 0)
+                return b;
+            
+            return a;
+        }
+
         /// <summary>
         /// A prime is a positive integer X that has exactly two distinct divisors: 1 and X. The first few prime integers are 2, 3, 5, 7, 11 and 13.
         /// 
