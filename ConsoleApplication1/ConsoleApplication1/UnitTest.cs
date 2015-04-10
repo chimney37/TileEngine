@@ -73,5 +73,17 @@ namespace ConsoleApplication1
         {
             return ConsoleApplication1.Solution.solution_Dominator(A);
         }
+
+        [TestCase(new[] { 23171, 21011, 21123, 21366, 21013, 21367 }, 1, Result = 356)]
+        [TestCase(new[] { 21123, 23171, 21122, 24171, 21013, 21367 }, 2, Result = 3049)]
+        [TestCase(new[] { 20122, 24170, 21123, 23171, 21122, 24171, 21013, 21367 }, 3, Result = 4049)]
+        [TestCase(new[] { 23122, 23121, 23120, 23119, 23118, 23117, 23116, 23115 }, 4, Result = 0)]
+        [TestCase(new[] { 23115, 23116, 23117, 23118, 23119, 23120, 23121, 23122 }, 5, Result = 7)]
+        [TestCase(new[] { 99, 1, 2, 0, 7, 5, 6 }, 6, Result = 7)]
+        [TestCase(new int[]{}, 7, Result = 0)]
+        public int TestMaxStockProfit(int[] A, int testnum)
+        {
+            return ConsoleApplication1.Solution.solution_MaxStockProfit(A);
+        }
     }
 }

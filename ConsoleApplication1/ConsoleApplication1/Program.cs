@@ -97,10 +97,16 @@ namespace ConsoleApplication1
             //int[] arrayH = { 1, 4, 3, 4, 1, 4, 3, 4, 1 };
             //Debug.WriteLine(Solution.solution_Stonewall(arrayH));
 
+            /*
             int[] arrayA = { 1, 2, 3, 4, 5, -1, -2, -3 };
             int[] arrayA2 = { 1,2,1,2,2,2 };
             Debug.WriteLine(Solution.solution_EquiLeader(arrayA2));
             Debug.WriteLine(Solution.solution_Dominator(arrayA));
+
+            */
+
+            int[] arrayA3 = { 23171, 21011, 21123, 21366, 21013, 21367 };
+            Debug.WriteLine(Solution.solution_MaxStockProfit(arrayA3));
         }
     }
 
@@ -275,6 +281,141 @@ namespace ConsoleApplication1
             return -1;
         }
 
+        /// <summary>
+        /// A zero-indexed array A consisting of N integers is given. 
+        /// It contains daily prices of a stock share for a period of N consecutive days. 
+        /// If a single share was bought on day P and sold on day Q, where 0 ≤ P ≤ Q < N, 
+        /// then the profit of such transaction is equal to A[Q] − A[P], provided that A[Q] ≥ A[P]. 
+        /// Otherwise, the transaction brings loss of A[P] − A[Q].
+        /// For example, consider the following array A consisting of six elements such that:
+        /// A[0] = 23171
+        ///A[1] = 21011
+        ///A[2] = 21123
+        ///A[3] = 21366
+        ///A[4] = 21013
+        ///A[5] = 21367
+        /// 
+        /// If a share was bought on day 0 and sold on day 2, a loss of 2048 would occur 
+        /// because A[2] − A[0] = 21123 − 23171 = −2048. If a share was bought on day 4 and sold on day 5, 
+        /// a profit of 354 would occur because A[5] − A[4] = 21367 − 21013 = 354. 
+        /// Maximum possible profit was 356. It would occur if a share was bought on day 1 and sold on day 5.
+        /// 
+        /// that, given a zero-indexed array A consisting of N integers containing daily prices of a stock share 
+        /// for a period of N consecutive days, returns the maximum possible profit from one transaction during this period. 
+        /// The function should return 0 if it was impossible to gain any profit.
+        /// 
+        /// the function should return 356, as explained above.
+        /// 
+        /// •N is an integer within the range [0..400,000];
+        /// •each element of array A is an integer within the range [0..200,000].
+        /// 
+        /// •expected worst-case time complexity is O(N);
+        /// •expected worst-case space complexity is O(1), beyond input storage (not counting the storage required for input arguments).
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static int solution_MaxStockProfit(int[] A)
+        {
+            //for this maybe we better know the Kadane's algorithm which can determine a maxslice in O(n)
+            //http://en.wikipedia.org/wiki/Maximum_subarray_problem
+
+            #region DISCARD
+            /*
+            //O(N^2) solution..discard
+            int max = int.MinValue;
+            for (int i = 0; i < A.Length; i++)
+            {
+                for (int j = i + 1; j < A.Length; j++)
+                {
+                    if (A[j] - A[i] > max)
+                        max = A[j] - A[i];
+                }
+            }
+
+            return max > 0 ? max : 0; 
+
+            */
+            #endregion
+
+            #region DISCARD2
+            //the idea is correct, but it is not able to handle all cases (not sure of the test case that fails though). 
+            //It is better to use the Kadane's algorithm
+            /*
+            if (A.Length == 0)
+                return 0;
+
+            int min = 200001;
+            int earliestminidx = -1;
+
+            //find the earliest minimum value
+            for (int i = A.Length - 1; i >= 0; i--)
+            {
+                if (A[i] < min)
+                {
+                    min = A[i];
+                    earliestminidx = i;
+                }
+            }
+
+            int max = int.MinValue;
+            int premaximaidx = -1;
+            int premax = int.MinValue;
+            //try to find a post value that is the maximal value
+            for (int i = 0; i < A.Length; i++)
+            {
+                if (A[i] > max && i < earliestminidx)
+                {
+                    premaximaidx = i;
+                    premax = A[i];
+                }
+                else if (A[i] > max && i > earliestminidx)
+                {
+                    max = A[i];
+                }
+            }
+
+
+            int localmin = 200001;
+            int localminidx = -1;
+            //a bigger max exists
+            if (max < premax)
+            {
+                //find a local minima
+                for (int i = 0; i < premaximaidx; i++)
+                {
+                    if (A[i] < localmin)
+                    {
+                        localminidx = i;
+                        localmin = A[i];
+                    }
+                }
+
+                if(localminidx >= 0)
+                    return (premax - localmin) > 0 ? premax - localmin : 0;
+            }
+
+            return max - min;
+             * 
+             */
+            
+            #endregion
+
+            if (A.Length <= 1)
+                return 0;
+
+            int maxProfitSoFar = 0;
+            int minPrice = A[0];
+
+            for (int i = 1; i < A.Length; i++)
+            {
+                int profitHere = Math.Max(0, A[i] - minPrice);
+                minPrice = Math.Min(minPrice, A[i]);
+                maxProfitSoFar = Math.Max(profitHere, maxProfitSoFar);
+            }
+
+            return maxProfitSoFar;
+        }
 
         /// <summary>
         /// FrogJump
