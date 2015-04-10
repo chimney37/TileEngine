@@ -57,5 +57,21 @@ namespace ConsoleApplication1
             return ConsoleApplication1.Solution.solution_Stonewall(H);
         }
 
+        [TestCase(new[] { 4,3,4,4,4,2 }, 1, Result = 2)]
+        [TestCase(new[] { 1,1,2,2,2,2}, 2, Result = 1)]
+        public int TestEquiLeader(int[] A, int testnum)
+        {
+            return ConsoleApplication1.Solution.solution_EquiLeader(A);
+        }
+
+        [TestCase(new[] { 4, 3, 4, 4, 4, 2 }, 1, Result = 0)]
+        [TestCase(new[] { 3,4,3,2,3,-1,3,3 }, 2, Result = 0)]
+        [TestCase(new[] { 1, 2, 3, 4, 5, -1, -2, -3 }, 3, Result = -1)]
+        [TestCase(new[] { 1, 2, 2147483647, 4, 5, -1, -2, -2147483648}, 4, Result = -1)]
+        [TestCase(new[] { 0}, 4, Result = 0)]
+        public int TestDominator(int[] A, int testnum)
+        {
+            return ConsoleApplication1.Solution.solution_Dominator(A);
+        }
     }
 }
