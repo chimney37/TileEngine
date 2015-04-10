@@ -85,5 +85,34 @@ namespace ConsoleApplication1
         {
             return ConsoleApplication1.Solution.solution_MaxStockProfit(A);
         }
+
+
+        [TestCase(1000000000, 1, Result = 126500)]
+        [TestCase(30, 2, Result = 22)]
+        [TestCase(25, 3, Result = 20)]
+        [TestCase(5, 4, Result = 12)]
+        [TestCase(1, 5, Result = 4)]
+        public int TestMinParamRectangle(int N, int testnum)
+        {
+            return Solution.solution_MinParamRectangle(N);
+        }
+
+        [TestCase(2147483647, 1, Result = 2)]
+        [TestCase(24, 2, Result = 8)]
+        [TestCase(25, 3, Result = 3)]
+        [TestCase(5, 4, Result = 2)]
+        [TestCase(1, 5, Result = 1)]
+        public int TestCountFactors(int N, int testnum)
+        {
+            return Solution.solution_CountFactors(N);
+        }
+
+        [TestCase(50000, new[] { 1, 4, 16 }, new[] { 50000, 10, 20 }, 1, Result = new[] { 12110, 4, 0 })]
+        [TestCase(26, new[] { 1, 4, 16 }, new[] { 26, 10, 20 }, 2, Result = new[] { 10,4,0 })]
+        [TestCase(1, new[] { 1, 1, 1 }, new[] { 1, 1, 1 }, 3, Result = new[] { 0,0,0 })]
+        public int[] TestSemiPrime(int N, int[] P, int[] Q, int testnum)
+        {
+            return Solution.solution_SemiPrime(N, P, Q);
+        }
     }
 }

@@ -105,13 +105,239 @@ namespace ConsoleApplication1
 
             */
 
-            int[] arrayA3 = { 23171, 21011, 21123, 21366, 21013, 21367 };
-            Debug.WriteLine(Solution.solution_MaxStockProfit(arrayA3));
+            //int[] arrayA3 = { 23171, 21011, 21123, 21366, 21013, 21367 };
+            //Debug.WriteLine(Solution.solution_MaxStockProfit(arrayA3));
+
+            //Debug.WriteLine(Solution.solution_CountFactors(2147483647));
+
+            int[] P = {1,4,16};
+            int[] Q = {26,10,20};
+            Debug.WriteLine(Solution.solution_SemiPrime(26, P, Q));
         }
     }
 
     internal class Solution
     {
+        /// <summary>
+        /// A prime is a positive integer X that has exactly two distinct divisors: 1 and X. The first few prime integers are 2, 3, 5, 7, 11 and 13.
+        /// 
+        /// A semiprime is a natural number that is the product of two (not necessarily distinct) prime numbers. The first few semiprimes are 4, 6, 9, 10, 14, 15, 21, 22, 25, 26.
+        /// 
+        /// You are given two non-empty zero-indexed arrays P and Q, each consisting of M integers. 
+        /// These arrays represent queries about the number of semiprimes within specified ranges.
+        /// 
+        /// Query K requires you to find the number of semiprimes within the range (P[K], Q[K]), where 1 ≤ P[K] ≤ Q[K] ≤ N.
+        /// 
+        /// For example, consider an integer N = 26 and arrays P, Q such that:
+        /// P[0] = 1    Q[0] = 26
+        ///P[1] = 4    Q[1] = 10
+        ///P[2] = 16   Q[2] = 20
+        /// 
+        /// The number of semiprimes within each of these ranges is as follows:
+        /// •(1, 26) is 10,
+        /// •(4, 10) is 4,
+        /// •(16, 20) is 0.
+        /// 
+        /// that, given an integer N and two non-empty zero-indexed arrays P and Q consisting of M integers, 
+        /// returns an array consisting of M elements specifying the consecutive answers to all the queries.
+        /// 
+        /// the function should return the values [10, 4, 0], as explained above.
+        /// •N is an integer within the range [1..50,000];
+        /// •M is an integer within the range [1..30,000];
+        /// •each element of arrays P, Q is an integer within the range [1..N];
+        /// •P[i] ≤ Q[i].
+        /// 
+        /// •expected worst-case time complexity is O(N*log(log(N))+M);
+        /// •expected worst-case space complexity is O(N+M), beyond input storage (not counting the storage required for input arguments).
+        /// </summary>
+        /// <param name="N"></param>
+        /// <param name="P"></param>
+        /// <param name="Q"></param>
+        /// <returns></returns>
+        public static int[] solution_SemiPrime(int N, int[] P, int[] Q)
+        {
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+            //first figure out the primes from 1 up to the range N
+            //maybe should use defactorization and given 2 factors, we know it's a semi prime
+
+            int[] arrayF = GetF(N);
+
+            bool[] issemiprime = new bool[N+1];
+            for(int i =0; i < N + 1 ;i++)
+                issemiprime[i] = false;
+
+            //obtain all semiprimes for the entire range
+            for (int i = 1; i < N + 1; i++)
+            {
+                //check for semiprime
+                if (GetPrimeFactors(i, arrayF).Length == 2)
+                    issemiprime[i] = true;
+            }
+
+            //Compute the number of semiprimes until each position
+            //Define: semiprimecnt[i] = k => in (0,i) there are k semiprimes.
+            int counter = 0;
+            int[] semiprimecnt = new int[N + 1];
+            for (int i = 0; i < semiprimecnt.Length; i++)
+            {
+                if (issemiprime[i])
+                    semiprimecnt[i] = ++counter;
+                else
+                    semiprimecnt[i] = counter;
+            }
+
+            //number of semiprimes within range P[K], Q[K]
+            //is semiprime[Q[K] - semiprime[P[K] -1]
+            int[] result = new int[P.Length];
+            for (int m = 0; m < P.Length; m++)
+            {
+                result[m] = semiprimecnt[Q[m]] - semiprimecnt[P[m] - 1];
+            }
+
+
+            #region DISCARD
+            /* This is a suboptimal way to find number of semiprimes
+             * since O(N*2). 
+            for (int m = 0; m < P.Length; m++)
+            {
+                int semiprimecnt = 0;
+                for(int s = P[m]; s <= Q[m] ;s++)
+                    if (issemiprime[s])
+                        semiprimecnt++;
+
+                result[m] = semiprimecnt;
+            }
+             */
+            #endregion
+            return result;
+        }
+
+        private static int[] GetF(int N)
+        {
+            // Make an array to get factors
+            int[] F = new int[N + 1];
+            for (int n = 0; n < N + 1; n++) F[n] = 0;
+
+            int i = 2;
+            while (i*i <= N)
+            {
+                if (F[i] == 0)
+                {
+                    int k = i*i;
+                    while (k <= N)
+                    {
+                        if (F[k] == 0)
+                            F[k] = i;
+
+                        k+=i;
+                    }
+                }
+                i++;
+            }
+            return F;
+        }
+        private static int[] GetPrimeFactors(int x, int[] F)
+        {
+            List<int> factors = new List<int>();
+            while (F[x] > 0)
+            {
+                factors.Add(F[x]);
+                x /= F[x];
+            }
+            factors.Add(x);
+            return factors.ToArray();
+        }
+
+        /// <summary>
+        /// A positive integer D is a factor of a positive integer N if there exists an integer M such that N = D * M.
+        /// For example, 6 is a factor of 24, because M = 4 satisfies the above condition (24 = 6 * 4).
+        /// 
+        /// that, given a positive integer N, returns the number of its factors.
+        /// For example, given N = 24, the function should return 8, because 24 has 8 factors, namely 1, 2, 3, 4, 6, 8, 12, 24. There are no other factors of 24.
+        /// 
+        /// •N is an integer within the range [1..2,147,483,647].
+        /// •expected worst-case time complexity is O(sqrt(N));
+        /// •expected worst-case space complexity is O(1).
+        /// 
+        /// </summary>
+        /// <param name="N"></param>
+        /// <returns></returns>
+        public static int solution_CountFactors(int N)
+        {
+            // sounds like problem of counting divisors of n
+            long i = 1;
+            int result = 0;
+
+            //test up to the sqrt(N) is enough to find divisors
+            while (i * i < N)
+            {
+                //if divisible by i, there are 2 divisors possible, i and N/i.
+                if (N % i == 0)
+                    result += 2;
+                i++;
+            }
+
+            //check when value is sqrt(N), there is 1 extra divisor possible
+            if (i*i == N)
+                result += 1;
+
+            return result;
+        }
+
+        /// <summary>
+        /// An integer N is given, representing the area of some rectangle.
+        /// The area of a rectangle whose sides are of length A and B is A * B, and the perimeter is 2 * (A + B).
+        /// The goal is to find the minimal perimeter of any rectangle whose area equals N. 
+        /// The sides of this rectangle should be only integers.
+        /// 
+        /// For example, given integer N = 30, rectangles of area 30 are:
+        /// •(1, 30), with a perimeter of 62,
+        /// •(2, 15), with a perimeter of 34,
+        /// •(3, 10), with a perimeter of 26,
+        /// •(5, 6), with a perimeter of 22.
+        /// 
+        /// that, given an integer N, returns the minimal perimeter of any rectangle whose area is exactly equal to N.
+        /// For example, given an integer N = 30, the function should return 22, as explained above.
+        /// 
+        /// •N is an integer within the range  [1..1,000,000,000].
+        /// 
+        /// •expected worst-case time complexity is O(sqrt(N));
+        /// •expected worst-case space complexity is O(1).
+        /// 
+        /// </summary>
+        /// <param name="N"></param>
+        /// <returns></returns>
+        public static int solution_MinParamRectangle(int N)
+        {
+            //sounds like a problem of counting divisors of n to get all parameter pairs
+
+            int i = 1;
+            int minparameter = int.MaxValue;
+
+            //test up to the sqrt(N) is enough to find divisors
+            while (i*i < N)
+            {
+                //if divisible by i
+                if (N%i == 0)
+                {
+                    int parameter = 2*((N/i) + i);
+                    if (parameter < minparameter)
+                        minparameter = parameter;
+                }
+                i++;
+            }
+
+            //check when value is sqrt(N)
+            if (i*i == N)
+            {
+                int parameter = 2 * ((N / i) + i);
+                if (parameter < minparameter)
+                    minparameter = parameter;
+            }
+
+            return minparameter;
+        }
+
         /// <summary>
         /// A non-empty zero-indexed array A consisting of N integers is given.
         /// The leader of this array is the value that occurs in more than half of the elements of A.
@@ -409,8 +635,13 @@ namespace ConsoleApplication1
 
             for (int i = 1; i < A.Length; i++)
             {
+                //calculates the profit here, if bigger than 0
                 int profitHere = Math.Max(0, A[i] - minPrice);
+
+                //tracks minimum price : this is the part that is not part of Kadane
                 minPrice = Math.Min(minPrice, A[i]);
+
+                //tracks the maximum profit so far
                 maxProfitSoFar = Math.Max(profitHere, maxProfitSoFar);
             }
 
