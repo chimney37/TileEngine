@@ -1038,13 +1038,17 @@ namespace ConsoleApplication1
         /// <summary>
         /// FrogJump
         /// Count minimal number of jumps from position X to Y. 
+        /// 
+        /// 
         /// </summary>
         /// <param name="X"></param>
         /// <param name="Y"></param>
         /// <param name="D"></param>
         /// <returns></returns>
-        public static int solution(int X, int Y, int D)
+        public static int solution_FrogJump(int X, int Y, int D)
         {
+            /// This is a range division problem
+
             if (X == Y)
                 return 0;
 
@@ -1080,7 +1084,7 @@ namespace ConsoleApplication1
         /// </summary>
         /// <param name="A"></param>
         /// <returns></returns>
-        public static int solution2(int[] A)
+        public static int solution_PermMissingElement(int[] A)
         {
             //if array length is 0, return 1
             if (A.Length == 0)
@@ -1116,23 +1120,27 @@ namespace ConsoleApplication1
         /// </summary>
         /// <param name="A"></param>
         /// <returns></returns>
-        public static int solution3(int[] A)
+        public static int solution_TapeEquilibrium(int[] A)
         {
             int[] diffarray = new int[A.Length - 1];
             int firstsum = 0;
             int overallsum = 0;
 
+            //get the total sum
             for (int i = 0; i < A.Length; i++)
                 overallsum += A[i];
 
+            //create an array that calculates for every i = P.
+            //(A[0] + ... + A[P-1]) - (A[P] + ... + A[N-1]).
+            //use the property that (A[i+1] + ... + A[N-1]) = sum of all - (A[0] +...+ A[i])
             for (int i = 0; i < A.Length - 1; i++)
             {
                 firstsum += A[i];
                 diffarray[i] = Math.Abs((overallsum - firstsum) - firstsum);
             }
 
+            //find the minimum value
             int maxsum = int.MaxValue;
-
             for (int i = 0; i < diffarray.Length; i++)
             {
                 if (diffarray[i] < maxsum)
@@ -1175,8 +1183,9 @@ namespace ConsoleApplication1
         /// </summary>
         /// <param name="A"></param>
         /// <returns></returns>
-        public static int solution4(int[] A)
+        public static int solution_PermCheck(int[] A)
         {
+            //idea is to use a dictionary like method to check if there is a missing value or repeating value
             int[] markarray = new int[A.Length + 1];
 
             for (int i = 0; i < A.Length; i++)
@@ -1221,7 +1230,7 @@ namespace ConsoleApplication1
         /// <param name="X"></param>
         /// <param name="A"></param>
         /// <returns></returns>
-        public static int solution5(int X, int[] A)
+        public static int solution_FrogRiverOne(int X, int[] A)
         {
             //define an array that stores the time K for a given position X
             int[] xtimearray = new int[X];
@@ -1289,7 +1298,7 @@ namespace ConsoleApplication1
         /// <param name="N"></param>
         /// <param name="A"></param>
         /// <returns></returns>
-        public static int[] solution6(int N, int[] A)
+        public static int[] solution_MaxCounters(int N, int[] A)
         {
             int[] counters = new int[N];
             int maxval = -1; //maxval keeps track of the maximum counter value
@@ -1349,7 +1358,7 @@ namespace ConsoleApplication1
         /// </summary>
         /// <param name="A"></param>
         /// <returns></returns>
-        public static int solution7(int[] A)
+        public static int solution_CountPassingCars(int[] A)
         {
             int eastidx = 0;
             int westidx = 0;
@@ -1396,7 +1405,7 @@ namespace ConsoleApplication1
         /// <param name="B"></param>
         /// <param name="K"></param>
         /// <returns></returns>
-        public static int solution8(int A, int B, int K)
+        public static int solution_CountDiv(int A, int B, int K)
         {
             if (A == B)
                 return A % K == 0 ? 1 : 0;
@@ -1485,7 +1494,7 @@ namespace ConsoleApplication1
         /// </summary>
         /// <param name="A"></param>
         /// <returns></returns>
-        public static int solution10(int[] A)
+        public static int solution_MaximalTriplet2(int[] A)
         {
             //a naive solution is in O(N**3), but a sort and a simple observation can make it N Log N
             //important observation: multiplication is commutative, the order doesn't matter when we want a product of 3.

@@ -14,7 +14,7 @@ namespace ConsoleApplication1
         [TestCase(10,85,30,Result = 3)]
         public int Test(int X,int Y, int D)
         {
-            return Solution.solution(X, Y, D);
+            return Solution.solution_FrogJump(X, Y, D);
         }
 
         [TestCase(5, new[] { 3, 4, 4, 6, 4, 4, 4 }, Result = new[] { 2, 2, 2, 5, 2 })]
@@ -24,7 +24,7 @@ namespace ConsoleApplication1
         [TestCase(5, new[] { 3, 4, 4, 6, 1, 4, 4 }, Result = new[] { 3, 2, 2, 4, 2 })]
         public int[] Test2(int N, int[] A)
         {
-            return Solution.solution6(N, A);
+            return Solution.solution_MaxCounters(N, A);
         }
 
         [TestCase(new[] { 8, 6, 5, 3, 2, 4, 7 }, new[] { 1, 1, 1, 1, 1, 0, 0 },1, Result = 1)]
