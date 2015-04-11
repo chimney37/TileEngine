@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Xml.Schema;
+using System.Numerics;
 
 namespace ConsoleApplication1
 {
@@ -115,13 +116,194 @@ namespace ConsoleApplication1
             //int[] Q = {26,10,20};
             //Debug.WriteLine(Solution.solution_SemiPrime(26, P, Q));
 
-            Debug.WriteLine(Solution.solution_ChocolatesCount(10,4));
+            //Debug.WriteLine(Solution.solution_ChocolatesCount(10,4));
+
+            int[] A = {4, 4, 5, 5, 1};
+            int[] B = { 3, 2, 4, 3, 1 };
+
+            Solution.solution_FibonacciLadder(A, B).ToList().ForEach(p => Debug.Write(p + ","));
 
         }
     }
 
     internal class Solution
     {
+        /// <summary>
+        /// You have to climb up a ladder. 
+        /// The ladder has exactly N rungs, numbered from 1 to N. 
+        /// With each step, you can ascend by one or two rungs. 
+        /// More precisely:
+        /// 
+        /// •with your first step you can stand on rung 1 or 2,
+        /// •if you are on rung K, you can move to rungs K + 1 or K + 2,
+        /// •finally you have to stand on rung N.
+        /// 
+        /// Your task is to count the number of different ways of climbing to the top of the ladder.
+        /// For example, given N = 4, you have five different ways of climbing, ascending by:
+        /// 
+        /// •1, 1, 1 and 1 rung,
+        /// •1, 1 and 2 rungs,
+        /// •1, 2 and 1 rung,
+        /// •2 and 2 rungs.
+        /// 
+        /// Given N = 5, you have eight different ways of climbing, ascending by:
+        /// 
+        /// The number of different ways can be very large, 
+        /// so it is sufficient to return the result modulo 2^P, for a given integer P.
+        /// 
+        /// that, given two non-empty zero-indexed arrays A and B of L integers, 
+        /// returns an array consisting of L integers specifying the consecutive answers; 
+        /// position I should contain the number of different ways of climbing the ladder with A[I] rungs modulo 2^B[I].
+        /// 
+        /// For example, given L = 5 and:
+
+        ///  A[0] = 4   B[0] = 3
+        ///  A[1] = 4   B[1] = 2
+        ///  A[2] = 5   B[2] = 4
+        ///  A[3] = 5   B[3] = 3
+        ///  A[4] = 1   B[4] = 1
+        /// the function should return the sequence [5, 1, 8, 0, 1], as explained above.
+        /// 
+        /// •L is an integer within the range [1..30,000];
+        /// •each element of array A is an integer within the range [1..L];
+        /// •each element of array B is an integer within the range [1..30].
+        /// 
+        /// •expected worst-case time complexity is O(L);
+        /// •expected worst-case space complexity is O(L), 
+        /// beyond input storage (not counting the storage required for input arguments).
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
+        public static int[] solution_FibonacciLadder(int[] A, int[] B)
+        {
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+            //The ways to calculate the different ways of climbing seems like a fibonacci sequence
+            //by using examples, we can deduce:
+            //N = 1, we have 1 way
+            //N = 2, we have 2 different ways
+            //N = 3, we have 3 different ways
+            //N = 4, we have 5 different ways
+            //N = 5, we have 8 different ways
+            //N = 6, we have 13 different ways
+
+            //we can prove for N = m, we have Fib(m+2) ways
+            //the problem then becomes, how do we calcuate Fib(A[i] + 2) in O(n) time when there could be L number of i.
+            //if we simply loop through, we end up with a O(L*N) time complexity
+            //we can observe that if we calculate fibonacci for the max value in the sequence A[i], take an example L.
+            //Then, we would have calculated fibonacci for k = L - 1 and so on.
+            //If we are able to access Fibonacci[L-1] through an O(1) operation (which we can by FibArray[k + 1])
+            //Given that FibArray is output by Fibonacci sequence where FibArray[0] is Fib(1)
+            //we can get a Fiboacci sequence array in O(L) time.
+            //then we can modulo the result with 2^B[k]
+
+            //edge cases:
+            //are there any overflows? Take 2^B[i] where B[i] is 30. 2^30 = 1,073,741,824, which is still within the int limit
+            //Fibonacci sequence is capable of overflowing 64bit integers fairly quickly like Fib(40+) or so.
+            //System.Numerics.BigInteger class can prevent this and give the correct answer
+            //However modulo operation is very slow on BigInteger
+            //we can prevent this by precomputing the fibonacci sequence using only some tailing bits
+
+            //we need to find the maximum value of A[i]
+            int maxvalue = A.Max();
+
+            //we can reduce the fibonacci sequence to a smaller form by cutting of the upper bits that aren't necessary.
+            //we can do this because in the end, we are doing a modulo that would remove the upper bits anyway.
+            //for example, B.Max() is 1. then modulo limit is 1 less than 2.
+            //this is easier to understand if you think in terms of bits. 16 = 10000, but 15 is 01111
+            //modLimit is used in Fibonacci_iterativeModulo which basically takes the bits up to the modLimit.fantastic.
+            //now we don't need to use bigint
+            int modLimit = (1 << B.Max()) - 1;
+
+            //We need to call Fib(L + 2). Based on the function that returns Fib sequence up to (L - 1) given Fib(L)
+            //we need to call func(L + 2 + 1)
+            long[] FibSequence = Fibonacci_IterativeModulo(maxvalue + 2 + 1, modLimit);
+            int[] result = new int[A.Length];
+
+            for (int i = 0; i < A.Length; i++)
+            {
+                //get number of different ways for each A[i]
+                //Using the binary method to get the modulo is much faster than the % operator
+                //we can do this in the special case of the modulo of power of 2 (y mod 2^x) can be represented in the binary AND
+                //The binary AND will remove the upper bits that will be lost, in this case would be equivalent to a modulo operation.
+                result[i] = (int)(FibSequence[A[i] + 1] & (1 << B[i]) - 1);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculates Fibonacci and returns a fibobacci sequence
+        /// len = 1 return 0
+        /// len = 2 return 1
+        /// len = 3 return 1
+        /// len = 4 return 2
+        /// len = 5 return 4
+        /// generalizing, len = n returns Fib(n - 1)
+        /// 
+        /// B an array of values that should modulo by 2^B{i]
+        /// </summary>
+        /// <param name="len"></param>
+        /// <returns></returns>
+        public static long[] Fibonacci_Iterative(int len)
+        {
+            long[] fibosequence = new long[len];
+            long a = 0, b = 1;
+            fibosequence[0] = a;
+            fibosequence[1] = b;
+
+            for (int i = 2; i < len; i++)
+            {
+                long c = a + b;
+                fibosequence[i] = c;
+                a = b;
+                b = c;
+            }
+            return fibosequence;
+        }
+
+        public static long[] Fibonacci_IterativeModulo(int len, int modLimit)
+        {
+            long[] fibosequence = new long[len];
+            long a = 0, b = 1;
+            fibosequence[0] = a;
+            fibosequence[1] = b;
+
+            for (int i = 2; i < len; i++)
+            {
+                long c = (a + b) & modLimit;
+                fibosequence[i] = c;
+                a = b;
+                b = c;
+            }
+            return fibosequence;
+        }
+
+
+        /// <summary>
+        /// Calculates Fibonacci sequence using BigInteger
+        /// </summary>
+        /// <param name="len"></param>
+        /// <returns></returns>
+        public static BigInteger[] Fibonacci_IterativeBig(int len)
+        {
+            BigInteger[] fibosequence = new BigInteger[len];
+            BigInteger a = 0, b = 1;
+            fibosequence[0] = a;
+            fibosequence[1] = b;
+
+            for (int i = 2; i < len; i++)
+            {
+                BigInteger c = a + b;
+                fibosequence[i] = c;
+                a = b;
+                b = c;
+            }
+            return fibosequence;
+        }
+
+
         /// <summary>
         /// Two positive integers N and M are given. 
         /// Integer N represents the number of chocolates arranged in a circle, numbered from 0 to N − 1.

@@ -126,5 +126,15 @@ namespace ConsoleApplication1
         {
             return Solution.solution_ChocolatesCount(N, M);
         }
+
+        [TestCase(new[] {4, 4, 5, 5, 1}, new[] {3, 2, 4, 3, 1}, 1, Result = new[] {5, 1, 8, 0, 1})]
+        [TestCase(new[] { 30000 }, new[] { 1 }, 2, Result = new[] { 1 })]
+        [TestCase(new[] { 30000 }, new[] { 30 }, 3, Result = new[] { 154758433 })]
+        [TestCase(new[] { 1 }, new[] { 1 }, 4, Result = new[] { 1 })]
+        public int[] TestLadderClimbFibonacci(int[] A, int[] B, int testnum)
+        {
+            return Solution.solution_FibonacciLadder(A, B);
+        }
+
     }
 }
