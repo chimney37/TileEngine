@@ -123,13 +123,185 @@ namespace ConsoleApplication1
 
             //Solution.solution_FibonacciLadder(A, B).ToList().ForEach(p => Debug.Write(p + ","));
 
-            int[] A = {2, 1, 5, 1, 2, 2, 2};
-            Debug.WriteLine(Solution.solution_MinMaxDivision(3,5,A));
+            //int[] A = {2, 1, 5, 1, 2, 2, 2};
+            //Debug.WriteLine(Solution.solution_MinMaxDivision(3,5,A));
+
+            int[] A = { -5, -3, -1, 0, 3, 6 };
+            Debug.WriteLine(Solution.solution_DistinctAbs3(A));
         }
     }
 
     internal class Solution
     {
+        /// <summary>
+        /// A non-empty zero-indexed array A consisting of N numbers is given. 
+        /// The array is sorted in non-decreasing order. 
+        /// The absolute distinct count of this array is the number of distinct absolute values among the elements of the array.
+        /// 
+        /// For example, consider array A such that:
+        /// 
+        /// A[0] = -5
+        ///A[1] = -3
+        ///A[2] = -1
+        ///A[3] =  0
+        ///A[4] =  3
+        ///A[5] =  6
+        /// 
+        /// The absolute distinct count of this array is 5, 
+        /// because there are 5 distinct absolute values among the elements of this array, namely 0, 1, 3, 5 and 6.
+        /// 
+        /// •N is an integer within the range [1..100,000];
+        /// •each element of array A is an integer within the range [−2,147,483,648..2,147,483,647];
+        /// •array A is sorted in non-decreasing order.
+        /// 
+        /// •expected worst-case time complexity is O(N);
+        /// •expected worst-case space complexity is O(N), beyond input storage (not counting the storage required for input arguments).
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static int solution_DistinctAbs(int[] A)
+        {
+            //how about given the fact array is sorted, we try to count the elements, but annihilate the negative numbers 
+            //since it is sorted, we can also eliminate repetitive numbers
+
+            //unfortunately, below is not an O(N) solution
+
+            bool[] touched = new bool[A.Length];
+
+            int dupecnt = 0;
+            int j = 0;
+            for (int i = 0; i < A.Length; i++)
+            {
+                j = i;
+                int n = A[i];
+
+                if (n == -2147483648)
+                    continue;
+
+                if (n < 0)
+                {
+                    //look for dupes in itself
+                    while (++j < A.Length && A[j] == n)
+                    {
+                        if (!touched[j])
+                        {
+                            touched[j] = true;
+                            dupecnt++;
+                        }
+                    }
+
+                    j = 0;
+                    //look for dupes in positive
+                    while (n * -1 <= A[A.Length - 1 - j] && 0 < A[A.Length - 1 - j])
+                    {
+                        if (A[A.Length - 1 - j] == n*-1)
+                        {
+                            if (!touched[A.Length - 1 - j])
+                            {
+                                touched[A.Length - 1 - j] = true;
+                                dupecnt++;
+                            }
+                        }
+                        if (j++ == A.Length)
+                            break;
+                    }
+                }
+                else
+                {
+                    //look for dupes in itself
+                    while (++j < A.Length && A[j] == n)
+                    {
+                        if (!touched[j])
+                        {
+                            touched[j] = true;
+                            dupecnt++;
+                        }
+                    }
+                }
+            }
+
+            return A.Length - dupecnt;
+        }
+
+        /// <summary>
+        /// An O(N) space solution
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static int solution_DistinctAbs2(int[] A)
+        {
+            Dictionary<int,int> hash = new Dictionary<int, int>(A.Length);
+
+            for (int i = 0; i < A.Length; i++)
+            {
+                if (A[i] == -2147483648)
+                {
+                    hash.Add(A[i],0);
+                    continue;
+                }
+
+                if (!hash.ContainsKey(Math.Abs(A[i])))
+                {
+                    hash.Add(Math.Abs(A[i]),0);
+                }
+            }
+
+            return hash.Keys.Count;
+        }
+
+        /// <summary>
+        /// O(1) space solution
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static int solution_DistinctAbs3(int[] A)
+        {
+            int distinctcnt = 1;
+
+            //set current element to the max value, either on the head or on the tail
+            long current = Math.Max(Math.Abs((long)A[0]), Math.Abs((long)A[A.Length - 1]));
+            int idx_head = 0;
+            int idx_tail = A.Length - 1;
+
+            //travel from greatest abs to smallest abs
+            while (idx_head <= idx_tail)
+            {
+                long former = Math.Abs((long)A[idx_head]);
+
+                //skip the elements on the head side that are the same as current value.
+                if (former == current)
+                {
+                    idx_head++;
+                    continue;
+                }
+
+                //skip the elments on the tail side that are the same as the current value.
+                long latter = Math.Abs((long)A[idx_tail]);
+                if (latter == current)
+                {
+                    idx_tail--;
+                    continue;
+                }
+
+                //set the current value to the latter, if the head is bigger than or equal to tail value
+                if (former >= latter)
+                {
+                    current = former;
+                    idx_head++;
+                }
+                else
+                {
+                    current = latter;
+                    idx_tail--;
+                }
+
+                distinctcnt++;
+            }
+
+            return distinctcnt;
+        }
+
         /// <summary>
         /// You are given integers K, M and a non-empty zero-indexed array A consisting of N integers. 
         /// Every element of the array is not greater than M.
