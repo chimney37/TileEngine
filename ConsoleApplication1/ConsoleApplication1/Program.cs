@@ -118,16 +118,124 @@ namespace ConsoleApplication1
 
             //Debug.WriteLine(Solution.solution_ChocolatesCount(10,4));
 
-            int[] A = {4, 4, 5, 5, 1};
-            int[] B = { 3, 2, 4, 3, 1 };
+            //int[] A = {4, 4, 5, 5, 1};
+            //int[] B = { 3, 2, 4, 3, 1 };
 
-            Solution.solution_FibonacciLadder(A, B).ToList().ForEach(p => Debug.Write(p + ","));
+            //Solution.solution_FibonacciLadder(A, B).ToList().ForEach(p => Debug.Write(p + ","));
 
+            int[] A = {2, 1, 5, 1, 2, 2, 2};
+            Debug.WriteLine(Solution.solution_MinMaxDivision(3,5,A));
         }
     }
 
     internal class Solution
     {
+        /// <summary>
+        /// You are given integers K, M and a non-empty zero-indexed array A consisting of N integers. 
+        /// Every element of the array is not greater than M.
+        /// You should divide this array into K blocks of consecutive elements. The size of the block is any integer between 0 and N. 
+        /// Every element of the array should belong to some block.
+        /// The sum of the block from X to Y equals A[X] + A[X + 1] + ... + A[Y]. The sum of empty block equals 0.
+        /// The large sum is the maximal sum of any block.
+        /// For example, you are given integers K = 3, M = 5 and array A such that:
+        /// 
+        ///  A[0] = 2
+        ///A[1] = 1
+        ///A[2] = 5
+        ///A[3] = 1
+        ///A[4] = 2
+        ///A[5] = 2
+        ///A[6] = 2
+        /// 
+        /// The array can be divided, for example, into the following blocks:
+        ///[2], [1, 5, 1, 2], [2, 2] with a large sum of 9;
+        ///•[2, 1, 5], [], [1, 2, 2, 2] with a large sum of 8;
+        ///•[2, 1], [5, 1], [2, 2, 2] with a large sum of 6.
+        /// 
+        /// The goal is to minimize the large sum. In the above example, 6 is the minimal large sum.
+        /// that, given integers K, M and a non-empty zero-indexed array A consisting of N integers, returns the minimal large sum.
+        /// 
+        /// the function should return 6, as explained above.
+        /// 
+        /// •N and K are integers within the range [1..100,000];
+        /// •M is an integer within the range [0..10,000];
+        /// •each element of array A is an integer within the range [0..M].
+        /// 
+        /// •expected worst-case time complexity is O(N*log(N+M));
+        /// •expected worst-case space complexity is O(1), beyond input storage (not counting the storage required for input arguments).
+        /// 
+        /// </summary>
+        /// <param name="K"></param>
+        /// <param name="M"></param>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static int solution_MinMaxDivision(int K, int M, int[] A)
+        {
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+            //part of the problem seems to be determining how many combinations of blocks is possible
+            // another part if summing up all the individual blocks to get the large sum
+            //maybe we can precompute a cumulative sum for each index, 
+            // so we can say A[X] + A[X + 1]+...+A[Y] = A[Y] - A[X - 1]
+            //but then the space complexity would be O(N)..
+
+            //maybe we can divide and conquer
+            //recursively take an element in the array to be a block and generate the remaining blocks
+            //but the complexity would be large..
+
+            //a solution from elsewhere uses binary search
+            //the idea is very elegant. It searches for a minimal large sum by doing a binary search for 
+            //a value between 0, the minimal value of M and the maximum value, given by the maximum theoretical sum in the array
+            //(maximum theoretical happens when A[i] = M for all i)
+            //with a candidate value, it tries to see if a block sums 
+
+            //maximum sum possible
+            int maxSum = M*A.Length;
+
+            int minSum = 0, mid = -1;
+            int total = 0;
+
+            //binary search for the minimum sum
+            while (minSum <= maxSum)
+            {
+                mid = (maxSum + minSum)/2;
+
+                if (CheckLargeSumIsPossible(K, mid, A))
+                    maxSum = mid - 1;
+                else
+                    minSum = mid + 1;
+            }
+
+            if (CheckLargeSumIsPossible(K, minSum, A))
+                minSum--;
+
+            return minSum;
+        }
+
+        /// <summary>
+        /// Checks if the candidate largesum is possible in the given array
+        /// if summing up the entire array doesn't match the candidate, it will return false
+        /// it doesn't check all possible cases
+        /// 
+        /// </summary>
+        /// <param name="K"></param>
+        /// <param name="candidatelargeSum"></param>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static bool CheckLargeSumIsPossible(int K, int candidatelargeSum, int[] A)
+        {
+            int cur = 0, i = 0;
+            while (K > 0 && i < A.Length)
+            {
+                while (i < A.Length && cur + A[i] < candidatelargeSum)
+                    cur += A[i++];
+
+                K--;
+                cur = 0;
+            }
+            return i == A.Length;
+        }
+
+
         /// <summary>
         /// You have to climb up a ladder. 
         /// The ladder has exactly N rungs, numbered from 1 to N. 
@@ -1331,7 +1439,7 @@ namespace ConsoleApplication1
         /// </summary>
         /// <param name="A"></param>
         /// <returns></returns>
-        public static int solution9(int[] A)
+        public static int solution_MaximalTriplet(int[] A)
         {
             // Note: unforutnately the solution below, although it seems elegant, is N^3. Basically a naive solution. A better solution in NlogN requires sorting and a observation.
  
@@ -1372,6 +1480,11 @@ namespace ConsoleApplication1
             return maxproduct;
         }
 
+        /// <summary>
+        /// A Better solution of the maximum product
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
         public static int solution10(int[] A)
         {
             //a naive solution is in O(N**3), but a sort and a simple observation can make it N Log N
