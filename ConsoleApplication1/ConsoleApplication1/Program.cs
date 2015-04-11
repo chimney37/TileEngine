@@ -130,15 +130,103 @@ namespace ConsoleApplication1
             //int[] A = { -5, -3, -1, 0, 3, 6 };
             //Debug.WriteLine(Solution.solution_DistinctAbs3(A));
 
-            int[] A = {1, 3, 7, 9, 9};
-            int[] B = {5, 6, 8, 9, 10};
+            //int[] A = {1, 3, 7, 9, 9};
+            //int[] B = {5, 6, 8, 9, 10};
 
-            Debug.WriteLine(Solution.solution_MaximumOverlappingSegments(A, B));
+            //Debug.WriteLine(Solution.solution_MaximumOverlappingSegments(A, B));
+
+            int[] A = {1, -2, 0, 9, -1, -2};
+            Debug.WriteLine(Solution.solution_NumberSolitaire(A));
+
         }
     }
 
     internal class Solution
     {
+        /// <summary>
+        /// A game for one player is played on a board consisting of N consecutive squares, numbered from 0 to N − 1. 
+        /// There is a number written on each square. 
+        /// A non-empty zero-indexed array A of N integers contains the numbers written on the squares. 
+        /// Moreover, some squares can be marked during the game.
+        /// 
+        /// At the beginning of the game, there is a pebble on square number 0 and this is the only square on the board which is marked. 
+        /// The goal of the game is to move the pebble to square number N − 1.
+        /// 
+        /// During each turn we throw a six-sided die, with numbers from 1 to 6 on its faces, 
+        /// and consider the number K, which shows on the upper face after the die comes to rest. 
+        /// Then we move the pebble standing on square number I to square number I + K, providing that square number I + K exists.
+        /// If square number I + K does not exist, we throw the die again until we obtain a valid move. 
+        /// Finally, we mark square number I + K.
+        /// 
+        /// After the game finishes (when the pebble is standing on square number N − 1),
+        /// we calculate the result. The result of the game is the sum of the numbers written on all marked squares.
+        /// 
+        /// A[0] = 1
+        /// A[1] = -2
+        ///  A[2] = 0
+        /// A[3] = 9
+        /// A[4] = -1
+        /// A[5] = -2
+        /// one possible game could be as follows:
+        /// •the pebble is on square number 0, which is marked;
+        /// •we throw 3; the pebble moves from square number 0 to square number 3; we mark square number 3;
+        /// •we throw 5; the pebble does not move, since there is no square number 8 on the board;
+        /// •we throw 2; the pebble moves to square number 5; we mark this square and the game ends.
+        /// 
+        /// The marked squares are 0, 3 and 5, so the result of the game is 1 + 9 + (−2) = 8. 
+        /// This is the maximal possible result that can be achieved on this board.
+        /// 
+        /// The marked squares are 0, 3 and 5, so the result of the game is 1 + 9 + (−2) = 8. 
+        /// This is the maximal possible result that can be achieved on this board.
+        /// 
+        /// that, given a non-empty zero-indexed array A of N integers, returns the maximal result that can be achieved on the board represented by array A.
+        /// 
+        /// •N is an integer within the range [2..100,000];
+        /// •each element of array A is an integer within the range [−10,000..10,000].
+        /// 
+        /// •expected worst-case time complexity is O(N);
+        /// •expected worst-case space complexity is O(N), beyond input storage (not counting the storage required for input arguments).
+        /// 
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static int solution_NumberSolitaire(int[] A)
+        {
+            //http://www.martinkysel.com/codility-numbersolitaire-solution/
+            // dynamic approach
+
+
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+            int num_possible_rolls = 6;
+
+            //extends the array with the number of possible rolls so we can use the same algorithm for the first index
+            int[] subsolutions = Enumerable.Repeat(int.MinValue, A.Length + num_possible_rolls).ToArray();
+
+            //the start before the dice roll is the value in the first cell
+            subsolutions[num_possible_rolls] = A[0];
+
+            //the idea is to incrementally solve the problem, by getting the solution progressively.
+            //for example, in the first inner loop, we get the solution to get to the 2nd cell is -1, since 1 - 2 = -1
+            //in the 2nd inner loop, the maximum is obtained by getting from cell 0 to cell 2 instead of going from cell 0,1 then to 2.
+            int max_previous = 0;
+            for (int i = num_possible_rolls + 1; i < A.Length + num_possible_rolls;i++)
+            {
+                max_previous = int.MinValue;
+
+                //TODO: prev_idx beyond where (i -prev_idx - 1) is less than num_possible_rolls is unnecessary, but complicates
+                for (int prev_idx = 0; prev_idx < num_possible_rolls; prev_idx++)
+                {
+                    //get the maximum of previous sums (from rolling the dice to get the result)
+                    max_previous = Math.Max(max_previous, subsolutions[i - prev_idx - 1]);
+
+                    //get the best solution to get to the current index given the maximum from previous (since we sum)
+                    subsolutions[i] = A[i - num_possible_rolls] + max_previous;
+                }
+            }
+            return subsolutions[A.Length + num_possible_rolls - 1];
+        }
+
         /// <summary>
         /// Located on a line are N segments, numbered from 0 to N − 1, 
         /// whose positions are given in zero-indexed arrays A and B. 
@@ -178,7 +266,7 @@ namespace ConsoleApplication1
         /// <returns></returns>
         public static int solution_MaximumOverlappingSegments(int[] A, int[] B)
         {
-            //consider the greedy approach, it's not going to find all possibilities though
+            //consider the greedy approach, in this case, we just consider adjacent segments to compare.
             //try finding the maximum number of non-overlapping segments in a single loop
 
             //if empty, return 0
@@ -209,10 +297,6 @@ namespace ConsoleApplication1
             return maximalnonoverlaps;
         }
 
-        private static bool IsOverlapSegment(int a1, int b1, int a2, int b2)
-        {
-            return (a1 <= a2 && a2 <= b1 || a2 <= a1 && a1 <= b2);
-        }
 
 
         /// <summary>
