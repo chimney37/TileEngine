@@ -135,14 +135,120 @@ namespace ConsoleApplication1
 
             //Debug.WriteLine(Solution.solution_MaximumOverlappingSegments(A, B));
 
-            int[] A = {1, -2, 0, 9, -1, -2};
-            Debug.WriteLine(Solution.solution_NumberSolitaire(A));
+            //int[] A = {1, -2, 0, 9, -1, -2};
+            //Debug.WriteLine(Solution.solution_NumberSolitaire(A));
 
+            //int[] A = {5,4,3,2,1};
+
+            //Debug.WriteLine(Solution.solution_Test2(A));
+
+            int[] A = {2,-2,0,3,4,-7};
+            Debug.WriteLine(Solution.solution_Test1(A));
         }
     }
 
     internal class Solution
     {
+        public static int solution_Test2(int[] A)
+        {
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+
+            //first I should think, if we just loop over each element to find the same integer for a given A[i], we would be doing a O(N^2)?
+            //no, because if we start with A[0], we would  be looping maximum of A[1]..A[N]..therefore, the next would be A[2]...A[N]. This would be less than O(N^2). 
+            //we can use a O(N) space, so maybe a marker array would be useful
+            //another observation is if we use the marker array, any marked element can be skipped without testing it for zerosum
+
+                     
+            int min = int.MaxValue;
+            int minidx = 0;
+
+
+            for (int i = 0; i < A.Length; i++)
+            {
+                if (A[i] < min)
+                {
+                    min = A[i];
+                    minidx = i;
+                }
+
+            }
+            int min2 = int.MaxValue;
+            for (int i = 0; i < A.Length; i++)
+            {
+                if (A[i] < min2 && A[i] >= min && (i - minidx > 1 || minidx - i > 1))
+                {
+                    min2 = A[i];
+                }
+            }
+
+            return min + min2;
+        }
+
+        public static int solution_Test1(int[] A)
+        {
+            // write your code in C# 5.0 with .NET 4.5 (Mono)
+
+            //first I should think, if we just loop over each element to find the same integer for a given A[i], we would be doing a O(N^2)?
+            //no, because if we start with A[0], we would  be looping maximum of A[1]..A[N]..therefore, the next would be A[2]...A[N]. This would be less than O(N^2). 
+            //we can use a O(N) space, so maybe a marker array would be useful
+            //another observation is if we use the marker array, any marked element can be skipped without testing it for zerosum
+
+
+            int[] marker = new int[A.Length];
+            int summer = 0;
+            for (int i = 0; i < A.Length; i++)
+            {
+                summer += A[i];
+                marker[i] = summer;
+            }
+
+
+            int cnt = 0;
+            int j = -1;
+            for (int i = 0; i < A.Length; i++)
+            {
+                //if 2 consecutive non-adjacent 0, add 1
+                if (j != -1 && marker[i] == 0 && i - j >= 2)
+                    cnt++;
+
+                if (marker[i] == 0)
+                {
+                    cnt++;
+                    j = i;
+                }
+
+                if (A[i] == 0)
+                    cnt++;
+            }
+            return cnt;
+
+
+            /*
+             int cnt = 0;
+            int j = 0;
+            for (int i = 0; i < A.Length; i++)
+            {
+                j = i + 1;
+                int sum = A[i];
+
+                if (sum == 0)
+                    cnt++;
+
+                while (j < A.Length)
+                {
+                    
+                    sum += A[j++];
+                    marker[j-1] = sum;
+
+                    if (sum == 0)
+                        cnt++;
+                }
+            }
+            return cnt;
+             */
+        }
+
+
         /// <summary>
         /// A game for one player is played on a board consisting of N consecutive squares, numbered from 0 to N − 1. 
         /// There is a number written on each square. 
@@ -296,8 +402,6 @@ namespace ConsoleApplication1
 
             return maximalnonoverlaps;
         }
-
-
 
         /// <summary>
         /// A non-empty zero-indexed array A consisting of N numbers is given. 
