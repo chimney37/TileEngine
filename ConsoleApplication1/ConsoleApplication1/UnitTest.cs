@@ -149,5 +149,13 @@ namespace ConsoleApplication1
             return Solution.solution_DistinctAbs3(A);
         }
 
+        [TestCase(new[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 1, Result = 1)]
+        [TestCase(new[] { 2, -2, 0, 3, 4, -7  }, 2, Result = 5)]
+        [TestCase(new[] { -2, -1, 0, 1, 2, 2 }, 2, Result = 2)]
+        public int TestZeroSumSlice(int[] A, int testnum)
+        {
+            return Solution.solution_ZeroSumSlice(A);
+        }
+
     }
 }

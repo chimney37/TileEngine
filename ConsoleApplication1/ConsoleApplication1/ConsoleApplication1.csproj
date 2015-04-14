@@ -43,6 +43,12 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="TSF.SearchCandidateProvider">
+      <HintPath>..\packages\TSF.SearchCandidateProvider.0.1.1.0\lib\net45\TSF.SearchCandidateProvider.dll</HintPath>
+    </Reference>
+    <Reference Include="TSF.TypeLib">
+      <HintPath>..\packages\TSF.TypeLib.1.0.1.0\lib\portable-net45+win\TSF.TypeLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FishAlive.cs" />
@@ -50,6 +56,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StoneWall.cs" />
     <Compile Include="UnitTest.cs" />
+    <Compile Include="WindowsIMEExperiment.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

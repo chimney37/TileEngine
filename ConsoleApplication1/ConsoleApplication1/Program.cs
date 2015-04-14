@@ -14,6 +14,7 @@ namespace ConsoleApplication1
 {
     internal class Program
     {
+        [STAThread]
         private static void Main(string[] args)
         {
 
@@ -138,12 +139,19 @@ namespace ConsoleApplication1
             //int[] A = {1, -2, 0, 9, -1, -2};
             //Debug.WriteLine(Solution.solution_NumberSolitaire(A));
 
-            //int[] A = {5,4,3,2,1};
-
+            //int[] A = {2,4,3,2,5};
             //Debug.WriteLine(Solution.solution_Test2(A));
 
-            int[] A = {2,-2,0,3,4,-7};
-            Debug.WriteLine(Solution.solution_Test1(A));
+            int[] A2 = { 2, -2, 0, 3, 4, -7 };
+            Debug.WriteLine(Solution.solution_ZeroSumSlice(A2));
+
+            //Windows IME tests
+            string[] texts = ImeLanguage.GetIMEKanaToKanjiCandidates("おおつき");
+            texts.ToList().ForEach(p => Debug.WriteLine(p));
+
+            ImeLanguage lang = new ImeLanguage();
+            lang.GetIMEKanjiToKana("大朏");
+            lang.Close();
         }
     }
 
@@ -184,14 +192,15 @@ namespace ConsoleApplication1
             return min + min2;
         }
 
-        public static int solution_Test1(int[] A)
+        public static int solution_ZeroSumSlice(int[] A)
         {
             // write your code in C# 5.0 with .NET 4.5 (Mono)
 
             //first I should think, if we just loop over each element to find the same integer for a given A[i], we would be doing a O(N^2)?
-            //no, because if we start with A[0], we would  be looping maximum of A[1]..A[N]..therefore, the next would be A[2]...A[N]. This would be less than O(N^2). 
+            //yes, because if we start with A[0], we would  be looping maximum of A[1]..A[N]..therefore, the next would be A[2]...A[N]. 
+            //since Big O is concerned with the largest component and the fact that there would be n(n + 1)/2 elements to look at.
+            //This would give (n^2 + n)/2, therefore it is O(n^2)
             //we can use a O(N) space, so maybe a marker array would be useful
-            //another observation is if we use the marker array, any marked element can be skipped without testing it for zerosum
 
 
             int[] marker = new int[A.Length];
@@ -207,16 +216,18 @@ namespace ConsoleApplication1
             int j = -1;
             for (int i = 0; i < A.Length; i++)
             {
-                //if 2 consecutive non-adjacent 0, add 1
+                //if 2 consecutive non-adjacent 0, it implies that halfway, there was a slice of elements that add up to zero
                 if (j != -1 && marker[i] == 0 && i - j >= 2)
                     cnt++;
 
-                if (marker[i] == 0)
+                //if marker array is zero and not the first element, it implies the sum up to that point from the beginning of array is 0
+                if (marker[i] == 0 && i != 0)
                 {
                     cnt++;
                     j = i;
                 }
 
+                //if an array element is 0, the sum of this element with itself [i, i] is always zero
                 if (A[i] == 0)
                     cnt++;
             }

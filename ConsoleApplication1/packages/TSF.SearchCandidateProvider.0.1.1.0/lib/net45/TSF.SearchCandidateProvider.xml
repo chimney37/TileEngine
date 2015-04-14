@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TSF.SearchCandidateProvider</name>
+    </assembly>
+    <members>
+        <member name="T:TSF.SearchCandidateProviderProfile">
+            <summary>
+            Represents the identity of a Text Input Processor that is supposed to support ITfFnSearchCandidateProvider.
+            </summary>
+        </member>
+        <member name="T:TSF.SearchCandidateResponse">
+            <summary>
+            Represents the execution result of ITfFnSearchCandidateProvider.GetSearchCandidates.
+            </summary>
+        </member>
+        <member name="T:TSF.SearchCandidateProvider">
+            <summary>
+            A managed wrapper of ITfFnSearchCandidateProvider.
+            </summary>
+        </member>
+        <member name="M:TSF.SearchCandidateProvider.GetThreadLocalInputSettings(System.Boolean)">
+            <summary>
+            Returns if the IME settings is per-thread mode or not.
+            </summary>
+            <param name="defaultValue">The value to be returned when fails to retrieve the settings.</param>
+            <returns>True if the IME settings is per-thread mode.</returns>
+            <remarks>SearchCandidateProvider.FromProfile is available as long as the IME settings is per-thread mode.</remarks>
+        </member>
+        <member name="M:TSF.SearchCandidateProvider.SetThreadLocalInputSettings(System.Boolean)">
+            <summary>
+            Updates the IME settings to be per-thread or not.
+            </summary>
+            <param name="value">True if the IME settings should be set to per-thread mode.</param>
+        </member>
+        <member name="M:TSF.SearchCandidateProvider.FromProfile(TSF.SearchCandidateProviderProfile)">
+            <summary>
+            Starts initialization of SearchCandidateProvider with <paramref name="profile"/>.
+            </summary>
+            <remarks>The caller must ensure that the IME settings is kept to be per-thread mode from the method is called until the returned task is completed.</remarks>
+            <param name="profile">The profile information with which SearchCandidateProvider is instantiated.</param>
+            <returns>A task object which represents an asynchronous operation to initialize a SearchCandidateProvider object.
+            The resolved value can be null if any error occurs.</returns>
+        </member>
+        <member name="M:TSF.SearchCandidateProvider.FromCurrentProfile">
+            <summary>
+            Starts initialization of SearchCandidateProvider with <paramref name="profile"/>.
+            </summary>
+            <returns>A task object which represents an asynchronous operation to initialize a SearchCandidateProvider object.
+            The resolved value can be null if any error occurs.</returns>
+        </member>
+        <member name="M:TSF.SearchCandidateProviderInternal.TSFEx.GetSearchCandidates(TSF.TypeLib.ITfFnSearchCandidateProvider,System.String,System.String)">
+            <summary>
+            An iterator-based implementation that encapsulates COM reference counting operation around ITfFnSearchCandidateProvider.GetSearchCandidates.
+            </summary>
+        </member>
+    </members>
+</doc>
