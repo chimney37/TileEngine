@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using BasicTileEngineMono.Commands;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 

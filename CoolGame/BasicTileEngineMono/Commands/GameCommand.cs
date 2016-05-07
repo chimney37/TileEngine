@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using Microsoft.Xna.Framework;
+using System.Linq;
 using BasicTileEngineMono.Components;
+using Microsoft.Xna.Framework;
 
-namespace BasicTileEngineMono
+namespace BasicTileEngineMono.Commands
 {
     //the basis for Command pattern
     public abstract class Command
@@ -58,11 +56,11 @@ namespace BasicTileEngineMono
     //State Changer Commands <T> target state
     public class StateChangeToCommand<T> : Command
     {
-        GameProcess gameProcess;
+        readonly GameProcess _gameProcess;
 
         public StateChangeToCommand(GameProcess gameProcess)
         {
-            this.gameProcess = gameProcess;
+            _gameProcess = gameProcess;
         }
 
         public override void Execute(object obj)
@@ -71,7 +69,7 @@ namespace BasicTileEngineMono
             if(obj is IContext)
             {
                 //only if blocking stack is empty
-                if (this.gameProcess.IsEmptySubProcessStack())
+                if (_gameProcess.IsEmptySubProcessStack())
                 {
                     IContext context = (IContext)obj;
                     context.ChangeState(typeof(T));
@@ -83,11 +81,11 @@ namespace BasicTileEngineMono
     //Message Box Commands
     public class MessageBoxCommand : Command
     {
-        protected GameProcess gameProcess;
-        protected string Title {get;set;}
-        protected string Content {get;set;}
-        protected int X {get;set;}
-        protected int Y {get;set;}
+        private GameProcess gameProcess;
+        private string Title {get;set;}
+        private string Content {get;set;}
+        private int X {get;set;}
+        private int Y {get;set;}
 
         public MessageBoxCommand(GameProcess gameProcess, string Title, string Content, int X, int Y)
         {
@@ -149,10 +147,10 @@ namespace BasicTileEngineMono
     }
     public class MessageBoxGetClickOffsetCommand : Command
     {
-        GameInput input;
+        readonly GameInput _input;
         public MessageBoxGetClickOffsetCommand(GameInput input)
         {
-            this.input = input;
+            _input = input;
         }
 
         public override void Execute(object obj)
@@ -160,19 +158,19 @@ namespace BasicTileEngineMono
             if (obj is GameMessageBox)
             {
                 GameMessageBox mbox = (GameMessageBox)obj;
-                if (mbox.DestinationRectangle.Contains(input.MousePosition))
+                if (mbox.DestinationRectangle.Contains(_input.MousePosition))
                 {
-                    mbox.ClickOffset = new Vector2(input.FirstMouseClickPosition.X, input.FirstMouseClickPosition.Y) - new Vector2(mbox.X, mbox.Y);
+                    mbox.ClickOffset = new Vector2(_input.FirstMouseClickPosition.X, _input.FirstMouseClickPosition.Y) - new Vector2(mbox.X, mbox.Y);
                 }
             }
         }
     }
     public class MessageBoxMoveCommand : Command
     {
-        GameInput input;
+        readonly GameInput _input;
         public MessageBoxMoveCommand(GameInput input)
         {
-            this.input = input;
+            _input = input;
         }
 
         public override void Execute(object obj)
@@ -180,10 +178,10 @@ namespace BasicTileEngineMono
             if (obj is GameMessageBox)
             {
                 GameMessageBox mbox = (GameMessageBox)obj;
-                if (mbox.DestinationRectangle.Contains(input.MousePosition))
+                if (mbox.DestinationRectangle.Contains(_input.MousePosition))
                 {
-                    mbox.X = input.MousePosition.X - (int)mbox.ClickOffset.X;
-                    mbox.Y = input.MousePosition.Y - (int)mbox.ClickOffset.Y;
+                    mbox.X = _input.MousePosition.X - (int)mbox.ClickOffset.X;
+                    mbox.Y = _input.MousePosition.Y - (int)mbox.ClickOffset.Y;
 
                     mbox.DestinationRectangle.X = mbox.X;
                     mbox.DestinationRectangle.Y = mbox.Y;
@@ -195,13 +193,12 @@ namespace BasicTileEngineMono
     //Marking Commands
     public class MarkWorldPointCommand : Command
     {
-        GameInput input;
+        readonly GameInput _input;
 
         public MarkWorldPointCommand(GameInput input)
         {
             Debug.Assert(input != null);
-
-            this.input = input;
+            _input = input;
         }
 
         public override void Execute(object obj)
@@ -210,7 +207,7 @@ namespace BasicTileEngineMono
             {
                 GameCore gCore = obj as GameCore;
 
-                Vector2 hilightLoc = gCore.GameCamera.ScreenToWorld(new Vector2(input.MousePosition.X, input.MousePosition.Y));
+                Vector2 hilightLoc = gCore.GameCamera.ScreenToWorld(new Vector2(_input.MousePosition.X, _input.MousePosition.Y));
                 //get map cell coordinates of mouse point in Update
 
                 gCore.MapPoints.Dequeue();
@@ -222,10 +219,10 @@ namespace BasicTileEngineMono
     //Distance Finder Command
     public class CalculateDistanceDebuggerCommand : Command
     {
-        GameCore gCore;
+        readonly GameCore _gCore;
         public CalculateDistanceDebuggerCommand(GameCore gCore)
         {
-            this.gCore = gCore;
+            _gCore = gCore;
         }
 
         public override void Execute(object obj)
@@ -233,14 +230,14 @@ namespace BasicTileEngineMono
             if(obj is IContext)
             {
                 MessageBoxCommand cmd = new MessageBoxCommand(
-                    gCore,
+                    _gCore,
                     "L0 Tile Distance:",
                     string.Format("({0},{1}) -> ({2},{3}) Distance={4}",
-                    gCore.MapPoints.ElementAt(0).X,
-                    gCore.MapPoints.ElementAt(0).Y,
-                    gCore.MapPoints.ElementAt(1).X,
-                    gCore.MapPoints.ElementAt(1).Y,
-                    TileMap.L0TileDistance(gCore.MapPoints.ElementAt(0), gCore.MapPoints.ElementAt(1))),
+                    _gCore.MapPoints.ElementAt(0).X,
+                    _gCore.MapPoints.ElementAt(0).Y,
+                    _gCore.MapPoints.ElementAt(1).X,
+                    _gCore.MapPoints.ElementAt(1).Y,
+                    TileMap.L0TileDistance(_gCore.MapPoints.ElementAt(0), _gCore.MapPoints.ElementAt(1))),
                     0,
                     0
                     );
@@ -252,15 +249,15 @@ namespace BasicTileEngineMono
 
     public class MoveGameActorCommand : Command
     {
-        Vector2 moveVector;
-        string animation;
-        GameCore gCore;
+        readonly Vector2 _moveVector;
+        readonly string _animation;
+        readonly GameCore _gCore;
 
         public MoveGameActorCommand(GameCore gCore,Vector2 moveDir, string animation)
         {
-            this.gCore = gCore;
-            this.moveVector = moveDir;
-            this.animation = animation;
+            _gCore = gCore;
+            _moveVector = moveDir;
+            _animation = animation;
         }
 
         public override void Execute(object obj)
@@ -269,15 +266,15 @@ namespace BasicTileEngineMono
             {
                 GameActor actor = obj as GameActor;
 
-                actor.MoveVector = this.moveVector;
-                actor.Animation = this.animation;
+                actor.MoveVector = _moveVector;
+                actor.Animation = _animation;
 
                 //check walkability
-                if (gCore.GameMap.GetCellAtWorldPoint(actor.ActorMobileSprite.Position + moveVector).Walkable == false)
+                if (_gCore.GameMap.GetCellAtWorldPoint(actor.ActorMobileSprite.Position + _moveVector).Walkable == false)
                     actor.MoveVector = Vector2.Zero;
 
                 //prevent movement into positions which have abrupt changes in height
-                if (Math.Abs(gCore.GameMap.GetOverallHeight(actor.ActorMobileSprite.Position) - gCore.GameMap.GetOverallHeight(actor.ActorMobileSprite.Position + moveVector)) > 10)
+                if (Math.Abs(_gCore.GameMap.GetOverallHeight(actor.ActorMobileSprite.Position) - _gCore.GameMap.GetOverallHeight(actor.ActorMobileSprite.Position + _moveVector)) > 10)
                     actor.MoveVector = Vector2.Zero;
             }
         }
@@ -285,13 +282,12 @@ namespace BasicTileEngineMono
 
     public class MoveGameActorToPositionCommand : Command
     {
-        GameActor actor;
+        readonly GameActor _actor;
 
         public MoveGameActorToPositionCommand(GameActor actor)
         {
             Debug.Assert(actor != null);
-
-            this.actor = actor;
+            _actor = actor;
         }
 
         public override void Execute(object obj)
@@ -301,36 +297,35 @@ namespace BasicTileEngineMono
                 GameCore gCore = obj as GameCore;
 
                 //activate mobile sprite
-                actor.ActorMobileSprite.IsActive = true;
-
-                actor.ActorMobileSprite.Target = actor.ActorMobileSprite.Position;
+                _actor.ActorMobileSprite.IsActive = true;
+                _actor.ActorMobileSprite.Target = _actor.ActorMobileSprite.Position;
 
                 //obtain start and end coordinates
-                Point start = gCore.GameMap.WorldToMapCell(actor.ActorMobileSprite.Position);
+                Point start = gCore.GameMap.WorldToMapCell(_actor.ActorMobileSprite.Position);
                 Point end = gCore.GameMap.WorldToMapCell(gCore.GameCamera.ScreenToWorld(gCore.GameInput.MousePosition));
 
                 Debug.WriteLine(string.Format("s:({0},{1})", start.X, start.Y));
                 Debug.WriteLine(string.Format("e:({0},{1})", end.X, end.Y));
 
                 //clear current existing path (if navigating in progress)
-                actor.ActorMobileSprite.ClearPathNodes();
+                _actor.ActorMobileSprite.ClearPathNodes();
 
                 //set up new path finder
                 PathFinder p = new PathFinder(gCore.GameMap);
 
                 if (p.Search(start.X, start.Y, end.X, end.Y, gCore.GameMap))
                 {
-                    actor.SearchPath = p.PathResult();
+                    _actor.SearchPath = p.PathResult();
 
-                    foreach (PathNode n in actor.SearchPath)
+                    foreach (PathNode n in _actor.SearchPath)
                     {
                         Vector2 nodevec = gCore.GameCamera.ScreenToWorld(gCore.GameMap.MapCellToScreen(gCore.GameCamera, n.X, n.Y));
 
                         Debug.WriteLine(string.Format("({0},{1})", nodevec.X, nodevec.Y));
                         //TODO: A probable issue with mapcell -> screen coordinates 
-                        actor.ActorMobileSprite.AddPathNode(nodevec);
+                        _actor.ActorMobileSprite.AddPathNode(nodevec);
                     }
-                    actor.ActorMobileSprite.DeactivateAfterPathing = true;
+                    _actor.ActorMobileSprite.DeactivateAfterPathing = true;
                 }
             }
         }
@@ -366,10 +361,10 @@ namespace BasicTileEngineMono
 
     public class MoveTileIndexCmd : Command
     {
-        TileIndexDir dir;
+        readonly TileIndexDir _dir;
         public MoveTileIndexCmd(TileIndexDir dir)
         {
-            this.dir = dir;
+            _dir = dir;
         }
 
         public override void Execute(object obj)
@@ -381,7 +376,7 @@ namespace BasicTileEngineMono
                 Command cmd = new UpdateTileIndexCmd();
                 cmd.Execute(obj);
 
-                switch(dir)
+                switch(_dir)
                 {
                     case TileIndexDir.Left:
                         gME.GameMap.GetLeftTileIndex();
@@ -415,7 +410,6 @@ namespace BasicTileEngineMono
             if(obj is GameMapEditor)
             {
                 GameMapEditor gME = obj as GameMapEditor;
-
                 gME.CurrentTileType = (TileType)(++gME.TileTypeIndex % Enum.GetNames(typeof(TileType)).Length);
             }
         }
@@ -427,7 +421,6 @@ namespace BasicTileEngineMono
             if (obj is GameMapEditor)
             {
                 GameMapEditor gME = obj as GameMapEditor;
-
                 switch (gME.CurrentTileType)
                 {
                     case TileType.Base:
@@ -443,8 +436,6 @@ namespace BasicTileEngineMono
                         gME.GameMap.AddMultiTile(gME.HiLightPoint.X, gME.HiLightPoint.Y, gME.GameMap.TileIndex);
                         //gME.GameMap.
                         break;
-                    default:
-                        break;
                 }
             }
         }
@@ -456,7 +447,6 @@ namespace BasicTileEngineMono
             if (obj is GameMapEditor)
             {
                 GameMapEditor gME = obj as GameMapEditor;
-
                 switch (gME.CurrentTileType)
                 {
                     case TileType.Base:
@@ -471,18 +461,16 @@ namespace BasicTileEngineMono
                     case TileType.Multi:
                         gME.GameMap.RemoveMultiTile(gME.HiLightPoint.X, gME.HiLightPoint.Y);
                         break;
-                    default:
-                        break;
                 }
             }
         }
     }
     public class SetPreviewCursor : Command
     {
-        bool value;
+        readonly bool _value;
         public SetPreviewCursor(bool value)
         {
-            this.value = value;
+            _value = value;
         }
 
         public override void Execute(object obj)
@@ -490,10 +478,8 @@ namespace BasicTileEngineMono
             if (obj is GameMapEditor)
             {
                 GameMapEditor gME = obj as GameMapEditor;
-
-                gME.ShowPreviewMode = value;
+                gME.ShowPreviewMode = _value;
             }
         }
     }
-
 }

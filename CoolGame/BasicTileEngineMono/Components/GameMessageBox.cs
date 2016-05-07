@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 using System.Diagnostics;
+using BasicTileEngineMono.Commands;
 using BasicTileEngineMono.Components;
 
 namespace BasicTileEngineMono
